@@ -1,17 +1,18 @@
 import { Button, Slider, Stack } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { start } from "repl";
 import * as Tone from "tone";
 
 const fakeQueryData = [
   "https://tonejs.github.io/audio/berklee/gong_1.mp3",
-  "https://mbardin.github.io/PDM-resources/media/sound_samples/rhythmic_effects/Bubbles.mp3",
+  // "https://mbardin.github.io/PDM-resources/media/sound_samples/rhythmic_effects/Bubbles.mp3",
 ];
 
 const Profile = () => {
   Tone.Transport.debug = true;
   const [players, setPlayers] = useState<Tone.Players | null>(null);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
+  const recordingIndex = useRef<number>(0);
 
   useEffect(() => {
     let playerDict: { [key: string]: string } = {};
@@ -31,12 +32,17 @@ const Profile = () => {
 
   const startAudio = () => {
     if (players && players.loaded) {
-      for (let i = 0; i < fakeQueryData.length; i++) {
-        players.player(i.toString()).start(i.toString());
-      }
-      if (players.has("Recording")) {
-        console.log("recording");
-        players.player("Recording").start();
+      for (
+        let i = 0;
+        i < fakeQueryData.length || i < recordingIndex.current;
+        i++
+      ) {
+        if (players.has(i.toString())) {
+          players.player(i.toString()).start(i.toString());
+        }
+        if (players.has("Recording" + i)) {
+          players.player("Recording" + i).start();
+        }
       }
     }
   };
@@ -64,11 +70,11 @@ const Profile = () => {
     if (recorder) {
       recorder.stop();
       recorder.ondataavailable = (e) => {
-        players?.add("Recording", URL.createObjectURL(e.data), () =>
-          console.log(players?.player("Recording").get())
+        players?.add(
+          "Recording" + recordingIndex.current++,
+          URL.createObjectURL(e.data)
         );
       };
-      console.log(players?.player("0").get());
       stopAudio();
     }
   };
