@@ -2,6 +2,7 @@ from flask import Flask, request
 from flask_cors import CORS, cross_origin
 import os
 import psycopg2
+import flask_login
 
 def get_db_connection():
   return psycopg2.connect(
@@ -10,10 +11,74 @@ def get_db_connection():
     user=os.environ['DB_USERNAME'],
     password=os.environ['DB_PASSWORD'])
 
-
 app = Flask(__name__)
+app.secret_key = os.environ['SECRET_KEY']
+login_manager = flask_login.LoginManager()
+login_manager.init_app(app)
+
+def email_in_db(email):
+  conn = get_db_connection()
+  cur = conn.cursor()
+
+  cur.execute("SELECT email FROM users WHERE email = %s", (email,))
+  user = cur.fetchone()
+
+  conn.close()
+  cur.close()
+  return user
+
+def has_correct_password(email, password):
+  conn = get_db_connection()
+  cur = conn.cursor()
+
+  cur.execute("SELECT password FROM users WHERE email = %s", (email,))
+  correct_password = cur.fetchone()
+
+  conn.close()
+  cur.close()
+  return correct_password[0] == password
+
+class User(flask_login.UserMixin):
+    pass
+
+@login_manager.user_loader
+def user_loader(email):
+  if email_in_db(email) is None:
+    return
+
+  user = User()
+  user.id = email
+  return user
+
+@login_manager.request_loader
+def request_loader(request):
+  email = request.form.get('email')
+  if email_in_db(email) is None:
+    return
+
+  user = User()
+  user.id = email
+  return user
+
+@app.post("/users/login")
+@cross_origin()
+def user_login():
+  request_data = request.get_json()
+  if email_in_db(request_data["email"]) and has_correct_password(request_data["email"], request_data["password"]):
+    user = User()
+    user.id = request_data["email"]
+    flask_login.login_user(user)
+    return 'logged in!'
+  return 'Bad login'
+
+@app.post('/users/logout')
+@cross_origin()
+def logout():
+  flask_login.logout_user()
+  return 'Logged out'
 
 @app.post("/track/create")
+@flask_login.login_required
 @cross_origin()
 def track_create():
   request_data = request.get_json()
@@ -25,7 +90,7 @@ def track_create():
   if projectid is None:
     return 'project not found'
 
-  cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, url) VALUES (%s, %s, %s)", (request_data["instrumentType"], 'jack@nope.com', request_data["url"]))
+  cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, url) VALUES (%s, %s, %s)", (request_data["instrumentType"], flask_login.current_user.id, request_data["url"]))
   cur.execute("SELECT trackid FROM tracks WHERE url = %s", (request_data["url"],))
   trackId = cur.fetchone()
 
@@ -37,13 +102,14 @@ def track_create():
   return 'success'
 
 @app.post("/project/create")
+@flask_login.login_required
 @cross_origin()
 def project_create():
   request_data = request.get_json()
   conn = get_db_connection()
   cur = conn.cursor()
 
-  cur.execute("INSERT INTO projects (owner, projectname) VALUES (%s, %s)", ('jack@nope.com', request_data["projectName"]))
+  cur.execute("INSERT INTO projects (owner, projectname) VALUES (%s, %s)", (flask_login.current_user.id, request_data["projectName"]))
   conn.commit()
 
   conn.close()
