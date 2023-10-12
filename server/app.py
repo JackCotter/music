@@ -17,7 +17,6 @@ app = Flask(__name__)
 @cross_origin()
 def track_create():
   request_data = request.get_json()
-  print(request_data)
   conn = get_db_connection()
   cur = conn.cursor()
 
@@ -29,7 +28,6 @@ def track_create():
   cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, url) VALUES (%s, %s, %s)", (request_data["instrumentType"], 'jack@nope.com', request_data["url"]))
   cur.execute("SELECT trackid FROM tracks WHERE url = %s", (request_data["url"],))
   trackId = cur.fetchone()
-  print(trackId)
 
   cur.execute("INSERT INTO projecttracks (projectid, trackid, accepted) VALUES (%s, %s, false)", (request_data["projectId"], trackId))
 
@@ -41,12 +39,26 @@ def track_create():
 @app.post("/project/create")
 @cross_origin()
 def project_create():
+  request_data = request.get_json()
   conn = get_db_connection()
   cur = conn.cursor()
-  cur.execute("INSERT INTO projects (owner, projectname) VALUES (%s, %s)", ('jack@nope.com', request.form.projectName))
+
+  cur.execute("INSERT INTO projects (owner, projectname) VALUES (%s, %s)", ('jack@nope.com', request_data["projectName"]))
   conn.commit()
+
   conn.close()
   cur.close()
   return 'success'
 
+@app.get("/tracks/list")
+@cross_origin()
+def project_get():
+  conn = get_db_connection()
+  cur = conn.cursor()
 
+  cur.execute("SELECT url, instrumenttype, accepted FROM projects join projecttracks on projects.projectid = projecttracks.projectid join tracks on projecttracks.trackid = tracks.trackid where projects.projectid = %s", request.args.get("projectId"))
+  tracks = cur.fetchall()
+
+  conn.close()
+  cur.close()
+  return str(tracks)
