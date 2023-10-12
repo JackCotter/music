@@ -3,6 +3,7 @@ from flask_cors import CORS, cross_origin
 import os
 import psycopg2
 import flask_login
+import bcrypt
 
 def get_db_connection():
   return psycopg2.connect(
@@ -36,7 +37,9 @@ def has_correct_password(email, password):
 
   conn.close()
   cur.close()
-  return correct_password[0] == password
+  encoded_password = password.encode('utf-8')
+  encoded_correct_password = correct_password[0].encode('utf-8')
+  return bcrypt.checkpw(encoded_password, encoded_correct_password)
 
 class User(flask_login.UserMixin):
     pass
@@ -76,6 +79,26 @@ def user_login():
 def logout():
   flask_login.logout_user()
   return 'Logged out'
+
+@app.post("/users/create")
+@cross_origin()
+def user_create():
+  request_data = request.get_json()
+  if email_in_db(request_data["email"]):
+    return 'User already exists'
+  password = request_data["password"].encode('utf-8')
+  salt = bcrypt.gensalt()
+  hashed_password = bcrypt.hashpw(password, salt).decode('utf-8')
+
+  conn = get_db_connection()
+  cur = conn.cursor()
+
+  cur.execute("INSERT INTO users (email, username, password) VALUES (%s, %s, %s)", (request_data["email"], request_data["username"], hashed_password))
+  conn.commit()
+
+  conn.close()
+  cur.close()
+  return 'success'
 
 @app.post("/track/create")
 @flask_login.login_required
