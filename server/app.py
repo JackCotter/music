@@ -52,7 +52,7 @@ def project_create():
 
 @app.get("/tracks/list")
 @cross_origin()
-def project_get():
+def track_list():
   conn = get_db_connection()
   cur = conn.cursor()
 
@@ -62,3 +62,19 @@ def project_get():
   conn.close()
   cur.close()
   return str(tracks)
+
+@app.get("/projects/list")
+@cross_origin()
+def project_list():
+  conn = get_db_connection()
+  cur = conn.cursor()
+
+  if 'ownerUsername' in request.args:
+    cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict FROM projects join users on (projects.owner = users.email) WHERE username = %s", (request.args.get("ownerUsername"),))
+  else:
+    cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict FROM projects join users on (projects.owner = users.email)")
+  projects = cur.fetchall()
+
+  conn.close()
+  cur.close()
+  return str(projects)
