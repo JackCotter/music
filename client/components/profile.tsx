@@ -1,6 +1,7 @@
-import { Button, Slider, Stack } from "@mui/material";
+import { getTrackList } from "@/utils/apiUtils";
+import { tupleArrayStringToArray } from "@/utils/stringUtils";
+import { Button, Stack } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { start } from "repl";
 import * as Tone from "tone";
 
 const fakeQueryData = [
@@ -13,6 +14,7 @@ const Profile = () => {
   const [players, setPlayers] = useState<Tone.Players | null>(null);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
   const recordingIndex = useRef<number>(0);
+  const [recordedUrls, setRecordedUrls] = useState<string[]>([]); // [url1, url2, ...
 
   useEffect(() => {
     let playerDict: { [key: string]: string } = {};
@@ -28,6 +30,15 @@ const Profile = () => {
         players.dispose(); // Clean up the player
       }
     };
+  }, []);
+
+  useEffect(() => {
+    const trackListQuery = async (id: number) => {
+      const trackList = await getTrackList(id);
+      tupleArrayStringToArray(trackList);
+      return trackList;
+    };
+    trackListQuery(1);
   }, []);
 
   const startAudio = () => {
@@ -70,14 +81,16 @@ const Profile = () => {
     if (recorder) {
       recorder.stop();
       recorder.ondataavailable = (e) => {
-        players?.add(
-          "Recording" + recordingIndex.current++,
-          URL.createObjectURL(e.data)
-        );
+        const url = URL.createObjectURL(e.data);
+        players?.add("Recording" + recordingIndex.current++, url);
+        setRecordedUrls([...recordedUrls, url]);
       };
       stopAudio();
     }
   };
+
+  const commitRecordings = () => {
+    
 
   return (
     <Stack direction="column" spacing={2}>
@@ -94,33 +107,10 @@ const Profile = () => {
         <Button variant="contained" onClick={() => stopRecording()}>
           Stop Recording
         </Button>
+        <Button variant="contained" onClick={() => {}}>
+          Commit Track
+        </Button>
       </Stack>
-      {/* <Stack direction="column" spacing={2}>
-        {fakeQueryData.map((url, index) => {
-          return (
-            <Stack direction="column" spacing={2}>
-              <Slider
-                key={index}
-                value={
-                  startTime && players
-                    ? (players.player(index.toString()).buffer. -
-                        startTime) /
-                      players.player(index.toString()).buffer.duration
-                    : 0
-                }
-              />
-              <div>
-                {startTime && players
-                  ? players.player("1").immediate() - startTime
-                  : 0}
-              </div>
-              <div>
-                {players ? players.player(index.toString()).buffer.duration : 0}
-              </div>
-            </Stack>
-          );
-        })}
-      </Stack> */}
     </Stack>
   );
 };
