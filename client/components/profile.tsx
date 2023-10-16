@@ -1,8 +1,10 @@
-import { getTrackList } from "@/utils/apiUtils";
+import { getTrackList, createTrack, login } from "@/utils/apiUtils";
 import { tupleArrayStringToArray } from "@/utils/stringUtils";
 import { Button, Stack } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
+import { useMutation } from "react-query";
+import LoginModal from "./modals/loginModal";
 
 const fakeQueryData = [
   "https://tonejs.github.io/audio/berklee/gong_1.mp3",
@@ -15,6 +17,7 @@ const Profile = () => {
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
   const recordingIndex = useRef<number>(0);
   const [recordedUrls, setRecordedUrls] = useState<string[]>([]); // [url1, url2, ...
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     let playerDict: { [key: string]: string } = {};
@@ -89,29 +92,59 @@ const Profile = () => {
     }
   };
 
-  const commitRecordings = () => {
-    
+  const createTracks = async () => {
+    for (let i = 0; i < recordedUrls.length; i++) {
+      await createTrack(1, "cool track", "Guitar", recordedUrls[i]);
+    }
+  };
+  const { mutate: trackCreateMutation } = useMutation(createTracks, {
+    onSuccess: () => {
+      console.log("success");
+    },
+    onError: () => {
+      console.log("error");
+    },
+  });
 
   return (
-    <Stack direction="column" spacing={2}>
-      <Stack direction="row" spacing={2}>
-        <Button variant="contained" onClick={() => startAudio()}>
-          Start Audio
-        </Button>
-        <Button variant="contained" onClick={() => stopAudio()}>
-          Stop Audio
-        </Button>
-        <Button variant="contained" onClick={() => startRecording()}>
-          Start Recording
-        </Button>
-        <Button variant="contained" onClick={() => stopRecording()}>
-          Stop Recording
-        </Button>
-        <Button variant="contained" onClick={() => {}}>
-          Commit Track
-        </Button>
+    <>
+      <Stack direction="column" spacing={2}>
+        <Stack direction="row" spacing={2}>
+          <Button variant="contained" onClick={() => startAudio()}>
+            Start Audio
+          </Button>
+          <Button variant="contained" onClick={() => stopAudio()}>
+            Stop Audio
+          </Button>
+          <Button variant="contained" onClick={() => startRecording()}>
+            Start Recording
+          </Button>
+          <Button variant="contained" onClick={() => stopRecording()}>
+            Stop Recording
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              trackCreateMutation();
+            }}
+          >
+            Commit Track
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setIsLoginModalOpen(true);
+            }}
+          >
+            login
+          </Button>
+        </Stack>
       </Stack>
-    </Stack>
+      <LoginModal
+        isLoginModalOpen={isLoginModalOpen}
+        setIsLoginModalOpen={setIsLoginModalOpen}
+      />
+    </>
   );
 };
 

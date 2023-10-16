@@ -14,6 +14,7 @@ def get_db_connection():
 
 app = Flask(__name__)
 app.secret_key = os.environ['SECRET_KEY']
+CORS(app, origins=["http://localhost:3000"],  supports_credentials=True)
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 
@@ -64,7 +65,6 @@ def request_loader(request):
   return user
 
 @app.post("/users/login")
-@cross_origin()
 def user_login():
   request_data = request.get_json()
   if email_in_db(request_data["email"]) and has_correct_password(request_data["email"], request_data["password"]):
@@ -75,7 +75,6 @@ def user_login():
   return 'Bad login'
 
 @app.post('/users/logout')
-@cross_origin()
 def logout():
   flask_login.logout_user()
   return 'Logged out'
@@ -100,15 +99,14 @@ def user_create():
   cur.close()
   return 'success'
 
-@app.post("/track/create")
+@app.post("/tracks/create")
 @flask_login.login_required
-@cross_origin()
 def track_create():
   request_data = request.get_json()
   conn = get_db_connection()
   cur = conn.cursor()
 
-  cur.execute("SELECT projectid FROM projects WHERE projectid = %s", (request_data["projectId"]))
+  cur.execute("SELECT projectid FROM projects WHERE projectid = %s", (str(request_data["projectId"])))
   projectid = cur.fetchone()
   if projectid is None:
     return 'project not found'
