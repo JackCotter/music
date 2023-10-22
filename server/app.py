@@ -1,9 +1,10 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 import os
 import psycopg2
 import flask_login
 import bcrypt
+import base64
 
 def get_db_connection():
   return psycopg2.connect(
@@ -103,6 +104,7 @@ def user_create():
 @flask_login.login_required
 def track_create():
   request_data = request.get_json()
+  print(request_data["blobData"])
   conn = get_db_connection()
   cur = conn.cursor()
 
@@ -110,9 +112,13 @@ def track_create():
   projectid = cur.fetchone()
   if projectid is None:
     return 'project not found'
+    
+  cur.execute("INSERT INTO blob_storage (blob_data) VALUES (%s)", (request_data["blobData"],))
+  cur.execute("SELECT blobid FROM blob_storage WHERE blob_data = %s", (request_data["blobData"],))
+  blobId = cur.fetchone()
 
-  cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, url) VALUES (%s, %s, %s)", (request_data["instrumentType"], flask_login.current_user.id, request_data["url"]))
-  cur.execute("SELECT trackid FROM tracks WHERE url = %s", (request_data["url"],))
+  cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, blobid) VALUES (%s, %s, %s)", (request_data["instrumentType"], flask_login.current_user.id, blobId))
+  cur.execute("SELECT trackid FROM tracks WHERE blobid = %s", blobId)
   trackId = cur.fetchone()
 
   cur.execute("INSERT INTO projecttracks (projectid, trackid, accepted) VALUES (%s, %s, false)", (request_data["projectId"], trackId))
@@ -143,12 +149,17 @@ def track_list():
   conn = get_db_connection()
   cur = conn.cursor()
 
-  cur.execute("SELECT url, instrumenttype, accepted FROM projects join projecttracks on projects.projectid = projecttracks.projectid join tracks on projecttracks.trackid = tracks.trackid where projects.projectid = %s", request.args.get("projectId"))
+  cur.execute("SELECT blob_data, instrumenttype, accepted FROM projects join projecttracks on projects.projectid = projecttracks.projectid join tracks on projecttracks.trackid = tracks.trackid join blob_storage on (tracks.blobid = blob_storage.blobid) where projects.projectid = %s", request.args.get("projectId"))
   tracks = cur.fetchall()
+
+  formatted_tracks = []
+  for row in tracks:
+    formatted_blob = base64.b64encode(row[0]).decode('utf-8')
+    formatted_tracks.append({"blobData": formatted_blob, "instrumentType": row[1], "accepted": row[2]})
 
   conn.close()
   cur.close()
-  return str(tracks)
+  return jsonify(formatted_tracks)
 
 @app.get("/projects/list")
 @cross_origin()

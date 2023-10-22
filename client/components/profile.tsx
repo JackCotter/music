@@ -16,17 +16,26 @@ const Profile = () => {
   const [players, setPlayers] = useState<Tone.Players | null>(null);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
   const recordingIndex = useRef<number>(0);
-  const [recordedUrls, setRecordedUrls] = useState<string[]>([]); // [url1, url2, ...
+  const [recordedData, setRecordedData] = useState<Blob | null>(null);
+  const [trackList, setTrackList] = useState<Track[]>([]);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    let playerDict: { [key: string]: string } = {};
-    fakeQueryData.forEach((url, index) => {
-      playerDict[index.toString()] = url;
-    });
-    const players: Tone.Players = new Tone.Players(playerDict, () =>
-      setPlayers(players)
-    ).toDestination();
+    const trackListQuery = async (id: number) => {
+      let playerDict: { [key: string]: string } = {};
+      const trackList: Track[] = await getTrackList(id);
+      setTrackList(trackList);
+      console.log(trackList);
+      trackList.forEach((track, index) => {
+        const blob = new Blob([track.blobData], { type: "audio/mpeg" });
+        const audioURL = URL.createObjectURL(blob);
+        playerDict[index.toString()] = audioURL;
+      });
+      const players: Tone.Players = new Tone.Players(playerDict, () =>
+        setPlayers(players)
+      ).toDestination();
+    };
+    trackListQuery(1);
     return () => {
       if (players) {
         console.log("disposed");
@@ -35,14 +44,7 @@ const Profile = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const trackListQuery = async (id: number) => {
-      const trackList = await getTrackList(id);
-      tupleArrayStringToArray(trackList);
-      return trackList;
-    };
-    trackListQuery(1);
-  }, []);
+  useEffect(() => {}, []);
 
   const startAudio = () => {
     if (players && players.loaded) {
@@ -86,15 +88,15 @@ const Profile = () => {
       recorder.ondataavailable = (e) => {
         const url = URL.createObjectURL(e.data);
         players?.add("Recording" + recordingIndex.current++, url);
-        setRecordedUrls([...recordedUrls, url]);
+        setRecordedData(e.data);
       };
       stopAudio();
     }
   };
 
   const createTracks = async () => {
-    for (let i = 0; i < recordedUrls.length; i++) {
-      await createTrack(1, "cool track", "Guitar", recordedUrls[i]);
+    if (recordedData) {
+      await createTrack(1, "cool track", "Guitar", recordedData);
     }
   };
   const { mutate: trackCreateMutation } = useMutation(createTracks, {
