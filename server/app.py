@@ -113,8 +113,15 @@ def track_create():
   if projectid is None:
     return 'project not found'
     
-  cur.execute("INSERT INTO blob_storage (blob_data) VALUES (%s)", (request_data["blobData"],))
-  cur.execute("SELECT blobid FROM blob_storage WHERE blob_data = %s", (request_data["blobData"],))
+  blob_data_bytes = request_data["blobData"].encode('ascii')
+  print("wait")
+  print("wait")
+  print("wait")
+  print(blob_data_bytes)
+  # content = base64.b64decode(blob_data_bytes)
+  print(blob_data_bytes.decode("ascii"))
+  cur.execute("INSERT INTO blob_storage (blob_data) VALUES (%s)", (blob_data_bytes,))
+  cur.execute("SELECT blobid FROM blob_storage WHERE blob_data = %s", (blob_data_bytes,))
   blobId = cur.fetchone()
 
   cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, blobid) VALUES (%s, %s, %s)", (request_data["instrumentType"], flask_login.current_user.id, blobId))
@@ -154,7 +161,9 @@ def track_list():
 
   formatted_tracks = []
   for row in tracks:
-    formatted_blob = base64.b64encode(row[0]).decode('utf-8')
+    # print("unformatted blob: " + str(row[0]))
+    formatted_blob =  row[0].tobytes().decode('ascii')
+    # print("formatted blob: " + str(formatted_blob))
     formatted_tracks.append({"blobData": formatted_blob, "instrumentType": row[1], "accepted": row[2]})
 
   conn.close()

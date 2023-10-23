@@ -14,8 +14,7 @@ export const login = async (email: string, password: string) => {
 
 export const getTrackList = async (projectId: number) => {
   const response = await api.get(`/tracks/list?projectId=${projectId}`, {withCredentials: false});
-  console.log(response.data);
-  return JSON.parse(response.data);
+  return response.data;
 }
 
 export const createTrack = async (projectId: number, trackName: string, instrumentType:string, blobData:Blob) => {

@@ -36,15 +36,15 @@ const Profile = () => {
       ).toDestination();
     };
     trackListQuery(1);
-    return () => {
-      if (players) {
-        console.log("disposed");
-        players.dispose(); // Clean up the player
-      }
-    };
+    // return () => {
+    //   if (players) {
+    //     console.log("disposed");
+    //     players.dispose(); // Clean up the player
+    //   }
+    // };
   }, []);
 
-  useEffect(() => {}, []);
+  console.log("players: " + players);
 
   const startAudio = () => {
     if (players && players.loaded) {
@@ -60,6 +60,8 @@ const Profile = () => {
           players.player("Recording" + i).start();
         }
       }
+    } else {
+      console.log("not loaded" + players);
     }
   };
 
