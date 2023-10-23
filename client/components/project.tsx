@@ -1,5 +1,4 @@
 import { getTrackList, createTrack, login } from "@/utils/apiUtils";
-import { tupleArrayStringToArray } from "@/utils/stringUtils";
 import { Button, Stack } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
@@ -11,7 +10,7 @@ const fakeQueryData = [
   // "https://mbardin.github.io/PDM-resources/media/sound_samples/rhythmic_effects/Bubbles.mp3",
 ];
 
-const Profile = () => {
+const Project = () => {
   Tone.Transport.debug = true;
   const [players, setPlayers] = useState<Tone.Players | null>(null);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
@@ -149,4 +148,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default Project;

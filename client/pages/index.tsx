@@ -1,5 +1,5 @@
 import { Inter } from "next/font/google";
-import Profile from "@/components/profile";
+import Project from "@/components/project";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -13,7 +13,7 @@ export default function Home() {
         height: "90vh",
       }}
     >
-      <Profile />
+      <Project />
     </div>
   );
 }
