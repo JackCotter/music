@@ -5,11 +5,6 @@ import * as Tone from "tone";
 import { useMutation } from "react-query";
 import LoginModal from "./modals/loginModal";
 
-const fakeQueryData = [
-  "https://tonejs.github.io/audio/berklee/gong_1.mp3",
-  // "https://mbardin.github.io/PDM-resources/media/sound_samples/rhythmic_effects/Bubbles.mp3",
-];
-
 const Project = () => {
   Tone.Transport.debug = true;
   const [players, setPlayers] = useState<Tone.Players | null>(null);
@@ -44,11 +39,7 @@ const Project = () => {
 
   const startAudio = () => {
     if (players && players.loaded) {
-      for (
-        let i = 0;
-        i < fakeQueryData.length || i < recordingIndex.current;
-        i++
-      ) {
+      for (let i = 0; i < trackList.length || i < recordingIndex.current; i++) {
         if (players.has(i.toString())) {
           players.player(i.toString()).start(i.toString());
         }
