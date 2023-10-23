@@ -1,9 +1,10 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 import os
 import psycopg2
 import flask_login
 import bcrypt
+import base64
 
 def get_db_connection():
   return psycopg2.connect(
@@ -14,6 +15,7 @@ def get_db_connection():
 
 app = Flask(__name__)
 app.secret_key = os.environ['SECRET_KEY']
+CORS(app, origins=["http://localhost:3000"],  supports_credentials=True)
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 
@@ -64,7 +66,6 @@ def request_loader(request):
   return user
 
 @app.post("/users/login")
-@cross_origin()
 def user_login():
   request_data = request.get_json()
   if email_in_db(request_data["email"]) and has_correct_password(request_data["email"], request_data["password"]):
@@ -75,7 +76,6 @@ def user_login():
   return 'Bad login'
 
 @app.post('/users/logout')
-@cross_origin()
 def logout():
   flask_login.logout_user()
   return 'Logged out'
@@ -100,21 +100,32 @@ def user_create():
   cur.close()
   return 'success'
 
-@app.post("/track/create")
+@app.post("/tracks/create")
 @flask_login.login_required
-@cross_origin()
 def track_create():
   request_data = request.get_json()
+  print(request_data["blobData"])
   conn = get_db_connection()
   cur = conn.cursor()
 
-  cur.execute("SELECT projectid FROM projects WHERE projectid = %s", (request_data["projectId"]))
+  cur.execute("SELECT projectid FROM projects WHERE projectid = %s", (str(request_data["projectId"])))
   projectid = cur.fetchone()
   if projectid is None:
     return 'project not found'
+    
+  blob_data_bytes = request_data["blobData"].encode('ascii')
+  print("wait")
+  print("wait")
+  print("wait")
+  print(blob_data_bytes)
+  # content = base64.b64decode(blob_data_bytes)
+  print(blob_data_bytes.decode("ascii"))
+  cur.execute("INSERT INTO blob_storage (blob_data) VALUES (%s)", (blob_data_bytes,))
+  cur.execute("SELECT blobid FROM blob_storage WHERE blob_data = %s", (blob_data_bytes,))
+  blobId = cur.fetchone()
 
-  cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, url) VALUES (%s, %s, %s)", (request_data["instrumentType"], flask_login.current_user.id, request_data["url"]))
-  cur.execute("SELECT trackid FROM tracks WHERE url = %s", (request_data["url"],))
+  cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, blobid) VALUES (%s, %s, %s)", (request_data["instrumentType"], flask_login.current_user.id, blobId))
+  cur.execute("SELECT trackid FROM tracks WHERE blobid = %s", blobId)
   trackId = cur.fetchone()
 
   cur.execute("INSERT INTO projecttracks (projectid, trackid, accepted) VALUES (%s, %s, false)", (request_data["projectId"], trackId))
@@ -145,12 +156,19 @@ def track_list():
   conn = get_db_connection()
   cur = conn.cursor()
 
-  cur.execute("SELECT url, instrumenttype, accepted FROM projects join projecttracks on projects.projectid = projecttracks.projectid join tracks on projecttracks.trackid = tracks.trackid where projects.projectid = %s", request.args.get("projectId"))
+  cur.execute("SELECT blob_data, instrumenttype, accepted FROM projects join projecttracks on projects.projectid = projecttracks.projectid join tracks on projecttracks.trackid = tracks.trackid join blob_storage on (tracks.blobid = blob_storage.blobid) where projects.projectid = %s", request.args.get("projectId"))
   tracks = cur.fetchall()
+
+  formatted_tracks = []
+  for row in tracks:
+    # print("unformatted blob: " + str(row[0]))
+    formatted_blob =  row[0].tobytes().decode('ascii')
+    # print("formatted blob: " + str(formatted_blob))
+    formatted_tracks.append({"blobData": formatted_blob, "instrumentType": row[1], "accepted": row[2]})
 
   conn.close()
   cur.close()
-  return str(tracks)
+  return jsonify(formatted_tracks)
 
 @app.get("/projects/list")
 @cross_origin()
