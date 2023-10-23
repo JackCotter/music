@@ -25,7 +25,6 @@ const Profile = () => {
       let playerDict: { [key: string]: string } = {};
       const trackList: Track[] = await getTrackList(id);
       setTrackList(trackList);
-      console.log(trackList);
       trackList.forEach((track, index) => {
         const blob = new Blob([track.blobData], { type: "audio/mpeg" });
         const audioURL = URL.createObjectURL(blob);
@@ -43,8 +42,6 @@ const Profile = () => {
     //   }
     // };
   }, []);
-
-  console.log("players: " + players);
 
   const startAudio = () => {
     if (players && players.loaded) {

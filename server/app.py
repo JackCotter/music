@@ -104,7 +104,6 @@ def user_create():
 @flask_login.login_required
 def track_create():
   request_data = request.get_json()
-  print(request_data["blobData"])
   conn = get_db_connection()
   cur = conn.cursor()
 
@@ -114,12 +113,6 @@ def track_create():
     return 'project not found'
     
   blob_data_bytes = request_data["blobData"].encode('ascii')
-  print("wait")
-  print("wait")
-  print("wait")
-  print(blob_data_bytes)
-  # content = base64.b64decode(blob_data_bytes)
-  print(blob_data_bytes.decode("ascii"))
   cur.execute("INSERT INTO blob_storage (blob_data) VALUES (%s)", (blob_data_bytes,))
   cur.execute("SELECT blobid FROM blob_storage WHERE blob_data = %s", (blob_data_bytes,))
   blobId = cur.fetchone()
@@ -161,9 +154,7 @@ def track_list():
 
   formatted_tracks = []
   for row in tracks:
-    # print("unformatted blob: " + str(row[0]))
     formatted_blob =  row[0].tobytes().decode('ascii')
-    # print("formatted blob: " + str(formatted_blob))
     formatted_tracks.append({"blobData": formatted_blob, "instrumentType": row[1], "accepted": row[2]})
 
   conn.close()
