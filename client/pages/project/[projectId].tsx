@@ -1,9 +1,10 @@
-import { getTrackList, createTrack, login } from "@/utils/apiUtils";
+import { getTrackList, createTrack } from "@/utils/apiUtils";
 import { Button, Stack } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
 import { useMutation } from "react-query";
-import LoginModal from "./modals/loginModal";
+import LoginModal from "../../components/modals/loginModal";
+import { useRouter } from "next/router";
 
 const Project = () => {
   Tone.Transport.debug = true;
@@ -13,6 +14,7 @@ const Project = () => {
   const [recordedData, setRecordedData] = useState<Blob | null>(null);
   const [trackList, setTrackList] = useState<Track[]>([]);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+  const router = useRouter();
 
   useEffect(() => {
     const trackListQuery = async (id: number) => {
@@ -28,7 +30,7 @@ const Project = () => {
         setPlayers(players)
       ).toDestination();
     };
-    trackListQuery(1);
+    trackListQuery(router.query.projectId as unknown as number);
     // return () => {
     //   if (players) {
     //     console.log("disposed");
@@ -98,10 +100,14 @@ const Project = () => {
   });
 
   return (
-    <>
+    <div className="dark">
       <Stack direction="column" spacing={2}>
         <Stack direction="row" spacing={2}>
-          <Button variant="contained" onClick={() => startAudio()}>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => startAudio()}
+          >
             Start Audio
           </Button>
           <Button variant="contained" onClick={() => stopAudio()}>
@@ -135,7 +141,7 @@ const Project = () => {
         isLoginModalOpen={isLoginModalOpen}
         setIsLoginModalOpen={setIsLoginModalOpen}
       />
-    </>
+    </div>
   );
 };
 
