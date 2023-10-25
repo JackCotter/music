@@ -1,5 +1,3 @@
-import { Inter } from "next/font/google";
-import Project from "@/pages/project/[projectId]";
 import { Button } from "@mui/material";
 import Link from "next/link";
 

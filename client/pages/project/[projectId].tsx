@@ -30,7 +30,11 @@ const Project = () => {
         setPlayers(players)
       ).toDestination();
     };
-    trackListQuery(router.query.projectId as unknown as number);
+    if (typeof router.query.projectId === "string") {
+      trackListQuery(parseInt(router.query.projectId) as number);
+    } else {
+      console.log("Error: projectId is not a string");
+    }
     // return () => {
     //   if (players) {
     //     console.log("disposed");
