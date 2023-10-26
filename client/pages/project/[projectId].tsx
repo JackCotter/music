@@ -1,10 +1,14 @@
 import { getTrackList, createTrack } from "@/utils/apiUtils";
-import { Button, Stack } from "@mui/material";
+import { Button, IconButton, Stack } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
 import { useMutation } from "react-query";
 import LoginModal from "../../components/modals/loginModal";
 import { useRouter } from "next/router";
+import styles from "@/styles/project.module.scss";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import StopIcon from "@mui/icons-material/Stop";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 
 const Project = () => {
   Tone.Transport.debug = true;
@@ -15,23 +19,27 @@ const Project = () => {
   const [trackList, setTrackList] = useState<Track[]>([]);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
   const router = useRouter();
+  const { projectId } = router.query;
 
   useEffect(() => {
     const trackListQuery = async (id: number) => {
       let playerDict: { [key: string]: string } = {};
       const trackList: Track[] = await getTrackList(id);
       setTrackList(trackList);
+      console.log(trackList);
       trackList.forEach((track, index) => {
-        const blob = new Blob([track.blobData], { type: "audio/mpeg" });
-        const audioURL = URL.createObjectURL(blob);
-        playerDict[index.toString()] = audioURL;
+        playerDict[
+          index.toString()
+        ] = `data:audio/mpeg;base64,${track.blobData}`;
       });
       const players: Tone.Players = new Tone.Players(playerDict, () =>
         setPlayers(players)
       ).toDestination();
+      setPlayers(players);
     };
-    if (typeof router.query.projectId === "string") {
-      trackListQuery(parseInt(router.query.projectId) as number);
+    if (projectId === undefined) return;
+    if (typeof projectId === "string") {
+      trackListQuery(parseInt(projectId) as number);
     } else {
       console.log("Error: projectId is not a string");
     }
@@ -41,7 +49,7 @@ const Project = () => {
     //     players.dispose(); // Clean up the player
     //   }
     // };
-  }, []);
+  }, [projectId]);
 
   const startAudio = () => {
     if (players && players.loaded) {
@@ -104,16 +112,16 @@ const Project = () => {
   });
 
   return (
-    <div className="dark">
+    <div className={styles.container}>
       <Stack direction="column" spacing={2}>
         <Stack direction="row" spacing={2}>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => startAudio()}
-          >
-            Start Audio
-          </Button>
+          <IconButton color="secondary" onClick={() => startAudio()}>
+            {players && players.state === "started" ? (
+              <StopIcon />
+            ) : (
+              <PlayArrowIcon />
+            )}
+          </IconButton>
           <Button variant="contained" onClick={() => stopAudio()}>
             Stop Audio
           </Button>
