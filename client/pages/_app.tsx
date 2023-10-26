@@ -1,7 +1,7 @@
 import type { AppProps } from "next/app";
 import { QueryClientProvider, QueryClient } from "react-query";
 import { ThemeOptions, ThemeProvider, createTheme } from "@mui/material/styles";
-import "../styles/globals.css";
+import "../styles/global.scss";
 
 export default function App({ Component, pageProps }: AppProps) {
   const darkThemeOptions: ThemeOptions = {
