@@ -3,7 +3,6 @@ import { Button, IconButton, Stack, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
 import { useMutation } from "react-query";
-import LoginModal from "../../components/modals/loginModal";
 import { useRouter } from "next/router";
 import styles from "@/styles/pages/project.module.scss";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -31,7 +30,6 @@ const Project = () => {
       let playerDict: { [key: string]: string } = {};
       const trackList: Track[] = await getTrackList(id);
       setTrackList(trackList);
-      console.log(trackList);
       trackList.forEach((track, index) => {
         playerDict[
           index.toString()
