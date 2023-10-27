@@ -1,11 +1,11 @@
-import { getTrackList, createTrack } from "@/utils/apiUtils";
-import { Button, IconButton, Stack } from "@mui/material";
+import { getTrackList, createTrack, getProject } from "@/utils/apiUtils";
+import { Button, IconButton, Stack, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
 import { useMutation } from "react-query";
 import LoginModal from "../../components/modals/loginModal";
 import { useRouter } from "next/router";
-import styles from "@/styles/project.module.scss";
+import styles from "@/styles/pages/project.module.scss";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
@@ -18,10 +18,16 @@ const Project = () => {
   const [recordedData, setRecordedData] = useState<Blob | null>(null);
   const [trackList, setTrackList] = useState<Track[]>([]);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
+  const [projectInfo, setProjectInfo] = useState<Project | null>(null);
   const router = useRouter();
   const { projectId } = router.query;
 
   useEffect(() => {
+    const projectGetQuery = async (id: number) => {
+      const project: Project = await getProject(id);
+      setProjectInfo(project);
+    };
     const trackListQuery = async (id: number) => {
       let playerDict: { [key: string]: string } = {};
       const trackList: Track[] = await getTrackList(id);
@@ -39,6 +45,7 @@ const Project = () => {
     };
     if (projectId === undefined) return;
     if (typeof projectId === "string") {
+      projectGetQuery(parseInt(projectId) as number);
       trackListQuery(parseInt(projectId) as number);
     } else {
       console.log("Error: projectId is not a string");
@@ -61,6 +68,7 @@ const Project = () => {
           players.player("Recording" + i).start();
         }
       }
+      setIsAudioPlaying(true);
     } else {
       console.log("not loaded" + players);
     }
@@ -69,6 +77,7 @@ const Project = () => {
   const stopAudio = () => {
     if (players && players.loaded) {
       players.stopAll();
+      setIsAudioPlaying(false);
     } else {
       console.log("not loaded");
     }
@@ -93,6 +102,7 @@ const Project = () => {
         players?.add("Recording" + recordingIndex.current++, url);
         setRecordedData(e.data);
       };
+      setRecorder(null);
       stopAudio();
     }
   };
@@ -113,24 +123,25 @@ const Project = () => {
 
   return (
     <div className={styles.container}>
-      <Stack direction="column" spacing={2}>
+      <Stack className={styles.innerContainer} direction="column" spacing={2}>
+        <Typography variant="h1">
+          {projectInfo ? projectInfo.projectname : "Track Project"}
+        </Typography>
+        <Typography variant="h2">
+          By {projectInfo?.username ? projectInfo.username : "A User"}
+        </Typography>
         <Stack direction="row" spacing={2}>
-          <IconButton color="secondary" onClick={() => startAudio()}>
-            {players && players.state === "started" ? (
-              <StopIcon />
-            ) : (
-              <PlayArrowIcon />
-            )}
+          <IconButton
+            color="secondary"
+            onClick={() => (isAudioPlaying ? stopAudio() : startAudio())}
+          >
+            {isAudioPlaying ? <StopIcon /> : <PlayArrowIcon />}
           </IconButton>
-          <Button variant="contained" onClick={() => stopAudio()}>
-            Stop Audio
-          </Button>
-          <Button variant="contained" onClick={() => startRecording()}>
-            Start Recording
-          </Button>
-          <Button variant="contained" onClick={() => stopRecording()}>
-            Stop Recording
-          </Button>
+          <IconButton
+            onClick={() => (recorder ? stopRecording() : startRecording())}
+          >
+            {recorder ? <StopIcon /> : <FiberManualRecordIcon />}
+          </IconButton>
           <Button
             variant="contained"
             onClick={() => {

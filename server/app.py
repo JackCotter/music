@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 import os
 import psycopg2
+from psycopg2.extras import RealDictCursor
 import flask_login
 import bcrypt
 import base64
@@ -165,7 +166,7 @@ def track_list():
 @cross_origin()
 def project_list():
   conn = get_db_connection()
-  cur = conn.cursor()
+  cur = conn.cursor(cursor_factory=RealDictCursor)
 
   if 'ownerUsername' in request.args:
     cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict FROM projects join users on (projects.owner = users.email) WHERE username = %s", (request.args.get("ownerUsername"),))
@@ -175,4 +176,17 @@ def project_list():
 
   conn.close()
   cur.close()
-  return str(projects)
+  return jsonify(projects)
+
+@app.get("/projects/get")
+@cross_origin()
+def project_get():
+  conn = get_db_connection()
+  cur = conn.cursor(cursor_factory=RealDictCursor)
+
+  cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict FROM projects join users on (projects.owner = users.email) where projectid = %s", request.args.get("projectId"))
+  projects = cur.fetchone()
+
+  conn.close()
+  cur.close()
+  return jsonify(projects)

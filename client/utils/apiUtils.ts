@@ -43,3 +43,8 @@ export const createTrack = async (projectId: number, trackName: string, instrume
 
   reader.readAsDataURL(blobData);
 }
+
+export const getProject = async (projectId: number) => {
+  const response = await api.get(`/projects/get?projectId=${projectId}`, {withCredentials: false});
+  return response.data as Project;
+}
