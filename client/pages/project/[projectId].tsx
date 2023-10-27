@@ -17,7 +17,6 @@ const Project = () => {
   const recordingIndex = useRef<number>(0);
   const [recordedData, setRecordedData] = useState<Blob | null>(null);
   const [trackList, setTrackList] = useState<Track[]>([]);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const [projectInfo, setProjectInfo] = useState<Project | null>(null);
   const router = useRouter();
@@ -150,20 +149,8 @@ const Project = () => {
           >
             Commit Track
           </Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setIsLoginModalOpen(true);
-            }}
-          >
-            login
-          </Button>
         </Stack>
       </Stack>
-      <LoginModal
-        isLoginModalOpen={isLoginModalOpen}
-        setIsLoginModalOpen={setIsLoginModalOpen}
-      />
     </div>
   );
 };
