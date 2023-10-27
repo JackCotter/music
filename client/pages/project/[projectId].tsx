@@ -1,58 +1,63 @@
-import { getTrackList, createTrack, login } from "@/utils/apiUtils";
-import { tupleArrayStringToArray } from "@/utils/stringUtils";
-import { Button, Stack } from "@mui/material";
+import { getTrackList, createTrack, getProject } from "@/utils/apiUtils";
+import { Button, IconButton, Stack, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
 import { useMutation } from "react-query";
-import LoginModal from "./modals/loginModal";
+import { useRouter } from "next/router";
+import styles from "@/styles/pages/project.module.scss";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import StopIcon from "@mui/icons-material/Stop";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 
-const fakeQueryData = [
-  "https://tonejs.github.io/audio/berklee/gong_1.mp3",
-  // "https://mbardin.github.io/PDM-resources/media/sound_samples/rhythmic_effects/Bubbles.mp3",
-];
-
-const Profile = () => {
+const Project = () => {
   Tone.Transport.debug = true;
   const [players, setPlayers] = useState<Tone.Players | null>(null);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
   const recordingIndex = useRef<number>(0);
   const [recordedData, setRecordedData] = useState<Blob | null>(null);
   const [trackList, setTrackList] = useState<Track[]>([]);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
+  const [projectInfo, setProjectInfo] = useState<Project | null>(null);
+  const router = useRouter();
+  const { projectId } = router.query;
 
   useEffect(() => {
+    const projectGetQuery = async (id: number) => {
+      const project: Project = await getProject(id);
+      setProjectInfo(project);
+    };
     const trackListQuery = async (id: number) => {
       let playerDict: { [key: string]: string } = {};
       const trackList: Track[] = await getTrackList(id);
       setTrackList(trackList);
-      console.log(trackList);
       trackList.forEach((track, index) => {
-        const blob = new Blob([track.blobData], { type: "audio/mpeg" });
-        const audioURL = URL.createObjectURL(blob);
-        playerDict[index.toString()] = audioURL;
+        playerDict[
+          index.toString()
+        ] = `data:audio/mpeg;base64,${track.blobData}`;
       });
       const players: Tone.Players = new Tone.Players(playerDict, () =>
         setPlayers(players)
       ).toDestination();
+      setPlayers(players);
     };
-    trackListQuery(1);
+    if (projectId === undefined) return;
+    if (typeof projectId === "string") {
+      projectGetQuery(parseInt(projectId) as number);
+      trackListQuery(parseInt(projectId) as number);
+    } else {
+      console.log("Error: projectId is not a string");
+    }
     // return () => {
     //   if (players) {
     //     console.log("disposed");
     //     players.dispose(); // Clean up the player
     //   }
     // };
-  }, []);
-
-  console.log("players: " + players);
+  }, [projectId]);
 
   const startAudio = () => {
     if (players && players.loaded) {
-      for (
-        let i = 0;
-        i < fakeQueryData.length || i < recordingIndex.current;
-        i++
-      ) {
+      for (let i = 0; i < trackList.length || i < recordingIndex.current; i++) {
         if (players.has(i.toString())) {
           players.player(i.toString()).start(i.toString());
         }
@@ -60,6 +65,7 @@ const Profile = () => {
           players.player("Recording" + i).start();
         }
       }
+      setIsAudioPlaying(true);
     } else {
       console.log("not loaded" + players);
     }
@@ -68,6 +74,7 @@ const Profile = () => {
   const stopAudio = () => {
     if (players && players.loaded) {
       players.stopAll();
+      setIsAudioPlaying(false);
     } else {
       console.log("not loaded");
     }
@@ -92,6 +99,7 @@ const Profile = () => {
         players?.add("Recording" + recordingIndex.current++, url);
         setRecordedData(e.data);
       };
+      setRecorder(null);
       stopAudio();
     }
   };
@@ -111,21 +119,26 @@ const Profile = () => {
   });
 
   return (
-    <>
-      <Stack direction="column" spacing={2}>
+    <div className={styles.container}>
+      <Stack className={styles.innerContainer} direction="column" spacing={2}>
+        <Typography variant="h1">
+          {projectInfo ? projectInfo.projectname : "Track Project"}
+        </Typography>
+        <Typography variant="h2">
+          By {projectInfo?.username ? projectInfo.username : "A User"}
+        </Typography>
         <Stack direction="row" spacing={2}>
-          <Button variant="contained" onClick={() => startAudio()}>
-            Start Audio
-          </Button>
-          <Button variant="contained" onClick={() => stopAudio()}>
-            Stop Audio
-          </Button>
-          <Button variant="contained" onClick={() => startRecording()}>
-            Start Recording
-          </Button>
-          <Button variant="contained" onClick={() => stopRecording()}>
-            Stop Recording
-          </Button>
+          <IconButton
+            color="secondary"
+            onClick={() => (isAudioPlaying ? stopAudio() : startAudio())}
+          >
+            {isAudioPlaying ? <StopIcon /> : <PlayArrowIcon />}
+          </IconButton>
+          <IconButton
+            onClick={() => (recorder ? stopRecording() : startRecording())}
+          >
+            {recorder ? <StopIcon /> : <FiberManualRecordIcon />}
+          </IconButton>
           <Button
             variant="contained"
             onClick={() => {
@@ -134,22 +147,10 @@ const Profile = () => {
           >
             Commit Track
           </Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setIsLoginModalOpen(true);
-            }}
-          >
-            login
-          </Button>
         </Stack>
       </Stack>
-      <LoginModal
-        isLoginModalOpen={isLoginModalOpen}
-        setIsLoginModalOpen={setIsLoginModalOpen}
-      />
-    </>
+    </div>
   );
 };
 
-export default Profile;
+export default Project;

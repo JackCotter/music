@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 import os
 import psycopg2
+from psycopg2.extras import RealDictCursor
 import flask_login
 import bcrypt
 import base64
@@ -104,7 +105,6 @@ def user_create():
 @flask_login.login_required
 def track_create():
   request_data = request.get_json()
-  print(request_data["blobData"])
   conn = get_db_connection()
   cur = conn.cursor()
 
@@ -114,12 +114,6 @@ def track_create():
     return 'project not found'
     
   blob_data_bytes = request_data["blobData"].encode('ascii')
-  print("wait")
-  print("wait")
-  print("wait")
-  print(blob_data_bytes)
-  # content = base64.b64decode(blob_data_bytes)
-  print(blob_data_bytes.decode("ascii"))
   cur.execute("INSERT INTO blob_storage (blob_data) VALUES (%s)", (blob_data_bytes,))
   cur.execute("SELECT blobid FROM blob_storage WHERE blob_data = %s", (blob_data_bytes,))
   blobId = cur.fetchone()
@@ -161,9 +155,7 @@ def track_list():
 
   formatted_tracks = []
   for row in tracks:
-    # print("unformatted blob: " + str(row[0]))
     formatted_blob =  row[0].tobytes().decode('ascii')
-    # print("formatted blob: " + str(formatted_blob))
     formatted_tracks.append({"blobData": formatted_blob, "instrumentType": row[1], "accepted": row[2]})
 
   conn.close()
@@ -174,7 +166,7 @@ def track_list():
 @cross_origin()
 def project_list():
   conn = get_db_connection()
-  cur = conn.cursor()
+  cur = conn.cursor(cursor_factory=RealDictCursor)
 
   if 'ownerUsername' in request.args:
     cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict FROM projects join users on (projects.owner = users.email) WHERE username = %s", (request.args.get("ownerUsername"),))
@@ -184,4 +176,17 @@ def project_list():
 
   conn.close()
   cur.close()
-  return str(projects)
+  return jsonify(projects)
+
+@app.get("/projects/get")
+@cross_origin()
+def project_get():
+  conn = get_db_connection()
+  cur = conn.cursor(cursor_factory=RealDictCursor)
+
+  cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict FROM projects join users on (projects.owner = users.email) where projectid = %s", request.args.get("projectId"))
+  projects = cur.fetchone()
+
+  conn.close()
+  cur.close()
+  return jsonify(projects)

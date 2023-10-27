@@ -11,7 +11,8 @@
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@mui/material": "^5.14.11",
+    "@mui/icons-material": "^5.14.15",
+    "@mui/material": "^5.14.15",
     "axios": "^1.5.1",
     "formik": "^2.4.5",
     "next": "latest",
@@ -27,6 +28,7 @@
     "@types/react-dom": "latest",
     "eslint": "latest",
     "eslint-config-next": "latest",
+    "sass": "^1.69.5",
     "typescript": "latest"
   }
 }

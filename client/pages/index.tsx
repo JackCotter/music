@@ -1,9 +1,8 @@
-import { Inter } from "next/font/google";
-import Profile from "@/components/profile";
-
-const inter = Inter({ subsets: ["latin"] });
+import { Button } from "@mui/material";
+import Link from "next/link";
 
 export default function Home() {
+  const projectId = 1;
   return (
     <div
       style={{
@@ -13,7 +12,11 @@ export default function Home() {
         height: "90vh",
       }}
     >
-      <Profile />
+      <Link href={`/project/${projectId}`}>
+        <Button variant="contained" color="secondary">
+          go to project
+        </Button>{" "}
+      </Link>
     </div>
   );
 }

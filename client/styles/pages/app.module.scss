@@ -1,0 +1,7 @@
+@use "../library";
+
+:export {
+  primary: library.$primary-MUI-component-color;
+  secondary: library.$secondary-MUI-component-color;
+  paper: library.$MUI-paper-color;
+}
