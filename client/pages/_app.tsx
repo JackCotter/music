@@ -4,6 +4,7 @@ import { ThemeOptions, ThemeProvider, createTheme } from "@mui/material/styles";
 import "../styles/global.scss";
 import themeColors from "../styles/pages/app.module.scss";
 import Header from "@/components/header";
+import { AuthContextProvider } from "@/contexts/authContext";
 
 export default function App({ Component, pageProps }: AppProps) {
   const darkThemeOptions: ThemeOptions = {
@@ -23,8 +24,10 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider theme={createTheme(darkThemeOptions)}>
       <QueryClientProvider client={new QueryClient()}>
-        <Header />
-        <Component {...pageProps} />
+        <AuthContextProvider>
+          <Header />
+          <Component {...pageProps} />
+        </AuthContextProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

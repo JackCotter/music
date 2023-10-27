@@ -5,10 +5,12 @@ import Typography from "@mui/material/Typography";
 import { Button } from "@mui/material";
 import styles from "@/styles/components/header.module.scss";
 import LoginModal from "./modals/loginModal";
+import { useAuthContext } from "@/contexts/authContext";
 
 const Header: React.FC = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] =
     React.useState<boolean>(false);
+  const authContext = useAuthContext();
   return (
     <>
       <AppBar position="static">
@@ -16,13 +18,15 @@ const Header: React.FC = () => {
           <Typography variant="h6" component="div" className={styles.title}>
             Track Track er
           </Typography>
-          <Button
-            color="secondary"
-            variant="contained"
-            onClick={() => setIsLoginModalOpen(true)}
-          >
-            Login
-          </Button>
+          {!authContext.isAuthenticated && (
+            <Button
+              color="secondary"
+              variant="contained"
+              onClick={() => setIsLoginModalOpen(true)}
+            >
+              Login
+            </Button>
+          )}
         </Toolbar>
       </AppBar>
       <LoginModal

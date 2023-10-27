@@ -12,6 +12,7 @@ import { useFormik, FormikProvider } from "formik";
 import * as Yup from "yup";
 import { login } from "@/utils/apiUtils";
 import { useMutation } from "react-query";
+import { useAuthContext } from "@/contexts/authContext";
 
 interface LoginModalProps {
   isLoginModalOpen: boolean;
@@ -21,6 +22,8 @@ const LoginModal = ({
   isLoginModalOpen,
   setIsLoginModalOpen,
 }: LoginModalProps) => {
+  const authContext = useAuthContext();
+
   const initialValues = {
     email: "",
     password: "",
@@ -47,6 +50,7 @@ const LoginModal = ({
 
   const { mutate: loginMutation, isLoading } = useMutation(loginQuery, {
     onSuccess: (a) => {
+      authContext.setLoggedIn();
       setIsLoginModalOpen(false);
     },
     onError: (error) => {
