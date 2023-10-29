@@ -7,11 +7,15 @@ import {
   TextField,
   Stack,
   CircularProgress,
+  Alert,
 } from "@mui/material";
 import { useFormik, FormikProvider } from "formik";
 import * as Yup from "yup";
 import { login } from "@/utils/apiUtils";
 import { useMutation } from "react-query";
+import { useAuthContext } from "@/contexts/authContext";
+import { useState } from "react";
+import styles from "@/styles/components/modals/loginModal.module.scss";
 
 interface LoginModalProps {
   isLoginModalOpen: boolean;
@@ -21,6 +25,9 @@ const LoginModal = ({
   isLoginModalOpen,
   setIsLoginModalOpen,
 }: LoginModalProps) => {
+  const authContext = useAuthContext();
+  const [errorBar, setErrorBar] = useState({ isOpen: false, message: "" });
+
   const initialValues = {
     email: "",
     password: "",
@@ -41,47 +48,53 @@ const LoginModal = ({
   });
 
   const loginQuery = async () => {
-    console.log(formik.values.email, formik.values.password);
-    login(formik.values.email, formik.values.password);
+    await login(formik.values.email, formik.values.password);
   };
 
   const { mutate: loginMutation, isLoading } = useMutation(loginQuery, {
     onSuccess: (a) => {
+      authContext.setLoggedIn();
       setIsLoginModalOpen(false);
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.log(error);
+      setErrorBar({ isOpen: true, message: "Incorrect Username or Password" });
     },
   });
 
   return (
     <Dialog open={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)}>
       <DialogTitle>Login</DialogTitle>
-      <DialogContent>
+      <DialogContent className={styles.dialogContent}>
         <form onSubmit={formik.handleSubmit}>
-          <Stack direction="column" spacing={2}>
-            <div>
-              <TextField
-                label="Email"
-                name="email"
-                type="text"
-                value={formik.values.email}
-                onChange={formik.handleChange}
-                error={formik.errors.email !== undefined}
-                helperText={formik.errors.email}
-              />
-            </div>
-            <div>
-              <TextField
-                label="Password"
-                name="password"
-                type="password"
-                value={formik.values.password}
-                onChange={formik.handleChange}
-                error={formik.errors.password !== undefined}
-                helperText={formik.errors.password}
-              />
-            </div>
+          <Stack
+            className={styles.inputFieldContainer}
+            direction="column"
+            spacing={2}
+          >
+            {errorBar.isOpen && (
+              <Alert severity="error">{errorBar.message}</Alert>
+            )}
+            <TextField
+              label="Email"
+              name="email"
+              type="text"
+              className={styles.inputField}
+              value={formik.values.email}
+              onChange={formik.handleChange}
+              error={formik.errors.email !== undefined}
+              helperText={formik.errors.email}
+            />
+            <TextField
+              label="Password"
+              name="password"
+              type="password"
+              className={styles.inputField}
+              value={formik.values.password}
+              onChange={formik.handleChange}
+              error={formik.errors.password !== undefined}
+              helperText={formik.errors.password}
+            />
             <DialogActions>
               <Button
                 variant="contained"

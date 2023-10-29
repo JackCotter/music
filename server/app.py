@@ -73,8 +73,8 @@ def user_login():
     user = User()
     user.id = request_data["email"]
     flask_login.login_user(user)
-    return 'logged in!'
-  return 'Bad login'
+    return 'logged in!', 200
+  return 'Bad login', 400
 
 @app.post('/users/logout')
 def logout():
