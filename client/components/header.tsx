@@ -15,7 +15,7 @@ const Header: React.FC = () => {
   const authContext = useAuthContext();
   return (
     <>
-      <AppBar position="static">
+      <AppBar position="static" color="primary">
         <Toolbar>
           <Typography variant="h6" component="div" className={styles.title}>
             Track Track er
@@ -27,7 +27,7 @@ const Header: React.FC = () => {
           </Link>
           {!authContext.isAuthenticated && (
             <Button
-              color="secondary"
+              color="primary"
               variant="contained"
               onClick={() => setIsLoginModalOpen(true)}
             >
