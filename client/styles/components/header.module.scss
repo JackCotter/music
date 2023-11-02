@@ -1,3 +1,18 @@
+@use '../library';
+
 .title {
   flex-grow: 1;
+}
+
+.newProjectIcon {
+  width: 1.3em;
+  height: 1.3em;
+}
+
+.newProjectButton {
+  margin-right: 0.2em;
+  :hover {
+    cursor: pointer;
+    color: library.$primary-MUI-component-color-hover;
+  }
 }

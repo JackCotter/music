@@ -48,3 +48,8 @@ export const getProject = async (projectId: number) => {
   const response = await api.get(`/projects/get?projectId=${projectId}`, {withCredentials: false});
   return response.data as Project;
 }
+
+export const createProject = async (projectName: string, instrumentTypes: string[], strictMode: boolean): Promise<{projectId: string}> => {
+  const response = await api.post("/projects/create", { projectName, instrumentTypes, strictMode }, {withCredentials: true});
+  return response.data;
+}
