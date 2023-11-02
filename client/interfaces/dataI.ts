@@ -6,8 +6,8 @@ interface Track {
 
 interface Project {
   projectid: number;
-  lookingfor: string | null;
-  lookingforstrict: boolean | null;
+  lookingfor?: string[];
+  lookingforstrict: boolean;
   accepted: boolean;
   projectname: string;
   username: string;

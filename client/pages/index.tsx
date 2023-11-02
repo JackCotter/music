@@ -1,22 +1,36 @@
-import { Button } from "@mui/material";
+import { listProject } from "@/utils/apiUtils";
+import { Button, Grid } from "@mui/material";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import ProjectCard from "@/components/projectCard";
+import styles from "@/styles/pages/index.module.scss";
 
 export default function Home() {
-  const projectId = 1;
+  const [projectList, setProjectList] = useState<Project[]>([]);
+
+  useEffect(() => {
+    const getProjectList = async () => {
+      const projectList = await listProject();
+      setProjectList(projectList);
+    };
+
+    getProjectList();
+  }, []);
+
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "90vh",
-      }}
+    <Grid
+      className={styles.gridContainer}
+      container
+      direction="row"
+      spacing={2}
     >
-      <Link href={`/project/${projectId}`}>
-        <Button variant="contained" color="secondary">
-          go to project
-        </Button>{" "}
-      </Link>
-    </div>
+      {projectList.map((project) => (
+        <Grid key={project.projectid} item xs={4}>
+          <Link href={`/project/${project.projectid}`}>
+            <ProjectCard project={project} />
+          </Link>
+        </Grid>
+      ))}
+    </Grid>
   );
 }

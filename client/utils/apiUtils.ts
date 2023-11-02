@@ -49,6 +49,16 @@ export const getProject = async (projectId: number) => {
   return response.data as Project;
 }
 
+export const listProject = async (projectId?: number) => {
+  if (projectId === undefined) {
+    const response = await api.get("/projects/list", {withCredentials: false});
+    return response.data as Project[];
+  } else {
+    const response = await api.get(`/projects/list?projectId=${projectId}`, {withCredentials: false});
+    return response.data as Project[];
+  }
+}
+
 export const createProject = async (projectName: string, instrumentTypes: string[], strictMode: boolean): Promise<{projectId: string}> => {
   const response = await api.post("/projects/create", { projectName, instrumentTypes, strictMode }, {withCredentials: true});
   return response.data;
