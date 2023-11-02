@@ -129,20 +129,29 @@ def track_create():
   cur.close()
   return 'success'
 
-@app.post("/project/create")
+@app.post("/projects/create")
 @flask_login.login_required
-@cross_origin()
 def project_create():
   request_data = request.get_json()
   conn = get_db_connection()
   cur = conn.cursor()
 
-  cur.execute("INSERT INTO projects (owner, projectname) VALUES (%s, %s)", (flask_login.current_user.id, request_data["projectName"]))
-  conn.commit()
+  cur.execute("SELECT projectid FROM projects WHERE owner = %s and projectname = %s", (flask_login.current_user.id, request_data["projectName"],))
+  project_exists_with_name = cur.fetchone()
+  if project_exists_with_name:
+    return 'project already exists with that name', 400
 
+  cur.execute("INSERT INTO projects (owner, projectname, lookingfor, lookingforstrict) VALUES (%s, %s, %s, %s)", (flask_login.current_user.id, request_data["projectName"], request_data["instrumentTypes"], request_data["strictMode"],))
+
+  cur.execute("select projectid from projects where owner = %s and projectname = %s", (flask_login.current_user.id, request_data["projectName"],))
+  projectid = cur.fetchone()
+  if projectid is None:
+    return 'project could not be created', 400
+
+  conn.commit()
   conn.close()
   cur.close()
-  return 'success'
+  return {"projectId": projectid[0]}
 
 @app.get("/tracks/list")
 @cross_origin()

@@ -4,6 +4,7 @@ import {
   Card,
   Checkbox,
   Chip,
+  CircularProgress,
   Divider,
   FormControl,
   InputLabel,
@@ -18,8 +19,13 @@ import styles from "@/styles/pages/project-create.module.scss";
 import { instrumentTypes } from "@/lib/constants";
 import { useFormik } from "formik";
 import * as yup from "yup";
+import { useMutation } from "react-query";
+import { createProject } from "@/utils/apiUtils";
+import { useRouter } from "next/router";
 
 const ProjectCreate = () => {
+  const router = useRouter();
+
   const formik = useFormik({
     initialValues: {
       projectName: "",
@@ -29,10 +35,29 @@ const ProjectCreate = () => {
     validationSchema: yup.object({
       projectName: yup.string().required("Project Name is required"),
     }),
-    onSubmit: (values) => {
-      alert(JSON.stringify(values, null, 2));
-    },
+    onSubmit: () => createProjectMutation(),
   });
+
+  const createProjectQuery = async (): Promise<{ projectId: string }> => {
+    return await createProject(
+      formik.values.projectName,
+      formik.values.instruments,
+      formik.values.strictMode
+    );
+  };
+
+  const { mutate: createProjectMutation, isLoading } = useMutation(
+    createProjectQuery,
+    {
+      onSuccess(data: { projectId: string }) {
+        router.push(`/project/${data.projectId}`);
+      },
+      onError(error) {
+        console.log(error);
+      },
+    }
+  );
+
   return (
     <form onSubmit={formik.handleSubmit}>
       <div className={styles.projectCreateContainer}>
@@ -49,7 +74,9 @@ const ProjectCreate = () => {
             <TextField
               color="primary"
               label="Project Name"
+              name="projectName"
               className={styles.projectNameInput}
+              onChange={formik.handleChange}
               error={
                 formik.touched.projectName && Boolean(formik.errors.projectName)
               }
@@ -100,7 +127,11 @@ const ProjectCreate = () => {
               <Typography variant="h5" className={styles.lightTypography}>
                 Enable Instrument Strict Mode?
               </Typography>
-              <Checkbox color="primary" />
+              <Checkbox
+                name="strictMode"
+                onChange={formik.handleChange}
+                color="primary"
+              />
             </Stack>
             <Typography className={styles.strictModeHelperText} variant="body1">
               Strict mode will prevent contrubutions that include instruments
@@ -116,6 +147,7 @@ const ProjectCreate = () => {
               {" "}
               Create{" "}
             </Button>
+            {isLoading && <CircularProgress />}
           </Stack>
         </Stack>
       </div>
