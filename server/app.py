@@ -159,7 +159,7 @@ def track_list():
   conn = get_db_connection()
   cur = conn.cursor()
 
-  cur.execute("SELECT blob_data, instrumenttype, accepted FROM projects join projecttracks on projects.projectid = projecttracks.projectid join tracks on projecttracks.trackid = tracks.trackid join blob_storage on (tracks.blobid = blob_storage.blobid) where projects.projectid = %s", request.args.get("projectId"))
+  cur.execute("SELECT blob_data, instrumenttype, accepted FROM projects join projecttracks on projects.projectid = projecttracks.projectid join tracks on projecttracks.trackid = tracks.trackid join blob_storage on (tracks.blobid = blob_storage.blobid) where projects.projectid = %s", (request.args.get("projectId"),))
   tracks = cur.fetchall()
 
   formatted_tracks = []
@@ -193,7 +193,8 @@ def project_get():
   conn = get_db_connection()
   cur = conn.cursor(cursor_factory=RealDictCursor)
 
-  cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict FROM projects join users on (projects.owner = users.email) where projectid = %s", request.args.get("projectId"))
+  print(str(request.args.get("projectId")))
+  cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict FROM projects join users on (projects.owner = users.email) where projectid = %s", (request.args.get("projectId"),))
   projects = cur.fetchone()
 
   conn.close()
