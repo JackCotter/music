@@ -11,4 +11,5 @@ interface Project {
   accepted: boolean;
   projectname: string;
   username: string;
+  description: string;
 }

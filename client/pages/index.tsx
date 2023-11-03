@@ -1,6 +1,5 @@
 import { listProject } from "@/utils/apiUtils";
 import { Button, Grid } from "@mui/material";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import ProjectCard from "@/components/projectCard";
 import styles from "@/styles/pages/index.module.scss";

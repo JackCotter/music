@@ -7,7 +7,6 @@ import {
   OutlinedInput,
   Select,
 } from "@mui/material";
-import styles from "@/styles/pages/project-create.module.scss";
 import { instrumentTypes } from "@/lib/constants";
 
 interface InstrumentTypeSelectProps {

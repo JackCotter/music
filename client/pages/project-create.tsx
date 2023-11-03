@@ -1,16 +1,8 @@
 import {
-  Box,
   Button,
-  Card,
   Checkbox,
-  Chip,
   CircularProgress,
   Divider,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  OutlinedInput,
-  Select,
   Stack,
   TextField,
   Typography,
@@ -22,7 +14,6 @@ import { useMutation } from "react-query";
 import { createProject } from "@/utils/apiUtils";
 import { useRouter } from "next/router";
 import AuthWrapper from "@/components/authWrapper";
-import { Instrument } from "tone/build/esm/instrument/Instrument";
 import InstrumentTypeSelect from "@/components/instrumentTypeSelect";
 
 const ProjectCreate = () => {
@@ -33,6 +24,7 @@ const ProjectCreate = () => {
       projectName: "",
       instruments: [],
       strictMode: false,
+      projectDescription: "",
     },
     validationSchema: yup.object({
       projectName: yup.string().required("Project Name is required"),
@@ -44,7 +36,8 @@ const ProjectCreate = () => {
     return await createProject(
       formik.values.projectName,
       formik.values.instruments,
-      formik.values.strictMode
+      formik.values.strictMode,
+      formik.values.projectDescription
     );
   };
 
@@ -118,6 +111,18 @@ const ProjectCreate = () => {
                 Strict mode will prevent contrubutions that include instruments
                 that are not in the selected instrument types.
               </Typography>
+            </Stack>
+            <Divider className={styles.divider} />
+            <Stack direction="column" spacing={2}>
+              <TextField
+                className={styles.projectDescriptionInput}
+                color="primary"
+                label="Project Description"
+                name="projectDescription"
+                multiline
+                rows={4}
+                onChange={formik.handleChange}
+              />
             </Stack>
             <Stack
               className={styles.submitButtonRow}
