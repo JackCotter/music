@@ -2,18 +2,30 @@
 
 .projectCard {
   width: 100%;
-}
+  min-height: 20vh;
 
-.title {
-  color: inherit;
-  text-decoration: none;
+  .topRow {
+    flex-wrap: wrap;
+    align-items: center;
 
-  &:hover {
-    color: library.$secondary-MUI-component-color;
+    .title {
+      color: inherit;
+      text-decoration: none;
+
+      &:hover {
+        color: library.$secondary-MUI-component-color;
+      }
+    }
+
+    .titleLink {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .username {
+      flex-grow: 1;
+    }
   }
 }
 
-.titleLink {
-  color: inherit;
-  text-decoration: none;
-}
+

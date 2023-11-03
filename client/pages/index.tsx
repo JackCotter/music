@@ -46,7 +46,15 @@ export default function Home() {
         spacing={2}
       >
         {filteredProjectList.map((project) => (
-          <Grid key={project.projectid} item xs={15} md={6} lg={4} xl={3}>
+          <Grid
+            key={project.projectid}
+            item
+            xs={12}
+            sm={6}
+            md={6}
+            lg={4}
+            xl={3}
+          >
             <ProjectCard
               project={project}
               highlightedInstruments={selectedInstruments}

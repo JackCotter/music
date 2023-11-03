@@ -32,49 +32,47 @@ const ProjectCard = ({ project, highlightedInstruments }: ProjectCardProps) => {
   return (
     <Card className={styles.projectCard}>
       <CardContent>
-        <Stack direction="row" spacing={2}>
-          <Stack direction="column" spacing={2}>
-            <Stack direction="row" spacing={2}>
-              <Link
-                className={styles.titleLink}
-                href={`/project/${project.projectid}`}
-              >
-                <Typography
-                  className={styles.title}
-                  variant="h5"
-                  component="div"
-                >
-                  {project.projectname}
-                </Typography>
-              </Link>
-              {project.lookingfor?.map((instrument) => (
-                <Chip
-                  key={instrument}
-                  color={
-                    highlightedInstruments.includes(instrument)
-                      ? "primary"
-                      : "default"
-                  }
-                  label={instrument}
-                  // className={styles.instrumentChip}
-                />
-              ))}
-            </Stack>
-            <Typography variant="body2">{project.username}</Typography>
-            <Typography variant="body2">{project.description}</Typography>
-          </Stack>
-          <div>
-            <IconButton
-              color="secondary"
-              onClick={() =>
-                isAudioPlaying
-                  ? stopAudio(players, setIsAudioPlaying)
-                  : startAudio(players, trackList, setIsAudioPlaying)
-              }
+        <Stack direction="column" spacing={2}>
+          <Stack className={styles.topRow} direction="row" spacing={2}>
+            <Link
+              className={styles.titleLink}
+              href={`/project/${project.projectid}`}
             >
-              {isAudioPlaying ? <StopIcon /> : <PlayArrowIcon />}
-            </IconButton>
-          </div>
+              <Typography className={styles.title} variant="h5" component="div">
+                {project.projectname}
+              </Typography>
+            </Link>
+            <Typography className={styles.username} variant="body2">
+              {project.username}
+            </Typography>
+            <div>
+              <IconButton
+                color="secondary"
+                onClick={() =>
+                  isAudioPlaying
+                    ? stopAudio(players, setIsAudioPlaying)
+                    : startAudio(players, trackList, setIsAudioPlaying)
+                }
+              >
+                {isAudioPlaying ? <StopIcon /> : <PlayArrowIcon />}
+              </IconButton>
+            </div>
+          </Stack>
+          <Stack className={styles.instrumentRow} direction="row" spacing={1}>
+            {project.lookingfor?.map((instrument) => (
+              <Chip
+                key={instrument}
+                color={
+                  highlightedInstruments.includes(instrument)
+                    ? "primary"
+                    : "default"
+                }
+                label={instrument}
+                // className={styles.instrumentChip}
+              />
+            ))}
+          </Stack>
+          <Typography variant="body2">{project.description}</Typography>
         </Stack>
       </CardContent>
     </Card>
