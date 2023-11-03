@@ -1,3 +1,19 @@
+@use '../library';
+
 .projectCard {
   width: 100%;
+}
+
+.title {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    color: library.$secondary-MUI-component-color;
+  }
+}
+
+.titleLink {
+  color: inherit;
+  text-decoration: none;
 }

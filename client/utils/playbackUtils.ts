@@ -1,7 +1,6 @@
 import { Players } from "tone";
 import { getTrackList } from "./apiUtils";
 
-
 export const populatePlayers = async (
   id: number, 
   setTrackList: (trackList: Track[]) => void, 
@@ -23,9 +22,10 @@ export const populatePlayers = async (
 export const startAudio = (
   players: Players | null,
   trackList: Track[],
-  recordingIndex: number,
-  setIsAudioPlaying: (isAudioPlaying: boolean) => void
+  setIsAudioPlaying: (isAudioPlaying: boolean) => void,
+  recordingIndex?: number
 ) => {
+  if (!recordingIndex) recordingIndex = 0;
   if (players && players.loaded) {
     for (let i = 0; i < trackList.length || i < recordingIndex; i++) {
       if (players.has(i.toString())) {
@@ -38,5 +38,17 @@ export const startAudio = (
     setIsAudioPlaying(true);
   } else {
     console.log("not loaded" + players);
+  }
+};
+
+export const stopAudio = (
+  players: Players | null,
+  setIsAudioPlaying: (isAudioPlaying: boolean) => void
+) => {
+  if (players && players.loaded) {
+    players.stopAll();
+    setIsAudioPlaying(false);
+  } else {
+    console.log("not loaded");
   }
 };

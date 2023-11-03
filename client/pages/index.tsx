@@ -48,12 +48,10 @@ export default function Home() {
       >
         {filteredProjectList.map((project) => (
           <Grid key={project.projectid} item xs={15} md={6} lg={4} xl={3}>
-            <Link href={`/project/${project.projectid}`}>
-              <ProjectCard
-                project={project}
-                highlightedInstruments={selectedInstruments}
-              />
-            </Link>
+            <ProjectCard
+              project={project}
+              highlightedInstruments={selectedInstruments}
+            />
           </Grid>
         ))}
       </Grid>

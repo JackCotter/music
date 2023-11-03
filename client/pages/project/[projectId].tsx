@@ -8,7 +8,7 @@ import styles from "@/styles/pages/project.module.scss";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
-import { populatePlayers, startAudio } from "@/utils/playbackUtils";
+import { populatePlayers, startAudio, stopAudio } from "@/utils/playbackUtils";
 
 const Project = () => {
   Tone.Transport.debug = true;
@@ -42,15 +42,6 @@ const Project = () => {
     // };
   }, [projectId]);
 
-  const stopAudio = () => {
-    if (players && players.loaded) {
-      players.stopAll();
-      setIsAudioPlaying(false);
-    } else {
-      console.log("not loaded");
-    }
-  };
-
   const startRecording = () => {
     Tone.start();
     let recorder: MediaRecorder;
@@ -58,7 +49,7 @@ const Project = () => {
       recorder = new MediaRecorder(stream);
       setRecorder(recorder);
       recorder.start();
-      startAudio(players, trackList, recordingIndex.current, setIsAudioPlaying);
+      startAudio(players, trackList, setIsAudioPlaying, recordingIndex.current);
     });
   };
 
@@ -71,7 +62,7 @@ const Project = () => {
         setRecordedData(e.data);
       };
       setRecorder(null);
-      stopAudio();
+      stopAudio(players, setIsAudioPlaying);
     }
   };
 
@@ -103,12 +94,12 @@ const Project = () => {
             color="secondary"
             onClick={() =>
               isAudioPlaying
-                ? stopAudio()
+                ? stopAudio(players, setIsAudioPlaying)
                 : startAudio(
                     players,
                     trackList,
-                    recordingIndex.current,
-                    setIsAudioPlaying
+                    setIsAudioPlaying,
+                    recordingIndex.current
                   )
             }
           >
