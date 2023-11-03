@@ -12,6 +12,10 @@ export default function Home() {
   const [selectedInstruments, setSelectedInstruments] = useState<string[]>([]);
 
   useEffect(() => {
+    if (selectedInstruments.length === 0) {
+      setFilteredProjectList(projectList);
+      return;
+    }
     const filteredProjectList = projectList.filter((project) =>
       project.lookingfor?.some((instrument) =>
         selectedInstruments.includes(instrument)
@@ -43,7 +47,7 @@ export default function Home() {
         spacing={2}
       >
         {filteredProjectList.map((project) => (
-          <Grid key={project.projectid} item xs={4}>
+          <Grid key={project.projectid} item xs={15} md={6} lg={4} xl={3}>
             <Link href={`/project/${project.projectid}`}>
               <ProjectCard
                 project={project}

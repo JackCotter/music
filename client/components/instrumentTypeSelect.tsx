@@ -20,11 +20,7 @@ const InstrumentTypeSelect = ({
   setSelectedInstruments,
 }: InstrumentTypeSelectProps) => {
   return (
-    <FormControl
-      className={styles.selectContainer}
-      color="primary"
-      sx={{ m: 1, width: 300 }}
-    >
+    <FormControl color="primary" sx={{ m: 1, width: 300 }}>
       <InputLabel id="instrumentTypeSelect">
         Desired Instrument Types
       </InputLabel>

@@ -8,6 +8,7 @@ import styles from "@/styles/pages/project.module.scss";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
+import { populatePlayers, startAudio } from "@/utils/playbackUtils";
 
 const Project = () => {
   Tone.Transport.debug = true;
@@ -26,24 +27,10 @@ const Project = () => {
       const project: Project = await getProject(id);
       setProjectInfo(project);
     };
-    const trackListQuery = async (id: number) => {
-      let playerDict: { [key: string]: string } = {};
-      const trackList: Track[] = await getTrackList(id);
-      setTrackList(trackList);
-      trackList.forEach((track, index) => {
-        playerDict[
-          index.toString()
-        ] = `data:audio/mpeg;base64,${track.blobData}`;
-      });
-      const players: Tone.Players = new Tone.Players(playerDict, () =>
-        setPlayers(players)
-      ).toDestination();
-      setPlayers(players);
-    };
     if (projectId === undefined) return;
     if (typeof projectId === "string") {
       projectGetQuery(parseInt(projectId) as number);
-      trackListQuery(parseInt(projectId) as number);
+      populatePlayers(parseInt(projectId) as number, setTrackList, setPlayers);
     } else {
       console.log("Error: projectId is not a string");
     }
@@ -54,22 +41,6 @@ const Project = () => {
     //   }
     // };
   }, [projectId]);
-
-  const startAudio = () => {
-    if (players && players.loaded) {
-      for (let i = 0; i < trackList.length || i < recordingIndex.current; i++) {
-        if (players.has(i.toString())) {
-          players.player(i.toString()).start(i.toString());
-        }
-        if (players.has("Recording" + i)) {
-          players.player("Recording" + i).start();
-        }
-      }
-      setIsAudioPlaying(true);
-    } else {
-      console.log("not loaded" + players);
-    }
-  };
 
   const stopAudio = () => {
     if (players && players.loaded) {
@@ -87,7 +58,7 @@ const Project = () => {
       recorder = new MediaRecorder(stream);
       setRecorder(recorder);
       recorder.start();
-      startAudio();
+      startAudio(players, trackList, recordingIndex.current, setIsAudioPlaying);
     });
   };
 
@@ -130,7 +101,16 @@ const Project = () => {
         <Stack direction="row" spacing={2}>
           <IconButton
             color="secondary"
-            onClick={() => (isAudioPlaying ? stopAudio() : startAudio())}
+            onClick={() =>
+              isAudioPlaying
+                ? stopAudio()
+                : startAudio(
+                    players,
+                    trackList,
+                    recordingIndex.current,
+                    setIsAudioPlaying
+                  )
+            }
           >
             {isAudioPlaying ? <StopIcon /> : <PlayArrowIcon />}
           </IconButton>
