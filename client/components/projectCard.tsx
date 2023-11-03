@@ -3,9 +3,10 @@ import styles from "@/styles/components/projectCard.module.scss";
 
 interface ProjectCardProps {
   project: Project;
+  highlightedInstruments: string[];
 }
 
-const ProjectCard = ({ project }: ProjectCardProps) => {
+const ProjectCard = ({ project, highlightedInstruments }: ProjectCardProps) => {
   return (
     <Card className={styles.projectCard}>
       <CardContent>
@@ -16,6 +17,11 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
           <Typography variant="body2">
             {project.lookingfor?.map((instrument) => (
               <Chip
+                color={
+                  highlightedInstruments.includes(instrument)
+                    ? "primary"
+                    : "default"
+                }
                 label={instrument}
                 // className={styles.instrumentChip}
               />

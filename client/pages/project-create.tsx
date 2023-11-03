@@ -16,13 +16,14 @@ import {
   Typography,
 } from "@mui/material";
 import styles from "@/styles/pages/project-create.module.scss";
-import { instrumentTypes } from "@/lib/constants";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useMutation } from "react-query";
 import { createProject } from "@/utils/apiUtils";
 import { useRouter } from "next/router";
 import AuthWrapper from "@/components/authWrapper";
+import { Instrument } from "tone/build/esm/instrument/Instrument";
+import InstrumentTypeSelect from "@/components/instrumentTypeSelect";
 
 const ProjectCreate = () => {
   const router = useRouter();
@@ -87,42 +88,12 @@ const ProjectCreate = () => {
                   formik.touched.projectName && formik.errors.projectName
                 }
               />
-              <FormControl
-                className={styles.selectContainer}
-                color="primary"
-                sx={{ m: 1, width: 300 }}
-              >
-                <InputLabel id="instrumentTypeSelect">
-                  Desired Instrument Types
-                </InputLabel>
-                <Select
-                  labelId="instrumentTypeSelect"
-                  label="Desired Instrument Types"
-                  name="instruments"
-                  multiple
-                  value={formik.values.instruments}
-                  onChange={formik.handleChange}
-                  input={
-                    <OutlinedInput
-                      id="select-multiple-chip"
-                      label="Select Desired Instruments"
-                    />
-                  }
-                  renderValue={(selected) => (
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                      {selected.map((value: string) => (
-                        <Chip key={value} label={value} />
-                      ))}
-                    </Box>
-                  )}
-                >
-                  {instrumentTypes.map((name) => (
-                    <MenuItem key={name} value={name}>
-                      {name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <InstrumentTypeSelect
+                selectedInstruments={formik.values.instruments}
+                setSelectedInstruments={(instruments: string[]) =>
+                  formik.setFieldValue("instruments", instruments)
+                }
+              />
             </Stack>
             <Divider className={styles.divider} />
             <Stack direction="column" spacing={2}>
