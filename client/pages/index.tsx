@@ -8,18 +8,28 @@ import InstrumentTypeSelect from "@/components/instrumentTypeSelect";
 
 export default function Home() {
   const [projectList, setProjectList] = useState<Project[]>([]);
+  const [filteredProjectList, setFilteredProjectList] = useState<Project[]>([]);
   const [selectedInstruments, setSelectedInstruments] = useState<string[]>([]);
+
+  useEffect(() => {
+    const filteredProjectList = projectList.filter((project) =>
+      project.lookingfor?.some((instrument) =>
+        selectedInstruments.includes(instrument)
+      )
+    );
+    setFilteredProjectList(filteredProjectList);
+  }, [selectedInstruments]);
 
   useEffect(() => {
     const getProjectList = async () => {
       const projectList = await listProject();
       setProjectList(projectList);
+      setFilteredProjectList(projectList);
     };
 
     getProjectList();
   }, []);
 
-  console.log(selectedInstruments);
   return (
     <>
       <InstrumentTypeSelect
@@ -32,7 +42,7 @@ export default function Home() {
         direction="row"
         spacing={2}
       >
-        {projectList.map((project) => (
+        {filteredProjectList.map((project) => (
           <Grid key={project.projectid} item xs={4}>
             <Link href={`/project/${project.projectid}`}>
               <ProjectCard
