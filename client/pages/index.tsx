@@ -58,6 +58,7 @@ export default function Home() {
             <ProjectCard
               project={project}
               highlightedInstruments={selectedInstruments}
+              setHighlightedInstruments={setSelectedInstruments}
             />
           </Grid>
         ))}

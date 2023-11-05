@@ -17,12 +17,27 @@ import Link from "next/link";
 interface ProjectCardProps {
   project: Project;
   highlightedInstruments: string[];
+  setHighlightedInstruments: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-const ProjectCard = ({ project, highlightedInstruments }: ProjectCardProps) => {
+const ProjectCard = ({
+  project,
+  highlightedInstruments,
+  setHighlightedInstruments,
+}: ProjectCardProps) => {
   const [trackList, setTrackList] = useState<Track[]>([]);
   const [players, setPlayers] = useState<Tone.Players | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
+
+  const onInstrumentClick = (instrument: string) => {
+    if (highlightedInstruments.includes(instrument)) {
+      setHighlightedInstruments(
+        highlightedInstruments.filter((i) => i !== instrument)
+      );
+    } else {
+      setHighlightedInstruments([...highlightedInstruments, instrument]);
+    }
+  };
 
   useEffect(() => {
     if (project.projectid === undefined) return;
@@ -67,8 +82,8 @@ const ProjectCard = ({ project, highlightedInstruments }: ProjectCardProps) => {
                     ? "primary"
                     : "default"
                 }
+                onClick={() => onInstrumentClick(instrument)}
                 label={instrument}
-                // className={styles.instrumentChip}
               />
             ))}
           </Stack>

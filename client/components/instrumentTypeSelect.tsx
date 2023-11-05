@@ -39,7 +39,16 @@ const InstrumentTypeSelect = ({
         renderValue={(selected) => (
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
             {selected.map((value: string) => (
-              <Chip key={value} label={value} />
+              <Chip
+                key={value}
+                label={value}
+                onDelete={() =>
+                  setSelectedInstruments(
+                    selectedInstruments.filter((i) => i !== value)
+                  )
+                }
+                onMouseDown={(event) => event.stopPropagation()}
+              />
             ))}
           </Box>
         )}
