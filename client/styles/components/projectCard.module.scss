@@ -7,6 +7,7 @@
   .topRow {
     flex-wrap: wrap;
     align-items: center;
+    padding-bottom: 0.4em;
 
     .title {
       color: inherit;
@@ -25,6 +26,11 @@
     .username {
       flex-grow: 1;
     }
+  }
+
+  .instrumentRow {
+    overflow-x: auto;
+    padding-bottom: 0.8em;
   }
 }
 

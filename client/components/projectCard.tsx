@@ -13,6 +13,7 @@ import * as Tone from "tone";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
 import Link from "next/link";
+import { maxNCharacters } from "@/utils/stringUtils";
 
 interface ProjectCardProps {
   project: Project;
@@ -47,7 +48,7 @@ const ProjectCard = ({
   return (
     <Card className={styles.projectCard}>
       <CardContent>
-        <Stack direction="column" spacing={2}>
+        <Stack direction="column">
           <Stack className={styles.topRow} direction="row" spacing={2}>
             <Link
               className={styles.titleLink}
@@ -87,7 +88,9 @@ const ProjectCard = ({
               />
             ))}
           </Stack>
-          <Typography variant="body2">{project.description}</Typography>
+          <Typography variant="body2">
+            {maxNCharacters(project.description, 300)}
+          </Typography>
         </Stack>
       </CardContent>
     </Card>

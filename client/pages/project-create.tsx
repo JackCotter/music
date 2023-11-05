@@ -73,6 +73,7 @@ const ProjectCreate = () => {
                 name="projectName"
                 className={styles.projectNameInput}
                 onChange={formik.handleChange}
+                inputProps={{ maxLength: 28 }}
                 error={
                   formik.touched.projectName &&
                   Boolean(formik.errors.projectName)
@@ -120,6 +121,7 @@ const ProjectCreate = () => {
                 label="Project Description"
                 name="projectDescription"
                 multiline
+                inputProps={{ maxLength: 1000 }}
                 rows={4}
                 onChange={formik.handleChange}
               />
