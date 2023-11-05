@@ -23,14 +23,23 @@
       text-decoration: none;
     }
 
-    .username {
+    .usernameAndPlayButton {
       flex-grow: 1;
+      align-items: center;
+      .username {
+        flex-grow: 1;
+      }
     }
   }
 
   .instrumentRow {
-    overflow-x: auto;
-    padding-bottom: 0.8em;
+    .instruments {
+      overflow-x: auto;
+      padding-bottom: 0.8em;
+    }
+    &::-webkit-scrollbar-thumb:hover{
+      background: library.$primary-MUI-component-color-hover;
+    }
   }
 }
 
