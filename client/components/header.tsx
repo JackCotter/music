@@ -18,13 +18,17 @@ const Header: React.FC = () => {
       <AppBar position="static" color="primary">
         <Toolbar>
           <Typography variant="h6" component="div" className={styles.title}>
-            Track Track er
+            <Link href="/" className={styles.titleLink}>
+              Track Track er
+            </Link>
           </Typography>
-          <Link href="/project-create">
-            <IconButton color="secondary" className={styles.newProjectButton}>
-              <AddCircleOutlineIcon className={styles.newProjectIcon} />
-            </IconButton>
-          </Link>
+          {authContext.isAuthenticated && (
+            <Link href="/project-create">
+              <IconButton color="secondary" className={styles.newProjectButton}>
+                <AddCircleOutlineIcon className={styles.newProjectIcon} />
+              </IconButton>
+            </Link>
+          )}
           {!authContext.isAuthenticated && (
             <Button
               color="primary"

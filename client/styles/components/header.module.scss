@@ -2,6 +2,10 @@
 
 .title {
   flex-grow: 1;
+  :hover {
+    cursor: pointer;
+    color: library.$primary-MUI-component-color-hover;
+  }
 }
 
 .newProjectIcon {
@@ -15,4 +19,9 @@
     cursor: pointer;
     color: library.$primary-MUI-component-color-hover;
   }
+}
+
+.titleLink {
+  color: inherit;
+  text-decoration: none;
 }
