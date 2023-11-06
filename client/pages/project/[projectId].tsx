@@ -45,12 +45,26 @@ const Project = () => {
   const startRecording = () => {
     Tone.start();
     let recorder: MediaRecorder;
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      recorder = new MediaRecorder(stream);
-      setRecorder(recorder);
-      recorder.start();
-      startAudio(players, trackList, setIsAudioPlaying, recordingIndex.current);
-    });
+    navigator.mediaDevices
+      .getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+        },
+      })
+      .then((stream) => {
+        console.log(stream);
+        recorder = new MediaRecorder(stream);
+        setRecorder(recorder);
+        recorder.start();
+        startAudio(
+          players,
+          trackList,
+          setIsAudioPlaying,
+          recordingIndex.current
+        );
+      });
   };
 
   const stopRecording = () => {
