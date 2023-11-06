@@ -87,6 +87,7 @@ const ProjectCreate = () => {
                 setSelectedInstruments={(instruments: string[]) =>
                   formik.setFieldValue("instruments", instruments)
                 }
+                className={styles.instrumentTypeSelect}
               />
             </Stack>
             <Divider className={styles.divider} />
