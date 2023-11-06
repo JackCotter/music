@@ -12,13 +12,11 @@ import { instrumentTypes } from "@/lib/constants";
 interface InstrumentTypeSelectProps {
   selectedInstruments: string[];
   setSelectedInstruments: (instruments: string[]) => void;
-  className?: string;
 }
 
 const InstrumentTypeSelect = ({
   selectedInstruments,
   setSelectedInstruments,
-  className,
 }: InstrumentTypeSelectProps) => {
   return (
     <FormControl color="primary" sx={{ m: 1, width: 300 }}>
@@ -26,7 +24,6 @@ const InstrumentTypeSelect = ({
         Desired Instrument Types
       </InputLabel>
       <Select
-        className={className}
         labelId="instrumentTypeSelect"
         label="Desired Instrument Types"
         name="instruments"
