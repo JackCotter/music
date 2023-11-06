@@ -1,5 +1,5 @@
 import { listProject } from "@/utils/apiUtils";
-import { Button, Grid } from "@mui/material";
+import { Button, Grid, Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import ProjectCard from "@/components/projectCard";
 import styles from "@/styles/pages/index.module.scss";
@@ -35,10 +35,15 @@ export default function Home() {
 
   return (
     <>
-      <InstrumentTypeSelect
-        selectedInstruments={selectedInstruments}
-        setSelectedInstruments={setSelectedInstruments}
-      />
+      <Stack direction="row" className={styles.titleRow}>
+        <InstrumentTypeSelect
+          selectedInstruments={selectedInstruments}
+          setSelectedInstruments={setSelectedInstruments}
+        />
+        <Typography className={styles.title} variant="h3" component="div">
+          Find a project to contribute to!
+        </Typography>
+      </Stack>
       <Grid
         className={styles.gridContainer}
         container
