@@ -1,0 +1,46 @@
+@use '../library';
+
+.projectCard {
+  width: 100%;
+  min-height: 20vh;
+
+  .topRow {
+    flex-wrap: wrap;
+    align-items: center;
+    padding-bottom: 0.4em;
+
+    .title {
+      color: inherit;
+      text-decoration: none;
+
+      &:hover {
+        color: library.$secondary-MUI-component-color;
+      }
+    }
+
+    .titleLink {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .usernameAndPlayButton {
+      flex-grow: 1;
+      align-items: center;
+      .username {
+        flex-grow: 1;
+      }
+    }
+  }
+
+  .instrumentRow {
+    .instruments {
+      overflow-x: auto;
+      padding-bottom: 0.8em;
+    }
+    &::-webkit-scrollbar-thumb:hover{
+      background: library.$primary-MUI-component-color-hover;
+    }
+  }
+}
+
+

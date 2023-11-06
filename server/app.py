@@ -141,7 +141,7 @@ def project_create():
   if project_exists_with_name:
     return 'project already exists with that name', 400
 
-  cur.execute("INSERT INTO projects (owner, projectname, lookingfor, lookingforstrict) VALUES (%s, %s, %s, %s)", (flask_login.current_user.id, request_data["projectName"], request_data["instrumentTypes"], request_data["strictMode"],))
+  cur.execute("INSERT INTO projects (owner, projectname, lookingfor, lookingforstrict, description) VALUES (%s, %s, %s, %s, %s)", (flask_login.current_user.id, request_data["projectName"], request_data["instrumentTypes"], request_data["strictMode"], request_data["description"]),)
 
   cur.execute("select projectid from projects where owner = %s and projectname = %s", (flask_login.current_user.id, request_data["projectName"],))
   projectid = cur.fetchone()
@@ -178,9 +178,9 @@ def project_list():
   cur = conn.cursor(cursor_factory=RealDictCursor)
 
   if 'ownerUsername' in request.args:
-    cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict FROM projects join users on (projects.owner = users.email) WHERE username = %s", (request.args.get("ownerUsername"),))
+    cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, description FROM projects join users on (projects.owner = users.email) WHERE username = %s", (request.args.get("ownerUsername"),))
   else:
-    cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict FROM projects join users on (projects.owner = users.email)")
+    cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, description FROM projects join users on (projects.owner = users.email)")
   projects = cur.fetchall()
 
   conn.close()
@@ -194,7 +194,7 @@ def project_get():
   cur = conn.cursor(cursor_factory=RealDictCursor)
 
   print(str(request.args.get("projectId")))
-  cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict FROM projects join users on (projects.owner = users.email) where projectid = %s", (request.args.get("projectId"),))
+  cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, description FROM projects join users on (projects.owner = users.email) where projectid = %s", (request.args.get("projectId"),))
   projects = cur.fetchone()
 
   conn.close()

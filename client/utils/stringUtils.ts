@@ -15,3 +15,10 @@ export const tupleArrayStringToArray = (tupleArray:string) => {
   console.log(parsedArrays);
   return parsedArrays;
 }
+
+export const maxNCharacters = (string:string, n:number) => {
+  if (string.length > n) {
+    return `${string.substring(0, n)}...`;
+  }
+  return string;
+}
