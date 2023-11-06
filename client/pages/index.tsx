@@ -36,14 +36,14 @@ export default function Home() {
   return (
     <>
       <Stack direction="row" className={styles.titleRow}>
-        <InstrumentTypeSelect
-          selectedInstruments={selectedInstruments}
-          setSelectedInstruments={setSelectedInstruments}
-        />
         <Typography className={styles.title} variant="h3" component="div">
           Find a project to contribute to!
         </Typography>
       </Stack>
+      <InstrumentTypeSelect
+        selectedInstruments={selectedInstruments}
+        setSelectedInstruments={setSelectedInstruments}
+      />
       <Grid
         className={styles.gridContainer}
         container

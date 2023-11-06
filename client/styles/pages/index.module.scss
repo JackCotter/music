@@ -6,11 +6,11 @@
 
 .titleRow {
   margin-top: 0.5rem;
-  // justify-content: center;
+  justify-content: center;
   align-items: center;
 }
 
 .title {
-  flex-grow: 1;
   color: library.$light-text-color;
+  text-align: center;
 }
