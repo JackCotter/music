@@ -45,8 +45,6 @@ const ProjectCard = ({
 
   useEffect(() => {
     if (project.projectid === undefined) return;
-    console.log(project);
-    console.log(project.lookingfor?.length);
     populatePlayers(project.projectid, setTrackList, setPlayers);
   }, [project.projectid]);
 
