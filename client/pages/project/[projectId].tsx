@@ -1,5 +1,5 @@
-import { getTrackList, createTrack, getProject } from "@/utils/apiUtils";
-import { Button, IconButton, Stack, Typography } from "@mui/material";
+import { getProject } from "@/utils/apiUtils";
+import { Button, Checkbox, IconButton, Stack, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
 import { useMutation } from "react-query";
@@ -9,6 +9,7 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import { populatePlayers, startAudio, stopAudio } from "@/utils/playbackUtils";
+import CommitTrackModal from "@/components/modals/commitTrackModal";
 
 const Project = () => {
   Tone.Transport.debug = true;
@@ -21,12 +22,15 @@ const Project = () => {
   const [projectInfo, setProjectInfo] = useState<Project | null>(null);
   const router = useRouter();
   const { projectId } = router.query;
+  const [openCommitTrackModal, setOpenCommitTrackModal] =
+    useState<boolean>(false);
+
+  const projectGetQuery = async (id: number) => {
+    const project: Project = await getProject(id);
+    setProjectInfo(project);
+  };
 
   useEffect(() => {
-    const projectGetQuery = async (id: number) => {
-      const project: Project = await getProject(id);
-      setProjectInfo(project);
-    };
     if (projectId === undefined) return;
     if (typeof projectId === "string") {
       projectGetQuery(parseInt(projectId) as number);
@@ -41,6 +45,11 @@ const Project = () => {
     //   }
     // };
   }, [projectId]);
+
+  const closeModalAndRefesh = () => {
+    setOpenCommitTrackModal(false);
+    router.push(router.asPath);
+  };
 
   const startRecording = () => {
     Tone.start();
@@ -80,20 +89,6 @@ const Project = () => {
     }
   };
 
-  const createTracks = async () => {
-    if (recordedData) {
-      await createTrack(1, "cool track", "Guitar", recordedData);
-    }
-  };
-  const { mutate: trackCreateMutation } = useMutation(createTracks, {
-    onSuccess: () => {
-      console.log("success");
-    },
-    onError: () => {
-      console.log("error");
-    },
-  });
-
   return (
     <div className={styles.container}>
       <Stack className={styles.innerContainer} direction="column" spacing={2}>
@@ -126,14 +121,33 @@ const Project = () => {
           </IconButton>
           <Button
             variant="contained"
-            onClick={() => {
-              trackCreateMutation();
-            }}
+            onClick={() => setOpenCommitTrackModal(true)}
           >
             Commit Track
           </Button>
         </Stack>
+        <Stack direction="column" spacing={2}>
+          {trackList.map((track) => (
+            <Stack
+              className={styles.trackListEntry}
+              direction="row"
+              spacing={2}
+            >
+              <Checkbox checked={true} />
+              <div>
+                <Typography variant="h3">{track.instrumentType}</Typography>
+              </div>
+            </Stack>
+          ))}
+        </Stack>
       </Stack>
+      <CommitTrackModal
+        isOpen={openCommitTrackModal}
+        onClose={() => setOpenCommitTrackModal(false)}
+        onSuccess={() => closeModalAndRefesh()}
+        recordedData={recordedData}
+        projectId={projectId}
+      />
     </div>
   );
 };

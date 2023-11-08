@@ -19,17 +19,23 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { instrumentTypes } from "@/lib/constants";
 import styles from "@/styles/components/modals/commitTrackModal.module.scss";
+import { createTrack } from "@/utils/apiUtils";
+import { useMutation } from "react-query";
 
 interface CommitTrackModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: () => void;
   recordedData: Blob | null;
+  projectId: string | string[] | undefined;
 }
 
 const CommitTrackModal = ({
   isOpen,
   onClose,
+  onSuccess,
   recordedData,
+  projectId,
 }: CommitTrackModalProps) => {
   const validationSchema = Yup.object({
     title: Yup.string().required("Title is required"),
@@ -42,8 +48,29 @@ const CommitTrackModal = ({
       instrument: "",
     },
     validationSchema,
-    onSubmit: (values) => {
-      console.log(values);
+    onSubmit: () => trackCreateMutation(),
+  });
+
+  const createTracks = async () => {
+    if (recordedData && typeof projectId === "string") {
+      await createTrack(
+        parseInt(projectId),
+        formik.values.title,
+        formik.values.description,
+        formik.values.instrument,
+        recordedData
+      );
+    } else {
+      throw Error;
+    }
+  };
+  const { mutate: trackCreateMutation } = useMutation(createTracks, {
+    onSuccess: () => {
+      console.log("success");
+      onSuccess();
+    },
+    onError: () => {
+      console.log("error");
     },
   });
 

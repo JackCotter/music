@@ -17,7 +17,7 @@ export const getTrackList = async (projectId: number) => {
   return response.data;
 }
 
-export const createTrack = async (projectId: number, trackName: string, instrumentType:string, blobData:Blob) => {
+export const createTrack = async (projectId: number, title: string, description:string, instrumentType:string, blobData:Blob) => {
   const reader = new FileReader();
   reader.onload = async () => {
     let base64Data: string;
@@ -37,7 +37,7 @@ export const createTrack = async (projectId: number, trackName: string, instrume
         return;
     }
     console.log(base64Data);
-    const response = await api.post("/tracks/create" , { projectId, trackName, instrumentType, blobData: base64Data }, {withCredentials: true});
+    const response = await api.post("/tracks/create" , { projectId, title, description, instrumentType, blobData: base64Data }, {withCredentials: true});
     return response.data;
   }
 
