@@ -85,6 +85,7 @@ const CommitTrackModal = ({
                 id="title"
                 name="title"
                 label="Title"
+                InputProps={{ inputProps: { maxLength: 30 } }}
                 value={formik.values.title}
                 onChange={formik.handleChange}
                 error={formik.touched.title && Boolean(formik.errors.title)}
@@ -94,6 +95,7 @@ const CommitTrackModal = ({
                 id="description"
                 name="description"
                 label="Description"
+                InputProps={{ inputProps: { maxLength: 300 } }}
                 multiline
                 minRows={4}
                 maxRows={4}
