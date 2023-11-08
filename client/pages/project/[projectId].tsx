@@ -48,7 +48,13 @@ const Project = () => {
 
   const closeModalAndRefesh = () => {
     setOpenCommitTrackModal(false);
-    router.push(router.asPath);
+    if (projectId === undefined) return;
+    if (typeof projectId === "string") {
+      projectGetQuery(parseInt(projectId) as number);
+      populatePlayers(parseInt(projectId) as number, setTrackList, setPlayers);
+    } else {
+      console.log("Error: projectId is not a string");
+    }
   };
 
   const startRecording = () => {
@@ -63,7 +69,6 @@ const Project = () => {
         },
       })
       .then((stream) => {
-        console.log(stream);
         recorder = new MediaRecorder(stream);
         setRecorder(recorder);
         recorder.start();
@@ -127,8 +132,9 @@ const Project = () => {
           </Button>
         </Stack>
         <Stack direction="column" spacing={2}>
-          {trackList.map((track) => (
+          {trackList.map((track, index) => (
             <Stack
+              key={index}
               className={styles.trackListEntry}
               direction="row"
               spacing={2}

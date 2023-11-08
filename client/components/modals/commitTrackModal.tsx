@@ -52,7 +52,7 @@ const CommitTrackModal = ({
   });
 
   const createTracks = async () => {
-    if (recordedData && typeof projectId === "string") {
+    if (recordedData !== null && typeof projectId === "string") {
       await createTrack(
         parseInt(projectId),
         formik.values.title,
@@ -60,14 +60,14 @@ const CommitTrackModal = ({
         formik.values.instrument,
         recordedData
       );
+      onSuccess();
     } else {
-      throw Error;
+      throw new Error("No recording data provided");
     }
   };
   const { mutate: trackCreateMutation } = useMutation(createTracks, {
     onSuccess: () => {
       console.log("success");
-      onSuccess();
     },
     onError: () => {
       console.log("error");
