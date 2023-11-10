@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import { setIn } from "formik";
 
 export const TrackTable = ({
   trackList,
@@ -27,44 +28,17 @@ export const TrackTable = ({
   }>({});
   const [instrumentsUsed, setInstrumentsUsed] = useState<string[]>([]);
 
-  // useEffect(() => {
-  //   if (trackList && trackList.length > 0) {
-  //     trackList.forEach((track) => {
-  //       if (tracksByInstrument[track.instrumentType] === undefined) {
-  //         tracksByInstrument[track.instrumentType] = [];
-  //         if (!instrumentsUsed.includes(track.instrumentType)) {
-  //           setInstrumentsUsed((instrumentsUsed) => [
-  //             ...instrumentsUsed,
-  //             track.instrumentType,
-  //           ]);
-  //         }
-  //       }
-  //       setTracksByInstrument((prevTracksByInstrument) => {
-  //         const updatedTracks = [
-  //           ...prevTracksByInstrument[track.instrumentType],
-  //           track,
-  //         ];
-  //         return {
-  //           ...prevTracksByInstrument,
-  //           [track.instrumentType]: updatedTracks,
-  //         };
-  //       });
-  //     });
-  //   }
-  // }, [trackList]);
-
   useEffect(() => {
     if (trackList && trackList.length > 0) {
       const newTracksByInstrument: { [instrumentType: string]: Track[] } = {};
+      const newInstrumentsUsed: string[] = [];
 
+      console.log(trackList);
       trackList.forEach((track) => {
         if (!newTracksByInstrument[track.instrumentType]) {
           newTracksByInstrument[track.instrumentType] = [];
-          if (!instrumentsUsed.includes(track.instrumentType)) {
-            setInstrumentsUsed((prevInstrumentsUsed) => [
-              ...prevInstrumentsUsed,
-              track.instrumentType,
-            ]);
+          if (!newInstrumentsUsed.includes(track.instrumentType)) {
+            newInstrumentsUsed.push(track.instrumentType);
           }
         }
         const updatedTracks = [
@@ -77,6 +51,7 @@ export const TrackTable = ({
         return newTracksByInstrument;
       });
       setTracksByInstrument(newTracksByInstrument);
+      setInstrumentsUsed(newInstrumentsUsed);
     }
     console.log(tracksByInstrument);
     console.log(instrumentsUsed);

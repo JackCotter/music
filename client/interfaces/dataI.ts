@@ -15,4 +15,5 @@ interface Project {
   projectname: string;
   username: string;
   description: string;
+  isowner: boolean;
 }

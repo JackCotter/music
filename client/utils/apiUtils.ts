@@ -45,7 +45,7 @@ export const createTrack = async (projectId: number, title: string, description:
 }
 
 export const getProject = async (projectId: number) => {
-  const response = await api.get(`/projects/get?projectId=${projectId}`, {withCredentials: false});
+  const response = await api.get(`/projects/get?projectId=${projectId}`, {withCredentials: true});
   return response.data as Project;
 }
 

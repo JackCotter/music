@@ -20,6 +20,7 @@ import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import { populatePlayers, startAudio, stopAudio } from "@/utils/playbackUtils";
 import CommitTrackModal from "@/components/modals/commitTrackModal";
 import { TrackTable } from "@/components/trackTable";
+import { useAuthContext } from "@/contexts/authContext";
 
 const Project = () => {
   Tone.Transport.debug = true;
@@ -35,6 +36,7 @@ const Project = () => {
 
   const router = useRouter();
   const { projectId } = router.query;
+  const { isAuthenticated } = useAuthContext();
 
   const projectGetQuery = async (id: number) => {
     const project: Project = await getProject(id);
@@ -44,17 +46,27 @@ const Project = () => {
   useEffect(() => {
     if (projectId === undefined) return;
     if (typeof projectId === "string") {
+      console.log("projectId: " + projectId);
+      projectGetQuery(parseInt(projectId) as number);
+    } else {
+      console.log("Error: projectId is not a string");
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (projectId === undefined) return;
+    if (typeof projectId === "string") {
       projectGetQuery(parseInt(projectId) as number);
       populatePlayers(parseInt(projectId) as number, setTrackList, setPlayers);
     } else {
       console.log("Error: projectId is not a string");
     }
-    // return () => {
-    //   if (players) {
-    //     console.log("disposed");
-    //     players.dispose(); // Clean up the player
-    //   }
-    // };
+    return () => {
+      if (players) {
+        console.log("disposed");
+        players.dispose(); // Clean up the player
+      }
+    };
   }, [projectId]);
 
   const closeModalAndRefesh = () => {
@@ -109,7 +121,7 @@ const Project = () => {
     <div className={styles.container}>
       <Stack className={styles.innerContainer} direction="column" spacing={2}>
         <Typography variant="h1">
-          {projectInfo ? projectInfo.projectname : "Track Project"}
+          {projectInfo?.projectname ? projectInfo.projectname : "Track Project"}
         </Typography>
         <Typography variant="h2">
           By {projectInfo?.username ? projectInfo.username : "A User"}
@@ -135,12 +147,14 @@ const Project = () => {
           >
             {recorder ? <StopIcon /> : <FiberManualRecordIcon />}
           </IconButton>
-          <Button
-            variant="contained"
-            onClick={() => setOpenCommitTrackModal(true)}
-          >
-            Commit Track
-          </Button>
+          {isAuthenticated && (
+            <Button
+              variant="contained"
+              onClick={() => setOpenCommitTrackModal(true)}
+            >
+              Commit Track
+            </Button>
+          )}
         </Stack>
         <div className={styles.acceptedTracksContainer}>
           <Typography variant="h3" className={styles.lightText}>
@@ -169,15 +183,18 @@ const Project = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={3}>
-                    No tracks have been accepted. Select some from the options
-                    below!
+                    {projectInfo && projectInfo.isowner
+                      ? "No tracks have been accepted. Select some from the options below!"
+                      : "No tracks have been accepted. Check back later!"}
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </div>
-        <TrackTable trackList={trackList} setTrackList={setTrackList} />
+        {projectInfo && projectInfo.isowner && (
+          <TrackTable trackList={trackList} setTrackList={setTrackList} />
+        )}
       </Stack>
       <CommitTrackModal
         isOpen={openCommitTrackModal}
