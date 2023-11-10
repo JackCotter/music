@@ -132,7 +132,7 @@ const Project = () => {
             Commit Track
           </Button>
         </Stack>
-        <TrackTable trackList={trackList} />
+        <TrackTable trackList={trackList} setTrackList={setTrackList} />
       </Stack>
       <CommitTrackModal
         isOpen={openCommitTrackModal}

@@ -1,4 +1,5 @@
 interface Track {
+  trackId: number;
   blobData: string;
   title: string;
   description: string;

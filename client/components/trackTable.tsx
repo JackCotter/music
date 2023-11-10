@@ -9,32 +9,77 @@ import {
   IconButton,
   TableContainer,
   Typography,
+  Checkbox,
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
-export const TrackTable = ({ trackList }: { trackList: Track[] }) => {
+export const TrackTable = ({
+  trackList,
+  setTrackList,
+}: {
+  trackList: Track[];
+  setTrackList: (trackList: Track[]) => void;
+}) => {
   const [drawerOpen, setDrawerOpen] = useState<string>("");
-  const tracksByInstrument = useRef<{ [instrumentType: string]: Track[] }>({});
+  const [tracksByInstrument, setTracksByInstrument] = useState<{
+    [instrumentType: string]: Track[];
+  }>({});
   const [instrumentsUsed, setInstrumentsUsed] = useState<string[]>([]);
 
+  // useEffect(() => {
+  //   if (trackList && trackList.length > 0) {
+  //     trackList.forEach((track) => {
+  //       if (tracksByInstrument[track.instrumentType] === undefined) {
+  //         tracksByInstrument[track.instrumentType] = [];
+  //         if (!instrumentsUsed.includes(track.instrumentType)) {
+  //           setInstrumentsUsed((instrumentsUsed) => [
+  //             ...instrumentsUsed,
+  //             track.instrumentType,
+  //           ]);
+  //         }
+  //       }
+  //       setTracksByInstrument((prevTracksByInstrument) => {
+  //         const updatedTracks = [
+  //           ...prevTracksByInstrument[track.instrumentType],
+  //           track,
+  //         ];
+  //         return {
+  //           ...prevTracksByInstrument,
+  //           [track.instrumentType]: updatedTracks,
+  //         };
+  //       });
+  //     });
+  //   }
+  // }, [trackList]);
+
   useEffect(() => {
-    console.log("tracklist: ", trackList);
     if (trackList && trackList.length > 0) {
+      const newTracksByInstrument: { [instrumentType: string]: Track[] } = {};
+
       trackList.forEach((track) => {
-        if (tracksByInstrument.current[track.instrumentType] === undefined) {
-          tracksByInstrument.current[track.instrumentType] = [];
+        if (!newTracksByInstrument[track.instrumentType]) {
+          newTracksByInstrument[track.instrumentType] = [];
           if (!instrumentsUsed.includes(track.instrumentType)) {
-            setInstrumentsUsed((instrumentsUsed) => [
-              ...instrumentsUsed,
+            setInstrumentsUsed((prevInstrumentsUsed) => [
+              ...prevInstrumentsUsed,
               track.instrumentType,
             ]);
           }
         }
-        tracksByInstrument.current[track.instrumentType].push(track);
+        const updatedTracks = [
+          ...newTracksByInstrument[track.instrumentType],
+          track,
+        ];
+
+        newTracksByInstrument[track.instrumentType] = updatedTracks;
+
+        return newTracksByInstrument;
       });
-      console.log(tracksByInstrument.current);
+      setTracksByInstrument(newTracksByInstrument);
     }
+    console.log(tracksByInstrument);
+    console.log(instrumentsUsed);
   }, [trackList]);
 
   const openDrawer = (instrument: string) => {
@@ -43,6 +88,16 @@ export const TrackTable = ({ trackList }: { trackList: Track[] }) => {
       return;
     }
     setDrawerOpen(instrument);
+  };
+
+  const toggleAcceptedUpdateTrackList = (trackId: number) => async () => {
+    const newTrackList = trackList.map((track) => {
+      if (track.trackId === trackId) {
+        return { ...track, accepted: !track.accepted };
+      }
+      return track;
+    });
+    setTrackList(newTrackList);
   };
 
   return (
@@ -84,16 +139,21 @@ export const TrackTable = ({ trackList }: { trackList: Track[] }) => {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {tracksByInstrument.current[instrument].map(
-                          (track, index) => (
-                            <TableRow key={index}>
-                              <TableCell>{index}</TableCell>
-                              <TableCell>{track.title}</TableCell>
-                              <TableCell>{track.description}</TableCell>
-                              <TableCell>{track.instrumentType}</TableCell>
-                            </TableRow>
-                          )
-                        )}
+                        {tracksByInstrument[instrument].map((track, index) => (
+                          <TableRow key={index}>
+                            <TableCell>
+                              <Checkbox
+                                checked={track.accepted}
+                                onClick={toggleAcceptedUpdateTrackList(
+                                  track.trackId
+                                )}
+                              />
+                            </TableCell>
+                            <TableCell>{track.title}</TableCell>
+                            <TableCell>{track.description}</TableCell>
+                            <TableCell>{track.instrumentType}</TableCell>
+                          </TableRow>
+                        ))}
                       </TableBody>
                     </Table>
                   </Collapse>
