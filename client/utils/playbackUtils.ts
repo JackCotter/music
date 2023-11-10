@@ -28,7 +28,7 @@ export const startAudio = (
   if (!recordingIndex) recordingIndex = 0;
   if (players && players.loaded) {
     for (let i = 0; i < trackList.length || i < recordingIndex; i++) {
-      if (players.has(i.toString())) {
+      if (players.has(i.toString()) && trackList[i].accepted) {
         players.player(i.toString()).start(i.toString());
       }
       if (players.has("Recording" + i)) {
