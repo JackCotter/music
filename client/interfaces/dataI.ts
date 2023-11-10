@@ -1,5 +1,7 @@
 interface Track {
   blobData: string;
+  title: string;
+  description: string;
   instrumentType: string;
   accepted: boolean;
 }

@@ -1,8 +1,7 @@
 import { getProject } from "@/utils/apiUtils";
-import { Button, Checkbox, IconButton, Stack, Typography } from "@mui/material";
+import { Button, IconButton, Stack, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
-import { useMutation } from "react-query";
 import { useRouter } from "next/router";
 import styles from "@/styles/pages/project.module.scss";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -10,6 +9,7 @@ import StopIcon from "@mui/icons-material/Stop";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import { populatePlayers, startAudio, stopAudio } from "@/utils/playbackUtils";
 import CommitTrackModal from "@/components/modals/commitTrackModal";
+import { TrackTable } from "@/components/trackTable";
 
 const Project = () => {
   Tone.Transport.debug = true;
@@ -20,10 +20,11 @@ const Project = () => {
   const [trackList, setTrackList] = useState<Track[]>([]);
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const [projectInfo, setProjectInfo] = useState<Project | null>(null);
-  const router = useRouter();
-  const { projectId } = router.query;
   const [openCommitTrackModal, setOpenCommitTrackModal] =
     useState<boolean>(false);
+
+  const router = useRouter();
+  const { projectId } = router.query;
 
   const projectGetQuery = async (id: number) => {
     const project: Project = await getProject(id);
@@ -131,21 +132,7 @@ const Project = () => {
             Commit Track
           </Button>
         </Stack>
-        <Stack direction="column" spacing={2}>
-          {trackList.map((track, index) => (
-            <Stack
-              key={index}
-              className={styles.trackListEntry}
-              direction="row"
-              spacing={2}
-            >
-              <Checkbox checked={true} />
-              <div>
-                <Typography variant="h3">{track.instrumentType}</Typography>
-              </div>
-            </Stack>
-          ))}
-        </Stack>
+        <TrackTable trackList={trackList} />
       </Stack>
       <CommitTrackModal
         isOpen={openCommitTrackModal}
