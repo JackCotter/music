@@ -1,5 +1,15 @@
 import { getProject } from "@/utils/apiUtils";
-import { Button, IconButton, Stack, Typography } from "@mui/material";
+import {
+  Button,
+  IconButton,
+  Stack,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
 import { useRouter } from "next/router";
@@ -132,6 +142,41 @@ const Project = () => {
             Commit Track
           </Button>
         </Stack>
+        <div className={styles.acceptedTracksContainer}>
+          <Typography variant="h3" className={styles.lightText}>
+            Accepted Tracks
+          </Typography>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Title</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell>Instrument</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {trackList.some((track) => track.accepted) ? (
+                trackList.map(
+                  (track, index) =>
+                    track.accepted && (
+                      <TableRow key={index}>
+                        <TableCell>{track.title}</TableCell>
+                        <TableCell>{track.description}</TableCell>
+                        <TableCell>{track.instrumentType}</TableCell>
+                      </TableRow>
+                    )
+                )
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={3}>
+                    No tracks have been accepted. Select some from the options
+                    below!
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
         <TrackTable trackList={trackList} setTrackList={setTrackList} />
       </Stack>
       <CommitTrackModal
