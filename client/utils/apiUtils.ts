@@ -17,6 +17,11 @@ export const getTrackList = async (projectId: number) => {
   return response.data;
 }
 
+export const patchTrack = async (trackIds: number[], projectId:number, accepted: boolean) => {
+  const response = await api.patch(`/tracks/patch`, {trackIds, projectId, accepted} );
+  return response.data;
+}
+
 export const createTrack = async (projectId: number, title: string, description:string, instrumentType:string, blobData:Blob) => {
   const reader = new FileReader();
   reader.onload = async () => {

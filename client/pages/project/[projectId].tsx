@@ -1,4 +1,4 @@
-import { getProject } from "@/utils/apiUtils";
+import { getProject, patchTrack } from "@/utils/apiUtils";
 import {
   Button,
   IconButton,
@@ -117,6 +117,35 @@ const Project = () => {
     }
   };
 
+  const saveTrackList = async () => {
+    if (projectId === undefined) return;
+    if (typeof projectId === "string") {
+      let selectedTrackIdList: number[] = [];
+      let unselectedTrackIdList: number[] = [];
+      trackList.forEach((track) => {
+        if (track.accepted) {
+          selectedTrackIdList.push(track.trackId);
+        } else {
+          unselectedTrackIdList.push(track.trackId);
+        }
+      });
+      console.log(selectedTrackIdList);
+      console.log(unselectedTrackIdList);
+      await patchTrack(
+        selectedTrackIdList,
+        parseInt(projectId) as number,
+        true
+      );
+      await patchTrack(
+        unselectedTrackIdList,
+        parseInt(projectId) as number,
+        false
+      );
+    } else {
+      console.log("Error: projectId is not a string");
+    }
+  };
+
   return (
     <div className={styles.container}>
       <Stack className={styles.innerContainer} direction="column" spacing={2}>
@@ -195,6 +224,13 @@ const Project = () => {
         {projectInfo && projectInfo.isowner && (
           <TrackTable trackList={trackList} setTrackList={setTrackList} />
         )}
+        <Button
+          className={styles.saveChangesButton}
+          onClick={saveTrackList}
+          variant="contained"
+        >
+          Save Changes
+        </Button>
       </Stack>
       <CommitTrackModal
         isOpen={openCommitTrackModal}

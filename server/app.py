@@ -195,6 +195,36 @@ def track_list():
     return jsonify(formatted_tracks)
 
 
+@app.patch("/tracks/patch")
+@flask_login.login_required
+def track_patch():
+    request_data = request.get_json()
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    if request_data["accepted"] is None or request_data["trackIds"] is None:
+        return 'missing accepted or trackIds', 400
+    trackids = tuple(request_data["trackIds"])
+    cur.execute("SELECT tracks.trackid FROM projects natural join projecttracks join tracks on projecttracks.trackid = tracks.trackid WHERE owner = %s and tracks.trackid in %s and projectid = %s",
+                (flask_login.current_user.id, trackids, request_data["projectId"],))
+    acceptable_trackids = cur.fetchall()
+    if len(acceptable_trackids) == 0:
+        conn.close()
+        cur.close()
+        return 'No valid trackids provided', 400
+
+    acceptable_trackids = tuple(
+        trackid for subtuple in acceptable_trackids for trackid in subtuple)
+
+    cur.execute("UPDATE projecttracks SET accepted = %s WHERE trackid IN %s",
+                (request_data["accepted"], acceptable_trackids,))
+    conn.commit()
+
+    conn.close()
+    cur.close()
+    return 'success'
+
+
 @app.get("/projects/list")
 @cross_origin()
 def project_list():
@@ -239,7 +269,6 @@ def project_get():
     if isOwner is not None:
         formatted_project = {"projectid": projects["projectid"], "username": projects["username"], "projectname": projects["projectname"],
                              "lookingfor": projects["lookingfor"], "lookingforstrict": projects["lookingforstrict"], "description": projects["description"], "isowner": True},
-        print(formatted_project)
         conn.close()
         cur.close()
         return jsonify(formatted_project[0])
@@ -247,40 +276,3 @@ def project_get():
         conn.close()
         cur.close()
         return jsonify(formatted_project[0])
-
-
-# @app.get("/projects/get")
-# @flask_login.login_required
-# def project_get_auth():
-#     conn = get_db_connection()
-#     cur = conn.cursor(cursor_factory=RealDictCursor)
-
-#     cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, description FROM projects join users on (projects.owner = users.email) where projectid = %s", (request.args.get("projectId"),))
-#     projects = cur.fetchone()
-#     if projects is None:
-#         conn.close()
-#         cur.close()
-#         return 'project not found', 400
-
-#     formatted_project = {"projectid": projects["projectid"], "username": projects["username"], "projectname": projects["projectname"],
-#                          "lookingfor": projects["lookingfor"], "lookingforstrict": projects["lookingforstrict"], "description": projects["description"], "isowner": False},
-#     if not flask_login.current_user.is_authenticated:
-#         conn.close()
-#         cur.close()
-#         return jsonify(formatted_project[0])
-
-#     cur.execute("SELECT * FROM projects where owner = %s and projectid = %s",
-#                 (flask_login.current_user.id, request.args.get("projectId"), ))
-#     isOwner = cur.fetchone()
-
-#     if isOwner is not None:
-#         formatted_project = {"projectid": projects["projectid"], "username": projects["username"], "projectname": projects["projectname"],
-#                              "lookingfor": projects["lookingfor"], "lookingforstrict": projects["lookingforstrict"], "description": projects["description"], "isowner": True},
-#         print(formatted_project)
-#         conn.close()
-#         cur.close()
-#         return jsonify(formatted_project[0])
-#     else:
-#         conn.close()
-#         cur.close()
-#         return jsonify(formatted_project[0])
