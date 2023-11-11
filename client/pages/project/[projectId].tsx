@@ -9,6 +9,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  CircularProgress,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
@@ -21,6 +22,8 @@ import { populatePlayers, startAudio, stopAudio } from "@/utils/playbackUtils";
 import CommitTrackModal from "@/components/modals/commitTrackModal";
 import { TrackTable } from "@/components/trackTable";
 import { useAuthContext } from "@/contexts/authContext";
+import { useMutation } from "react-query";
+import { maxNCharacters } from "@/utils/stringUtils";
 
 const Project = () => {
   Tone.Transport.debug = true;
@@ -129,8 +132,6 @@ const Project = () => {
           unselectedTrackIdList.push(track.trackId);
         }
       });
-      console.log(selectedTrackIdList);
-      console.log(unselectedTrackIdList);
       await patchTrack(
         selectedTrackIdList,
         parseInt(projectId) as number,
@@ -146,14 +147,35 @@ const Project = () => {
     }
   };
 
+  const { mutate: trackCreateMutation, isLoading } = useMutation(
+    saveTrackList,
+    {
+      onSuccess: () => {
+        console.log("success");
+      },
+      onError: () => {
+        console.log("error");
+      },
+    }
+  );
+
   return (
     <div className={styles.container}>
       <Stack className={styles.innerContainer} direction="column" spacing={2}>
-        <Typography variant="h1">
-          {projectInfo?.projectname ? projectInfo.projectname : "Track Project"}
-        </Typography>
-        <Typography variant="h2">
-          By {projectInfo?.username ? projectInfo.username : "A User"}
+        <Stack className={styles.titleRow} direction="row" spacing={6}>
+          <Typography variant="h1">
+            {projectInfo?.projectname
+              ? projectInfo.projectname
+              : "Track Project"}
+          </Typography>
+          <Typography variant="h2">
+            By {projectInfo?.username ? projectInfo.username : "A User"}
+          </Typography>
+        </Stack>
+        <Typography variant="h3">
+          {projectInfo?.description
+            ? maxNCharacters(projectInfo.description, 300)
+            : ""}
         </Typography>
         <Stack direction="row" spacing={2}>
           <IconButton
@@ -222,15 +244,25 @@ const Project = () => {
           </Table>
         </div>
         {projectInfo && projectInfo.isowner && (
-          <TrackTable trackList={trackList} setTrackList={setTrackList} />
+          <>
+            <TrackTable trackList={trackList} setTrackList={setTrackList} />
+            <Stack
+              className={styles.saveChangesButtonRow}
+              direction="row"
+              spacing={2}
+            >
+              <Button
+                className={styles.saveChangesButton}
+                onClick={() => trackCreateMutation()}
+                variant="contained"
+                disabled={isLoading}
+              >
+                Save Changes
+              </Button>
+              {isLoading && <CircularProgress />}
+            </Stack>
+          </>
         )}
-        <Button
-          className={styles.saveChangesButton}
-          onClick={saveTrackList}
-          variant="contained"
-        >
-          Save Changes
-        </Button>
       </Stack>
       <CommitTrackModal
         isOpen={openCommitTrackModal}

@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import styles from "@/styles/components/trackTable.module.scss";
 
 export const TrackTable = ({
   trackList,
@@ -81,10 +82,11 @@ export const TrackTable = ({
           <TableBody>
             {instrumentsUsed.map((instrument, index) => (
               <TableRow key={index}>
-                <TableCell>
+                <TableCell className={styles.collapseButtonCell}>
                   <IconButton
                     aria-label="expand row"
                     size="small"
+                    className={styles.collapseButton}
                     onClick={() => openDrawer(instrument)}
                   >
                     {drawerOpen === instrument ? (
@@ -106,7 +108,7 @@ export const TrackTable = ({
                     <Table>
                       <TableHead>
                         <TableRow>
-                          <TableCell>ID</TableCell>
+                          <TableCell>Accepted</TableCell>
                           <TableCell>Title</TableCell>
                           <TableCell>Description</TableCell>
                           <TableCell>Instrument</TableCell>
