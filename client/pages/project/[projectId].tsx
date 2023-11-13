@@ -198,7 +198,7 @@ const Project = () => {
           >
             {recorder ? <StopIcon /> : <FiberManualRecordIcon />}
           </IconButton>
-          {isAuthenticated && (
+          {isAuthenticated && recordedData !== null && (
             <Button
               variant="contained"
               onClick={() => setOpenCommitTrackModal(true)}

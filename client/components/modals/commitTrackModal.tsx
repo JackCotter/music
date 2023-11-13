@@ -14,6 +14,7 @@ import {
   InputLabel,
   Divider,
   Typography,
+  Alert,
 } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -37,6 +38,10 @@ const CommitTrackModal = ({
   recordedData,
   projectId,
 }: CommitTrackModalProps) => {
+  const [errorBar, setErrorBar] = React.useState({
+    isOpen: false,
+    message: "",
+  });
   const validationSchema = Yup.object({
     title: Yup.string().required("Title is required"),
     instrument: Yup.string().required("Instrument is required"),
@@ -79,6 +84,9 @@ const CommitTrackModal = ({
       <DialogTitle>Commit Track</DialogTitle>
       <form onSubmit={formik.handleSubmit}>
         <DialogContent>
+          {errorBar.isOpen && (
+            <Alert severity="error"> {errorBar.message}</Alert>
+          )}
           <Stack className={styles.containerRow} direction="row" spacing={2}>
             <Stack className={styles.formColumn} direction="column" spacing={2}>
               <TextField
