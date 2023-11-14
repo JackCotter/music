@@ -48,7 +48,7 @@ const TrackProgressBar = ({ player, trackStopped }: TrackProgressBarProps) => {
   }, [player?.state]);
 
   return (
-    <div style={{ minWidth: "500px" }}>
+    <div>
       {trackDuration && (
         <LinearProgress
           variant="determinate"
