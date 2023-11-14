@@ -1,13 +1,13 @@
 import { LinearProgress } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { start } from "repl";
 import * as Tone from "tone";
 
 interface TrackProgressBarProps {
   player: Tone.Player | null;
+  trackStopped: () => void;
 }
 
-const TrackProgressBar = ({ player }: TrackProgressBarProps) => {
+const TrackProgressBar = ({ player, trackStopped }: TrackProgressBarProps) => {
   const startTime = useRef<number | undefined>();
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const timerId = useRef<NodeJS.Timeout | undefined>();
@@ -27,6 +27,7 @@ const TrackProgressBar = ({ player }: TrackProgressBarProps) => {
       clearInterval(timerId.current);
       startTime.current = undefined;
       timerId.current = undefined;
+      trackStopped();
     }
   };
 

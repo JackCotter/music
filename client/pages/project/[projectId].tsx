@@ -20,6 +20,7 @@ import StopIcon from "@mui/icons-material/Stop";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import {
   getMaxLengthAcceptedPlayer,
+  isAnyAcceptedPlayersStarted,
   populatePlayers,
   startAudio,
   stopAudio,
@@ -213,6 +214,10 @@ const Project = () => {
             </Button>
           )}
         </Stack>
+        <TrackProgressBar
+          player={getMaxLengthAcceptedPlayer(players, trackList)}
+          trackStopped={() => setIsAudioPlaying(false)}
+        />
         <div className={styles.acceptedTracksContainer}>
           <Typography variant="h3" className={styles.lightText}>
             Accepted Tracks
@@ -269,9 +274,6 @@ const Project = () => {
             </Stack>
           </>
         )}
-        <TrackProgressBar
-          player={getMaxLengthAcceptedPlayer(players, trackList)}
-        />
       </Stack>
       <CommitTrackModal
         isOpen={openCommitTrackModal}
