@@ -11,7 +11,7 @@ const TrackProgressBar = ({ player }: TrackProgressBarProps) => {
   const startTime = useRef<number | undefined>();
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const timerId = useRef<NodeJS.Timeout | undefined>();
-  const trackDuration = useRef<number | undefined>();
+  const [trackDuration, setTrackDuration] = useState<number | undefined>();
 
   const startTimeCounter = (): void => {
     timerId.current = setInterval(() => {
@@ -41,16 +41,21 @@ const TrackProgressBar = ({ player }: TrackProgressBarProps) => {
       startTimeCounter();
     } else if (player && player.state === "stopped") {
       stopTimeCounter();
+      setElapsedTime(0);
     }
-    trackDuration.current = player?.buffer.duration;
+    setTrackDuration(player?.buffer.duration);
   }, [player?.state]);
 
   return (
     <div style={{ minWidth: "500px" }}>
-      {elapsedTime && trackDuration.current && (
+      {trackDuration && (
         <LinearProgress
           variant="determinate"
-          value={elapsedTime / 10 / trackDuration.current}
+          value={
+            elapsedTime / 10 / trackDuration < 100
+              ? elapsedTime / 10 / trackDuration
+              : 100
+          }
         />
       )}
     </div>
