@@ -18,12 +18,18 @@ import styles from "@/styles/pages/project.module.scss";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
-import { populatePlayers, startAudio, stopAudio } from "@/utils/playbackUtils";
+import {
+  getMaxLengthAcceptedPlayer,
+  populatePlayers,
+  startAudio,
+  stopAudio,
+} from "@/utils/playbackUtils";
 import CommitTrackModal from "@/components/modals/commitTrackModal";
 import { TrackTable } from "@/components/trackTable";
 import { useAuthContext } from "@/contexts/authContext";
 import { useMutation } from "react-query";
 import { maxNCharacters } from "@/utils/stringUtils";
+import TrackProgressBar from "@/components/trackProgressBar";
 
 const Project = () => {
   Tone.Transport.debug = true;
@@ -263,6 +269,9 @@ const Project = () => {
             </Stack>
           </>
         )}
+        <TrackProgressBar
+          player={getMaxLengthAcceptedPlayer(players, trackList)}
+        />
       </Stack>
       <CommitTrackModal
         isOpen={openCommitTrackModal}
