@@ -55,7 +55,6 @@ const Project = () => {
   useEffect(() => {
     if (projectId === undefined) return;
     if (typeof projectId === "string") {
-      console.log("projectId: " + projectId);
       projectGetQuery(parseInt(projectId) as number);
     } else {
       console.log("Error: projectId is not a string");
@@ -72,7 +71,6 @@ const Project = () => {
     }
     return () => {
       if (players) {
-        console.log("disposed");
         players.dispose(); // Clean up the player
       }
     };
