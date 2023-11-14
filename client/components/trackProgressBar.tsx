@@ -11,7 +11,7 @@ const TrackProgressBar = ({ player, trackStopped }: TrackProgressBarProps) => {
   const startTime = useRef<number | undefined>();
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const timerId = useRef<NodeJS.Timeout | undefined>();
-  const [trackDuration, setTrackDuration] = useState<number | undefined>();
+  const [trackDuration, setTrackDuration] = useState<number | undefined>(0);
 
   const startTimeCounter = (): void => {
     timerId.current = setInterval(() => {

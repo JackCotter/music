@@ -20,7 +20,6 @@ import StopIcon from "@mui/icons-material/Stop";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import {
   getMaxLengthAcceptedPlayer,
-  isAnyAcceptedPlayersStarted,
   populatePlayers,
   startAudio,
   stopAudio,
