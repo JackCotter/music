@@ -33,7 +33,6 @@ export const TrackTable = ({
       const newTracksByInstrument: { [instrumentType: string]: Track[] } = {};
       const newInstrumentsUsed: string[] = [];
 
-      console.log(trackList);
       trackList.forEach((track) => {
         if (!newTracksByInstrument[track.instrumentType]) {
           newTracksByInstrument[track.instrumentType] = [];
@@ -53,8 +52,6 @@ export const TrackTable = ({
       setTracksByInstrument(newTracksByInstrument);
       setInstrumentsUsed(newInstrumentsUsed);
     }
-    console.log(tracksByInstrument);
-    console.log(instrumentsUsed);
   }, [trackList]);
 
   const openDrawer = (instrument: string) => {
