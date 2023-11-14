@@ -78,6 +78,12 @@ const Project = () => {
     };
   }, [projectId]);
 
+  useEffect(() => {
+    if (!isAudioPlaying && recorder) {
+      stopRecording();
+    }
+  }, [isAudioPlaying]);
+
   const closeModalAndRefesh = () => {
     setOpenCommitTrackModal(false);
     if (projectId === undefined) return;
@@ -118,6 +124,12 @@ const Project = () => {
       recorder.stop();
       recorder.ondataavailable = (e) => {
         const url = URL.createObjectURL(e.data);
+        if (players?.has("Recording" + (recordingIndex.current - 1))) {
+          players?.player("Recording" + (recordingIndex.current - 1)).dispose();
+          // console.log(
+          //   players?.player("Recording" + (recordingIndex.current - 1)).state
+          // );
+        }
         players?.add("Recording" + recordingIndex.current++, url);
         setRecordedData(e.data);
       };
@@ -253,7 +265,7 @@ const Project = () => {
             </TableBody>
           </Table>
         </div>
-        {projectInfo && projectInfo.isowner && (
+        {projectInfo && projectInfo.isowner && trackList.length > 0 && (
           <>
             <TrackTable trackList={trackList} setTrackList={setTrackList} />
             <Stack
