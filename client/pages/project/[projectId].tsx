@@ -10,6 +10,7 @@ import {
   TableHead,
   TableRow,
   CircularProgress,
+  Alert,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
@@ -214,6 +215,13 @@ const Project = () => {
           >
             {recorder ? <StopIcon /> : <FiberManualRecordIcon />}
           </IconButton>
+          {recordedData !== null && (
+            <Alert severity="success">
+              {isAuthenticated
+                ? "Track recorded. Click commit button to commit to project"
+                : "Track recorded. Sign in to commit to this project."}
+            </Alert>
+          )}
           {isAuthenticated && recordedData !== null && (
             <Button
               variant="contained"
