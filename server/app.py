@@ -276,3 +276,18 @@ def project_get():
         conn.close()
         cur.close()
         return jsonify(formatted_project[0])
+
+
+@app.get("/users/get")
+@flask_login.login_required
+def get_user():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    cur.execute("SELECT username FROM users where email = %s",
+                (flask_login.current_user.id,))
+    username = cur.fetchone()
+
+    cur.close()
+    conn.close()
+    return jsonify(username)
