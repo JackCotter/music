@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from "react";
+import { getUser } from "@/utils/apiUtils";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -29,6 +30,19 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
     setIsAuthenticated(false);
   };
 
+  useEffect(() => {
+    const queryUser = async () => {
+      try {
+        const username = await getUser();
+        if (username) {
+          setIsAuthenticated(true);
+        }
+      } catch {
+        setIsAuthenticated(false);
+      }
+    };
+    queryUser();
+  }, []);
   return (
     <AuthContext.Provider
       value={{ isAuthenticated, setLoggedIn, setLoggedOut }}

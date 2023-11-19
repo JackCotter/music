@@ -68,3 +68,8 @@ export const createProject = async (projectName: string, instrumentTypes: string
   const response = await api.post("/projects/create", { projectName, instrumentTypes, strictMode, description }, {withCredentials: true});
   return response.data;
 }
+
+export const getUser = async () => {
+  const response = await api.get("/users/get", {withCredentials: true});
+  return response.data as string;
+}
