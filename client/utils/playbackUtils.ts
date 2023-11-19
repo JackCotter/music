@@ -1,4 +1,4 @@
-import { Players } from "tone";
+import { Player, Players } from "tone";
 import { getTrackList } from "./apiUtils";
 
 export const populatePlayers = async (
@@ -28,7 +28,7 @@ export const startAudio = (
   if (!recordingIndex) recordingIndex = 0;
   if (players && players.loaded) {
     for (let i = 0; i < trackList.length || i < recordingIndex; i++) {
-      if (players.has(i.toString())) {
+      if (players.has(i.toString()) && trackList[i].accepted) {
         players.player(i.toString()).start(i.toString());
       }
       if (players.has("Recording" + i)) {
@@ -52,3 +52,18 @@ export const stopAudio = (
     console.log("not loaded");
   }
 };
+
+export const getMaxLengthAcceptedPlayer = (Players: Players | null, Tracks: Track[]): Player | null => {
+  if (!Players) return null;
+  let maxLength = 0;
+  let maxLengthPlayer: Player | null = null
+  for (let i = 0; i < Tracks.length; i++) {
+    if (Players.has(i.toString()) && Tracks[i].accepted) {
+      if (Players.player(i.toString()).buffer.duration > maxLength) {
+        maxLengthPlayer = Players.player(i.toString());
+        maxLength = Players.player(i.toString()).buffer.duration;
+      }
+    }
+  }
+  return maxLengthPlayer;
+}

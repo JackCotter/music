@@ -1,14 +1,36 @@
-import { getTrackList, createTrack, getProject } from "@/utils/apiUtils";
-import { Button, IconButton, Stack, Typography } from "@mui/material";
+import { getProject, patchTrack } from "@/utils/apiUtils";
+import {
+  Button,
+  IconButton,
+  Stack,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
-import { useMutation } from "react-query";
 import { useRouter } from "next/router";
 import styles from "@/styles/pages/project.module.scss";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
-import { populatePlayers, startAudio, stopAudio } from "@/utils/playbackUtils";
+import {
+  getMaxLengthAcceptedPlayer,
+  populatePlayers,
+  startAudio,
+  stopAudio,
+} from "@/utils/playbackUtils";
+import CommitTrackModal from "@/components/modals/commitTrackModal";
+import { TrackTable } from "@/components/trackTable";
+import { useAuthContext } from "@/contexts/authContext";
+import { useMutation } from "react-query";
+import { maxNCharacters } from "@/utils/stringUtils";
+import TrackProgressBar from "@/components/trackProgressBar";
 
 const Project = () => {
   Tone.Transport.debug = true;
@@ -19,14 +41,28 @@ const Project = () => {
   const [trackList, setTrackList] = useState<Track[]>([]);
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const [projectInfo, setProjectInfo] = useState<Project | null>(null);
+  const [openCommitTrackModal, setOpenCommitTrackModal] =
+    useState<boolean>(false);
+
   const router = useRouter();
   const { projectId } = router.query;
+  const { isAuthenticated } = useAuthContext();
+
+  const projectGetQuery = async (id: number) => {
+    const project: Project = await getProject(id);
+    setProjectInfo(project);
+  };
 
   useEffect(() => {
-    const projectGetQuery = async (id: number) => {
-      const project: Project = await getProject(id);
-      setProjectInfo(project);
-    };
+    if (projectId === undefined) return;
+    if (typeof projectId === "string") {
+      projectGetQuery(parseInt(projectId) as number);
+    } else {
+      console.log("Error: projectId is not a string");
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
     if (projectId === undefined) return;
     if (typeof projectId === "string") {
       projectGetQuery(parseInt(projectId) as number);
@@ -34,13 +70,29 @@ const Project = () => {
     } else {
       console.log("Error: projectId is not a string");
     }
-    // return () => {
-    //   if (players) {
-    //     console.log("disposed");
-    //     players.dispose(); // Clean up the player
-    //   }
-    // };
+    return () => {
+      if (players) {
+        players.dispose(); // Clean up the player
+      }
+    };
   }, [projectId]);
+
+  useEffect(() => {
+    if (!isAudioPlaying && recorder) {
+      stopRecording();
+    }
+  }, [isAudioPlaying]);
+
+  const closeModalAndRefesh = () => {
+    setOpenCommitTrackModal(false);
+    if (projectId === undefined) return;
+    if (typeof projectId === "string") {
+      projectGetQuery(parseInt(projectId) as number);
+      populatePlayers(parseInt(projectId) as number, setTrackList, setPlayers);
+    } else {
+      console.log("Error: projectId is not a string");
+    }
+  };
 
   const startRecording = () => {
     Tone.start();
@@ -54,7 +106,6 @@ const Project = () => {
         },
       })
       .then((stream) => {
-        console.log(stream);
         recorder = new MediaRecorder(stream);
         setRecorder(recorder);
         recorder.start();
@@ -72,6 +123,12 @@ const Project = () => {
       recorder.stop();
       recorder.ondataavailable = (e) => {
         const url = URL.createObjectURL(e.data);
+        if (players?.has("Recording" + (recordingIndex.current - 1))) {
+          players?.player("Recording" + (recordingIndex.current - 1)).dispose();
+          // console.log(
+          //   players?.player("Recording" + (recordingIndex.current - 1)).state
+          // );
+        }
         players?.add("Recording" + recordingIndex.current++, url);
         setRecordedData(e.data);
       };
@@ -80,28 +137,62 @@ const Project = () => {
     }
   };
 
-  const createTracks = async () => {
-    if (recordedData) {
-      await createTrack(1, "cool track", "Guitar", recordedData);
+  const saveTrackList = async () => {
+    if (projectId === undefined) return;
+    if (typeof projectId === "string") {
+      let selectedTrackIdList: number[] = [];
+      let unselectedTrackIdList: number[] = [];
+      trackList.forEach((track) => {
+        if (track.accepted) {
+          selectedTrackIdList.push(track.trackId);
+        } else {
+          unselectedTrackIdList.push(track.trackId);
+        }
+      });
+      await patchTrack(
+        selectedTrackIdList,
+        parseInt(projectId) as number,
+        true
+      );
+      await patchTrack(
+        unselectedTrackIdList,
+        parseInt(projectId) as number,
+        false
+      );
+    } else {
+      console.log("Error: projectId is not a string");
     }
   };
-  const { mutate: trackCreateMutation } = useMutation(createTracks, {
-    onSuccess: () => {
-      console.log("success");
-    },
-    onError: () => {
-      console.log("error");
-    },
-  });
+
+  const { mutate: trackCreateMutation, isLoading } = useMutation(
+    saveTrackList,
+    {
+      onSuccess: () => {
+        console.log("success");
+      },
+      onError: () => {
+        console.log("error");
+      },
+    }
+  );
 
   return (
     <div className={styles.container}>
       <Stack className={styles.innerContainer} direction="column" spacing={2}>
-        <Typography variant="h1">
-          {projectInfo ? projectInfo.projectname : "Track Project"}
-        </Typography>
-        <Typography variant="h2">
-          By {projectInfo?.username ? projectInfo.username : "A User"}
+        <Stack className={styles.titleRow} direction="row" spacing={6}>
+          <Typography variant="h1">
+            {projectInfo?.projectname
+              ? projectInfo.projectname
+              : "Track Project"}
+          </Typography>
+          <Typography variant="h2">
+            By {projectInfo?.username ? projectInfo.username : "A User"}
+          </Typography>
+        </Stack>
+        <Typography variant="h3">
+          {projectInfo?.description
+            ? maxNCharacters(projectInfo.description, 300)
+            : ""}
         </Typography>
         <Stack direction="row" spacing={2}>
           <IconButton
@@ -124,16 +215,90 @@ const Project = () => {
           >
             {recorder ? <StopIcon /> : <FiberManualRecordIcon />}
           </IconButton>
-          <Button
-            variant="contained"
-            onClick={() => {
-              trackCreateMutation();
-            }}
-          >
-            Commit Track
-          </Button>
+          {recordedData !== null && (
+            <Alert severity="success">
+              {isAuthenticated
+                ? "Track recorded. Click commit button to commit to project"
+                : "Track recorded. Sign in to commit to this project."}
+            </Alert>
+          )}
+          {isAuthenticated && recordedData !== null && (
+            <Button
+              variant="contained"
+              onClick={() => setOpenCommitTrackModal(true)}
+            >
+              Commit Track
+            </Button>
+          )}
         </Stack>
+        <TrackProgressBar
+          player={getMaxLengthAcceptedPlayer(players, trackList)}
+          trackStopped={() => setIsAudioPlaying(false)}
+        />
+        <div className={styles.acceptedTracksContainer}>
+          <Typography variant="h3" className={styles.lightText}>
+            Accepted Tracks
+          </Typography>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Title</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell>Instrument</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {trackList.some((track) => track.accepted) ? (
+                trackList.map(
+                  (track, index) =>
+                    track.accepted && (
+                      <TableRow key={index}>
+                        <TableCell>{track.title}</TableCell>
+                        <TableCell>{track.description}</TableCell>
+                        <TableCell>{track.instrumentType}</TableCell>
+                      </TableRow>
+                    )
+                )
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={3}>
+                    {projectInfo && projectInfo.isowner
+                      ? "No tracks have been accepted. Select some from the options below!"
+                      : "No tracks have been accepted. Check back later!"}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        {projectInfo && projectInfo.isowner && trackList.length > 0 && (
+          <>
+            <TrackTable trackList={trackList} setTrackList={setTrackList} />
+            <Stack
+              className={styles.saveChangesButtonRow}
+              direction="row"
+              spacing={2}
+            >
+              <Button
+                className={styles.saveChangesButton}
+                onClick={() => trackCreateMutation()}
+                variant="contained"
+                disabled={isLoading}
+              >
+                Save Changes
+              </Button>
+              {isLoading && <CircularProgress />}
+            </Stack>
+          </>
+        )}
       </Stack>
+      <CommitTrackModal
+        isOpen={openCommitTrackModal}
+        onClose={() => setOpenCommitTrackModal(false)}
+        onSuccess={() => closeModalAndRefesh()}
+        recordedData={recordedData}
+        projectId={projectId}
+      />
     </div>
   );
 };

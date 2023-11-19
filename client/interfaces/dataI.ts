@@ -1,5 +1,8 @@
 interface Track {
+  trackId: number;
   blobData: string;
+  title: string;
+  description: string;
   instrumentType: string;
   accepted: boolean;
 }
@@ -12,4 +15,5 @@ interface Project {
   projectname: string;
   username: string;
   description: string;
+  isowner: boolean;
 }
