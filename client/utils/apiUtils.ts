@@ -69,7 +69,12 @@ export const createProject = async (projectName: string, instrumentTypes: string
   return response.data;
 }
 
-export const getUser = async () => {
-  const response = await api.get("/users/get", {withCredentials: true});
+export const getUserLoggedIn = async () => {
+  const response = await api.get("/users/loggedIn", {withCredentials: true});
   return response.data as string;
+}
+
+export const getUser = async (username: string) => {
+  const response = await api.get(`/users/get?username=${username}`, {withCredentials: false});
+  return response.data as UserContribution[];
 }

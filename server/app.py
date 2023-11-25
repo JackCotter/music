@@ -278,15 +278,29 @@ def project_get():
         return jsonify(formatted_project[0])
 
 
-@app.get("/users/get")
+@app.get("/users/loggedIn")
 @flask_login.login_required
-def get_user():
+def get_user_logged_in():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
     cur.execute("SELECT username FROM users where email = %s",
                 (flask_login.current_user.id,))
     username = cur.fetchone()
+
+    cur.close()
+    conn.close()
+    return jsonify(username)
+
+
+@app.get("/users/get")
+def get_user():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    cur.execute("SELECT title, trackid, createdat FROM tracks natural join projecttracks join users on (tracks.contributeremail = users.email) where username = %s",
+                (request.args.get("username"),))
+    username = cur.fetchall()
 
     cur.close()
     conn.close()

@@ -1,4 +1,4 @@
-import { getUser } from "@/utils/apiUtils";
+import { getUserLoggedIn } from "@/utils/apiUtils";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface AuthContextType {
@@ -33,7 +33,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   useEffect(() => {
     const queryUser = async () => {
       try {
-        const username = await getUser();
+        const username = await getUserLoggedIn();
         if (username) {
           setIsAuthenticated(true);
         }
