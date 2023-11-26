@@ -40,35 +40,56 @@ const UserProfile = () => {
     }
   }, [username]);
   return (
-    <Stack className={styles.outerWrapper} direction="column" spacing={2}>
-      <Typography className={styles.username} variant="h4">
-        {username}
-      </Typography>
-      <Stack
-        className={styles.descriptionContainer}
+    <>
+      <Stack className={styles.outerWrapper} direction="column" spacing={2}>
+        <Typography className={styles.username} variant="h4">
+          {username}
+        </Typography>
+        <Stack
+          className={styles.descriptionContainer}
+          direction="row"
+          spacing={2}
+        >
+          <Typography className={styles.description} variant="body1">
+            {userInfo?.description}
+          </Typography>
+        </Stack>
+        <Stack
+          direction="row"
+          spacing={2}
+          className={styles.activityCalendarRow}
+        >
+          <div className={styles.activityCalendarContainer}>
+            {activityHistory.length > 0 ? (
+              <ActivityCalendar data={activityHistory} weekStart={0} />
+            ) : (
+              <div>No activity</div>
+            )}
+          </div>
+        </Stack>
+        {/* <Stack direction="row" spacing={2} className={styles.activityCalendarRow}> */}
+      </Stack>
+      <Grid
+        className={styles.projectCardGrid}
+        container
         direction="row"
         spacing={2}
       >
-        <Typography className={styles.description} variant="body1">
-          {userInfo?.description}
-        </Typography>
-      </Stack>
-      <Stack direction="row" spacing={2} className={styles.activityCalendarRow}>
-        <div className={styles.activityCalendarContainer}>
-          {activityHistory.length > 0 ? (
-            <ActivityCalendar data={activityHistory} weekStart={0} />
-          ) : (
-            <div>No activity</div>
-          )}
-        </div>
-      </Stack>
-      {/* <Stack direction="row" spacing={2} className={styles.activityCalendarRow}> */}
-      {projectList.map((project) => (
-        <Grid key={project.projectid} item xs={12} sm={6} md={6} lg={4} xl={3}>
-          <ProjectCard project={project} />
-        </Grid>
-      ))}
-    </Stack>
+        {projectList.map((project) => (
+          <Grid
+            key={project.projectid}
+            item
+            xs={12}
+            sm={6}
+            md={6}
+            lg={4}
+            xl={3}
+          >
+            <ProjectCard project={project} />
+          </Grid>
+        ))}
+      </Grid>
+    </>
   );
 };
 

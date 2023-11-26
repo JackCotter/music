@@ -20,6 +20,8 @@
     // text-align: center;
     color: library.$light-text-color;
     max-width: 865px;
+    margin-left: 1rem;
+    margin-right: 1rem;
   }
 }
 
@@ -34,19 +36,22 @@
   @media screen and (max-width: 864px) {
     justify-content: flex-start;
   }
+
+  .activityCalendarContainer {
+    background-color: library.$MUI-paper-color;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border-radius: 25px;
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
 }
 
-.activityCalendarContainer {
-  background-color: library.$MUI-paper-color;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-  margin-right: 2rem;
-  margin-left: 2rem;
-  padding: 0.7rem;
-  border-radius: 25px;
-
+.projectCardGrid {
+  padding-top: 1rem;
+  padding-right: 1rem;
+  padding-left: 1rem;
 }

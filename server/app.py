@@ -235,7 +235,7 @@ def project_list():
         cur.execute("SELECT projects.projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM tracks join projecttracks on tracks.trackid = projecttracks.trackid join projects on projecttracks.projectid = projects.projectid join users on (tracks.contributeremail = users.email) where username = %s",
                     (request.args.get("username"),))
     else:
-        cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, description FROM projects join users on (projects.owner = users.email)")
+        cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM projects join users on (projects.owner = users.email)")
     projects = cur.fetchall()
 
     conn.close()
