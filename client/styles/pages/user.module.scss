@@ -1,0 +1,29 @@
+@use 'library';
+
+.activityCalendarRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  overflow-x: auto;
+  direction: rtl;
+
+  @media screen and (max-width: 864px) {
+    justify-content: flex-end;
+  }
+}
+
+.activityCalendarContainer {
+  background-color: library.$MUI-paper-color;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  margin-right: 2rem;
+  margin-left: 2rem;
+  padding: 0.7rem;
+  border-radius: 25px;
+
+}

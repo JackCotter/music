@@ -1,10 +1,11 @@
 import { useAuthContext } from "@/contexts/authContext";
 import { getUser } from "@/utils/apiUtils";
 import { commitHistoryToActivityCalendar } from "@/utils/calendarUtils";
-import { act } from "@testing-library/react";
+import { Stack, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import ActivityCalendar, { Activity } from "react-activity-calendar";
+import styles from "@/styles/pages/user.module.scss";
 
 const UserProfile = () => {
   const router = useRouter();
@@ -29,13 +30,18 @@ const UserProfile = () => {
     }
   }, [username]);
   return (
-    <div>
-      {activityHistory.length > 0 ? (
-        <ActivityCalendar data={activityHistory} weekStart={0} />
-      ) : (
-        <div>No activity</div>
-      )}
-    </div>
+    <Stack direction="column" spacing={2}>
+      <Typography variant="h4">{username}</Typography>
+      <Stack direction="row" spacing={2} className={styles.activityCalendarRow}>
+        <div className={styles.activityCalendarContainer}>
+          {activityHistory.length > 0 ? (
+            <ActivityCalendar data={activityHistory} weekStart={0} />
+          ) : (
+            <div>No activity</div>
+          )}
+        </div>
+      </Stack>
+    </Stack>
   );
 };
 
