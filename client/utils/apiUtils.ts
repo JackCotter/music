@@ -54,12 +54,12 @@ export const getProject = async (projectId: number) => {
   return response.data as Project;
 }
 
-export const listProject = async (projectId?: number) => {
-  if (projectId === undefined) {
+export const listProject = async (username?:string) => {
+  if (username === undefined) {
     const response = await api.get("/projects/list", {withCredentials: false});
     return response.data as Project[];
   } else {
-    const response = await api.get(`/projects/list?projectId=${projectId}`, {withCredentials: false});
+    const response = await api.get(`/projects/list?username=${username}`, {withCredentials: false});
     return response.data as Project[];
   }
 }
@@ -74,7 +74,12 @@ export const getUserLoggedIn = async () => {
   return response.data as string;
 }
 
+export const listProjectTracks = async (username: string) => {
+  const response = await api.get(`/projecttracks/list?username=${username}`, {withCredentials: false});
+  return response.data as UserContribution[];
+}
+
 export const getUser = async (username: string) => {
   const response = await api.get(`/users/get?username=${username}`, {withCredentials: false});
-  return response.data as UserContribution[];
+  return response.data as User;
 }

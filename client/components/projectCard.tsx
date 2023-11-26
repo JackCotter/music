@@ -20,8 +20,8 @@ import LockOpenIcon from "@mui/icons-material/LockOpen";
 
 interface ProjectCardProps {
   project: Project;
-  highlightedInstruments: string[];
-  setHighlightedInstruments: React.Dispatch<React.SetStateAction<string[]>>;
+  highlightedInstruments?: string[];
+  setHighlightedInstruments?: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const ProjectCard = ({
@@ -34,6 +34,11 @@ const ProjectCard = ({
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
 
   const onInstrumentClick = (instrument: string) => {
+    if (
+      highlightedInstruments === undefined ||
+      setHighlightedInstruments === undefined
+    )
+      return;
     if (highlightedInstruments.includes(instrument)) {
       setHighlightedInstruments(
         highlightedInstruments.filter((i) => i !== instrument)
@@ -91,6 +96,7 @@ const ProjectCard = ({
                     <Chip
                       key={instrument}
                       color={
+                        highlightedInstruments === undefined ||
                         highlightedInstruments.includes(instrument)
                           ? "primary"
                           : "default"

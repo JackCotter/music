@@ -231,9 +231,9 @@ def project_list():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
-    if 'ownerUsername' in request.args:
-        cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, description FROM projects join users on (projects.owner = users.email) WHERE username = %s",
-                    (request.args.get("ownerUsername"),))
+    if 'username' in request.args:
+        cur.execute("SELECT projects.projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM tracks join projecttracks on tracks.trackid = projecttracks.trackid join projects on projecttracks.projectid = projects.projectid join users on (tracks.contributeremail = users.email) where username = %s",
+                    (request.args.get("username"),))
     else:
         cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, description FROM projects join users on (projects.owner = users.email)")
     projects = cur.fetchall()
