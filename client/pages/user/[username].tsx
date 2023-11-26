@@ -1,5 +1,5 @@
 import { useAuthContext } from "@/contexts/authContext";
-import { getUser } from "@/utils/apiUtils";
+import { getUser, listProjectTracks } from "@/utils/apiUtils";
 import { commitHistoryToActivityCalendar } from "@/utils/calendarUtils";
 import { Stack, Typography } from "@mui/material";
 import { useRouter } from "next/router";
@@ -12,15 +12,17 @@ const UserProfile = () => {
   const { username } = router.query;
   const { isAuthenticated } = useAuthContext();
   const [activityHistory, setActivityHistory] = useState<Activity[]>([]);
+  const [userInfo, setUserInfo] = useState<User>();
 
   useEffect(() => {
     const getUserContrubutions = async (username: string) => {
-      const usercontributions = await getUser(username);
+      const userContributions = await listProjectTracks(username);
+      const userInfo = await getUser(username);
       const activityHistory: Activity[] =
-        commitHistoryToActivityCalendar(usercontributions);
-      console.log(activityHistory);
+        commitHistoryToActivityCalendar(userContributions);
 
       setActivityHistory(activityHistory);
+      setUserInfo(userInfo);
     };
     if (username === undefined) return;
     if (typeof username === "string") {
@@ -30,8 +32,19 @@ const UserProfile = () => {
     }
   }, [username]);
   return (
-    <Stack direction="column" spacing={2}>
-      <Typography variant="h4">{username}</Typography>
+    <Stack className={styles.outerWrapper} direction="column" spacing={2}>
+      <Typography className={styles.username} variant="h4">
+        {username}
+      </Typography>
+      <Stack
+        className={styles.descriptionContainer}
+        direction="row"
+        spacing={2}
+      >
+        <Typography className={styles.description} variant="body1">
+          {userInfo?.description}
+        </Typography>
+      </Stack>
       <Stack direction="row" spacing={2} className={styles.activityCalendarRow}>
         <div className={styles.activityCalendarContainer}>
           {activityHistory.length > 0 ? (
@@ -41,6 +54,11 @@ const UserProfile = () => {
           )}
         </div>
       </Stack>
+      <Stack
+        direction="row"
+        spacing={2}
+        className={styles.activityCalendarRow}
+      ></Stack>
     </Stack>
   );
 };

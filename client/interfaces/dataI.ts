@@ -23,3 +23,8 @@ interface UserContribution {
   trackid: number;
   createdat: Date;
 }
+
+interface User {
+  username: string;
+  description: string;
+}

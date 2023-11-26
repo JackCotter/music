@@ -298,6 +298,20 @@ def get_user():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
+    cur.execute("SELECT username, description FROM users where username = %s",
+                (request.args.get("username"),))
+    username = cur.fetchone()
+
+    cur.close()
+    conn.close()
+    return jsonify(username)
+
+
+@app.get("/projecttracks/list")
+def projecttracks_list():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
     cur.execute("SELECT title, trackid, createdat FROM tracks natural join projecttracks join users on (tracks.contributeremail = users.email) where username = %s",
                 (request.args.get("username"),))
     username = cur.fetchall()
