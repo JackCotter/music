@@ -71,9 +71,14 @@ const ProjectCard = ({
               direction="row"
               spacing={1}
             >
-              <Typography className={styles.username} variant="body2">
-                {project.username}
-              </Typography>
+              <Link
+                className={styles.titleLink}
+                href={`/user/${project.username}`}
+              >
+                <Typography className={styles.username} variant="body2">
+                  {project.username}
+                </Typography>
+              </Link>
               <div>
                 <IconButton
                   color="secondary"

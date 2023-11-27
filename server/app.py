@@ -248,7 +248,7 @@ def project_get():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
-    cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, description FROM projects join users on (projects.owner = users.email) where projectid = %s", (request.args.get("projectId"),))
+    cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM projects join users on (projects.owner = users.email) where projectid = %s", (request.args.get("projectId"),))
     projects = cur.fetchone()
     if projects is None:
         conn.close()

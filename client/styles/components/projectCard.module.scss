@@ -28,6 +28,9 @@
       align-items: center;
       .username {
         flex-grow: 1;
+        &:hover {
+          color: library.$secondary-MUI-component-color;
+        }
       }
     }
   }
