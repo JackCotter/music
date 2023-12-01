@@ -8,7 +8,7 @@ import {
   Typography,
 } from "@mui/material";
 import styles from "@/styles/components/projectCard.module.scss";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { populatePlayers, startAudio, stopAudio } from "@/utils/playbackUtils";
 import * as Tone from "tone";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -32,6 +32,7 @@ const ProjectCard = ({
   const [trackList, setTrackList] = useState<Track[]>([]);
   const [players, setPlayers] = useState<Tone.Players | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
+  const projectid = useRef<number | undefined>(undefined);
 
   const onInstrumentClick = (instrument: string) => {
     if (
@@ -50,7 +51,12 @@ const ProjectCard = ({
 
   useEffect(() => {
     if (project.projectid === undefined) return;
-    populatePlayers(project.projectid, setTrackList, setPlayers);
+    if (projectid.current === project.projectid) return;
+    const populatePlayersQuery = async () => {
+      projectid.current = project.projectid;
+      await populatePlayers(project.projectid, setTrackList, setPlayers);
+    };
+    populatePlayersQuery();
   }, [project.projectid]);
 
   return (
