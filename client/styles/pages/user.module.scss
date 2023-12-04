@@ -21,6 +21,9 @@
   justify-content: center;
   margin-left: 1rem;
   margin-right: 1rem;
+   @media screen and (max-width: 864px) {
+    padding-left: 1rem;
+   }
 
   .description {
     position: flex;

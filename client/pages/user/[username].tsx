@@ -14,6 +14,7 @@ import {
   IconButton,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { useRouter } from "next/router";
@@ -171,7 +172,19 @@ const UserProfile = () => {
         >
           <div className={styles.activityCalendarContainer}>
             {activityHistory.length > 0 ? (
-              <ActivityCalendar data={activityHistory} weekStart={0} />
+              <ActivityCalendar
+                data={activityHistory}
+                weekStart={0}
+                renderBlock={(block, activity) => (
+                  <Tooltip
+                    placement="top"
+                    arrow
+                    title={`${activity.count} commits on ${activity.date}`}
+                  >
+                    {block}
+                  </Tooltip>
+                )}
+              />
             ) : (
               <div>No activity</div>
             )}
