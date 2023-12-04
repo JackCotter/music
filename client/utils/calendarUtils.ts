@@ -10,7 +10,6 @@ const dateToString = (date: Date) => {
 }
 
 export const commitHistoryToActivityCalendar = (contributionList: UserContribution[]) => {
-  console.log("commitHistoryToActivityCalendar", contributionList)
   const today = new Date();
   const lastYearToday = new Date();
   lastYearToday.setFullYear(today.getFullYear() - 1);

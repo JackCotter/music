@@ -6,7 +6,6 @@ export const populatePlayers = async (
   setTrackList: (trackList: Track[]) => void, 
   setPlayers: (players: Players) => void ) => {
   let playerDict: { [key: string]: string } = {};
-  console.log("populatePlayers")
   const trackList: Track[] = await getTrackList(id);
   setTrackList(trackList);
   trackList.forEach((track, index) => {

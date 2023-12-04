@@ -319,3 +319,19 @@ def projecttracks_list():
     cur.close()
     conn.close()
     return jsonify(username)
+
+
+@app.patch("/users/patch")
+@flask_login.login_required
+def patch_user():
+    request_data = request.get_json()
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    cur.execute("UPDATE users SET description = %s WHERE email = %s",
+                (request_data["description"], flask_login.current_user.id,))
+    conn.commit()
+
+    cur.close()
+    conn.close()
+    return 'success'

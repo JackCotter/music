@@ -83,3 +83,8 @@ export const getUser = async (username: string) => {
   const response = await api.get(`/users/get?username=${username}`, {withCredentials: false});
   return response.data as User;
 }
+
+export const patchUser = async (description: string) => {
+  const response = await api.patch(`/users/patch`, {description}, {withCredentials: true});
+  return response.data as User;
+}

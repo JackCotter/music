@@ -1,28 +1,39 @@
 @use 'library';
 
-.outerWrapper {
-
-}
-
 .username {
   padding-top: 1rem;
   text-align: center;
   color: library.$light-text-color;
+}
+.editButtonContainer {
+  position: absolute;
+  right: 0;
 }
 
 .descriptionContainer{
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-left: 1rem;
+  margin-right: 1rem;
 
   .description {
-    padding-top: 1rem;
-    // text-align: center;
+    position: flex;
     color: library.$light-text-color;
     max-width: 865px;
-    margin-left: 1rem;
-    margin-right: 1rem;
   }
+  
+  // .editButton {
+  //   display: absolute;
+  //   left: -30px;
+  //   color: library.$light-text-color;
+  // }
+
+  // &:hover {
+  //   .editButton {
+  //     display: absolute;
+  //   }
+  // }
 }
 
 .activityCalendarRow {
