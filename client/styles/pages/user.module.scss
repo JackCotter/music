@@ -10,6 +10,9 @@
   flex-direction: row;
   position: absolute;
   right: 0;
+  .editButton {
+    margin-right: 1rem;
+  }
 }
 
 .descriptionContainer{

@@ -110,15 +110,26 @@ const UserProfile = () => {
                 <Alert severity={errorBar.severity}>{errorBar.message}</Alert>
               )}
               {isEditing ? (
-                <Button
-                  className={styles.editButton}
-                  variant="contained"
-                  color="primary"
-                  type="submit"
-                  disabled={isLoading}
-                >
-                  Save
-                </Button>
+                <Stack direction="row">
+                  <Button
+                    className={styles.editButton}
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setIsEditing(false)}
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className={styles.editButton}
+                    variant="contained"
+                    color="primary"
+                    type="submit"
+                    disabled={isLoading}
+                  >
+                    Save
+                  </Button>
+                </Stack>
               ) : (
                 <IconButton
                   className={styles.editButton}
