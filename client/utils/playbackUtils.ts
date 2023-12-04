@@ -16,7 +16,6 @@ export const populatePlayers = async (
   const players: Players = new Players(playerDict, () =>
     setPlayers(players)
   ).toDestination();
-  setPlayers(players);
 };
 
 export const startAudio = (

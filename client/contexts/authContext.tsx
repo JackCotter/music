@@ -1,14 +1,18 @@
-import { getUser } from "@/utils/apiUtils";
+import { getUserLoggedIn } from "@/utils/apiUtils";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  username: string;
+  setUsername: (username: string) => void;
   setLoggedIn: () => void;
   setLoggedOut: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
+  username: "",
+  setUsername: () => {},
   setLoggedIn: () => {},
   setLoggedOut: () => {},
 });
@@ -21,6 +25,7 @@ interface AuthContextProviderProps {
 
 export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState<string>("");
 
   const setLoggedIn = () => {
     setIsAuthenticated(true);
@@ -33,9 +38,10 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   useEffect(() => {
     const queryUser = async () => {
       try {
-        const username = await getUser();
+        const username = await getUserLoggedIn();
         if (username) {
           setIsAuthenticated(true);
+          setUsername(username);
         }
       } catch {
         setIsAuthenticated(false);
@@ -45,7 +51,13 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   }, []);
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, setLoggedIn, setLoggedOut }}
+      value={{
+        isAuthenticated,
+        username,
+        setUsername,
+        setLoggedIn,
+        setLoggedOut,
+      }}
     >
       {children}
     </AuthContext.Provider>

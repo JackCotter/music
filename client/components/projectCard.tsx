@@ -8,7 +8,7 @@ import {
   Typography,
 } from "@mui/material";
 import styles from "@/styles/components/projectCard.module.scss";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { populatePlayers, startAudio, stopAudio } from "@/utils/playbackUtils";
 import * as Tone from "tone";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -20,8 +20,8 @@ import LockOpenIcon from "@mui/icons-material/LockOpen";
 
 interface ProjectCardProps {
   project: Project;
-  highlightedInstruments: string[];
-  setHighlightedInstruments: React.Dispatch<React.SetStateAction<string[]>>;
+  highlightedInstruments?: string[];
+  setHighlightedInstruments?: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const ProjectCard = ({
@@ -32,8 +32,14 @@ const ProjectCard = ({
   const [trackList, setTrackList] = useState<Track[]>([]);
   const [players, setPlayers] = useState<Tone.Players | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
+  const projectid = useRef<number | undefined>(undefined);
 
   const onInstrumentClick = (instrument: string) => {
+    if (
+      highlightedInstruments === undefined ||
+      setHighlightedInstruments === undefined
+    )
+      return;
     if (highlightedInstruments.includes(instrument)) {
       setHighlightedInstruments(
         highlightedInstruments.filter((i) => i !== instrument)
@@ -45,7 +51,12 @@ const ProjectCard = ({
 
   useEffect(() => {
     if (project.projectid === undefined) return;
-    populatePlayers(project.projectid, setTrackList, setPlayers);
+    if (projectid.current === project.projectid) return;
+    const populatePlayersQuery = async () => {
+      projectid.current = project.projectid;
+      await populatePlayers(project.projectid, setTrackList, setPlayers);
+    };
+    populatePlayersQuery();
   }, [project.projectid]);
 
   return (
@@ -66,9 +77,14 @@ const ProjectCard = ({
               direction="row"
               spacing={1}
             >
-              <Typography className={styles.username} variant="body2">
-                {project.username}
-              </Typography>
+              <Link
+                className={styles.titleLink}
+                href={`/user/${project.username}`}
+              >
+                <Typography className={styles.username} variant="body2">
+                  {project.username}
+                </Typography>
+              </Link>
               <div>
                 <IconButton
                   color="secondary"
@@ -91,6 +107,7 @@ const ProjectCard = ({
                     <Chip
                       key={instrument}
                       color={
+                        highlightedInstruments === undefined ||
                         highlightedInstruments.includes(instrument)
                           ? "primary"
                           : "default"

@@ -1,0 +1,63 @@
+@use 'library';
+
+.username {
+  padding-top: 1rem;
+  text-align: center;
+  color: library.$light-text-color;
+}
+.editButtonContainer {
+  display: flex;
+  flex-direction: row;
+  position: absolute;
+  right: 0;
+  .editButton {
+    margin-right: 1rem;
+  }
+}
+
+.descriptionContainer{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 1rem;
+  margin-right: 1rem;
+   @media screen and (max-width: 864px) {
+    padding-left: 1rem;
+   }
+
+  .description {
+    position: flex;
+    color: library.$light-text-color;
+    max-width: 865px;
+  }
+}
+
+.activityCalendarRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  overflow-x: auto;
+  direction: rtl;
+
+  @media screen and (max-width: 864px) {
+    justify-content: flex-start;
+  }
+
+  .activityCalendarContainer {
+    background-color: library.$MUI-paper-color;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border-radius: 25px;
+    direction: ltr;
+  }
+}
+
+.projectCardGrid {
+  padding-top: 1rem;
+  padding-right: 1rem;
+  padding-left: 1rem;
+}

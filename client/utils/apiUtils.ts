@@ -9,7 +9,7 @@ const api = axios.create({
 
 export const login = async (email: string, password: string) => {
   const response = await api.post("/users/login", { email, password }, {withCredentials: true});
-  return response.data;
+  return response.data as string;
 };
 
 export const getTrackList = async (projectId: number) => {
@@ -41,7 +41,6 @@ export const createTrack = async (projectId: number, title: string, description:
         console.error("Unsupported result type");
         return;
     }
-    console.log(base64Data);
     const response = await api.post("/tracks/create" , { projectId, title, description, instrumentType, blobData: base64Data }, {withCredentials: true});
     return response.data;
   }
@@ -54,12 +53,12 @@ export const getProject = async (projectId: number) => {
   return response.data as Project;
 }
 
-export const listProject = async (projectId?: number) => {
-  if (projectId === undefined) {
+export const listProject = async (username?:string) => {
+  if (username === undefined) {
     const response = await api.get("/projects/list", {withCredentials: false});
     return response.data as Project[];
   } else {
-    const response = await api.get(`/projects/list?projectId=${projectId}`, {withCredentials: false});
+    const response = await api.get(`/projects/list?username=${username}`, {withCredentials: false});
     return response.data as Project[];
   }
 }
@@ -69,7 +68,22 @@ export const createProject = async (projectName: string, instrumentTypes: string
   return response.data;
 }
 
-export const getUser = async () => {
-  const response = await api.get("/users/get", {withCredentials: true});
+export const getUserLoggedIn = async () => {
+  const response = await api.get("/users/loggedIn", {withCredentials: true});
   return response.data as string;
+}
+
+export const listProjectTracks = async (username: string) => {
+  const response = await api.get(`/projecttracks/list?username=${username}`, {withCredentials: false});
+  return response.data as UserContribution[];
+}
+
+export const getUser = async (username: string) => {
+  const response = await api.get(`/users/get?username=${username}`, {withCredentials: false});
+  return response.data as User;
+}
+
+export const patchUser = async (description: string) => {
+  const response = await api.patch(`/users/patch`, {description}, {withCredentials: true});
+  return response.data as User;
 }

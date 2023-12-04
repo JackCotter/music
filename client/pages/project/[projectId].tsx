@@ -31,6 +31,7 @@ import { useAuthContext } from "@/contexts/authContext";
 import { useMutation } from "react-query";
 import { maxNCharacters } from "@/utils/stringUtils";
 import TrackProgressBar from "@/components/trackProgressBar";
+import Link from "next/link";
 
 const Project = () => {
   Tone.Transport.debug = true;
@@ -185,9 +186,11 @@ const Project = () => {
               ? projectInfo.projectname
               : "Track Project"}
           </Typography>
-          <Typography variant="h2">
-            By {projectInfo?.username ? projectInfo.username : "A User"}
-          </Typography>
+          <Link href={`/user/${projectInfo?.username}`}>
+            <Typography variant="h2">
+              By {projectInfo?.username ? projectInfo.username : "A User"}
+            </Typography>
+          </Link>
         </Stack>
         <Typography variant="h3">
           {projectInfo?.description

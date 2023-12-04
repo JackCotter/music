@@ -77,11 +77,23 @@ def request_loader(request):
 @app.post("/users/login")
 def user_login():
     request_data = request.get_json()
-    if email_in_db(request_data["email"]) and has_correct_password(request_data["email"], request_data["password"]):
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT username FROM users where email = %s",
+                (request_data["email"],))
+    username = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    print(username)
+    print(request_data["email"])
+
+    if username and has_correct_password(request_data["email"], request_data["password"]):
         user = User()
         user.id = request_data["email"]
         flask_login.login_user(user)
-        return 'logged in!', 200
+        return username[0], 200
     return 'Bad login', 400
 
 
@@ -231,11 +243,11 @@ def project_list():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
-    if 'ownerUsername' in request.args:
-        cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, description FROM projects join users on (projects.owner = users.email) WHERE username = %s",
-                    (request.args.get("ownerUsername"),))
+    if 'username' in request.args:
+        cur.execute("SELECT DISTINCT projects.projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM tracks join projecttracks on tracks.trackid = projecttracks.trackid join projects on projecttracks.projectid = projects.projectid join users on (tracks.contributeremail = users.email) where username = %s",
+                    (request.args.get("username"),))
     else:
-        cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, description FROM projects join users on (projects.owner = users.email)")
+        cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM projects join users on (projects.owner = users.email)")
     projects = cur.fetchall()
 
     conn.close()
@@ -248,7 +260,7 @@ def project_get():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
-    cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, description FROM projects join users on (projects.owner = users.email) where projectid = %s", (request.args.get("projectId"),))
+    cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM projects join users on (projects.owner = users.email) where projectid = %s", (request.args.get("projectId"),))
     projects = cur.fetchone()
     if projects is None:
         conn.close()
@@ -278,16 +290,65 @@ def project_get():
         return jsonify(formatted_project[0])
 
 
-@app.get("/users/get")
+@app.get("/users/loggedIn")
 @flask_login.login_required
-def get_user():
+def get_user_logged_in():
     conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur = conn.cursor()
 
     cur.execute("SELECT username FROM users where email = %s",
                 (flask_login.current_user.id,))
     username = cur.fetchone()
 
+    if username is None:
+        conn.close()
+        cur.close()
+        return 'user not found', 400
+
+    cur.close()
+    conn.close()
+    return username[0]
+
+
+@app.get("/users/get")
+def get_user():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    cur.execute("SELECT username, description FROM users where username = %s",
+                (request.args.get("username"),))
+    username = cur.fetchone()
+
     cur.close()
     conn.close()
     return jsonify(username)
+
+
+@app.get("/projecttracks/list")
+def projecttracks_list():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    cur.execute("SELECT title, trackid, createdat FROM tracks natural join projecttracks join users on (tracks.contributeremail = users.email) where username = %s",
+                (request.args.get("username"),))
+    username = cur.fetchall()
+
+    cur.close()
+    conn.close()
+    return jsonify(username)
+
+
+@app.patch("/users/patch")
+@flask_login.login_required
+def patch_user():
+    request_data = request.get_json()
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    cur.execute("UPDATE users SET description = %s WHERE email = %s",
+                (request_data["description"], flask_login.current_user.id,))
+    conn.commit()
+
+    cur.close()
+    conn.close()
+    return 'success'

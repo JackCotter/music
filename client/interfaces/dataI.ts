@@ -17,3 +17,14 @@ interface Project {
   description: string;
   isowner: boolean;
 }
+
+interface UserContribution {
+  title: string;
+  trackid: number;
+  createdat: Date;
+}
+
+interface User {
+  username: string;
+  description: string;
+}
