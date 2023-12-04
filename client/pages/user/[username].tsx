@@ -97,7 +97,6 @@ const UserProfile = () => {
     },
   });
 
-  console.log(userInfo?.username, authContext.username);
   return (
     <form onSubmit={formik.handleSubmit}>
       <Stack className={styles.outerWrapper} direction="column" spacing={2}>

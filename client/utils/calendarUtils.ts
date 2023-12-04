@@ -10,7 +10,6 @@ const dateToString = (date: Date) => {
 }
 
 const getLevelByCount = (count: number) => {
-  console.log(count)
   if (count === 0) return 0;
   if (count < 2) return 1;
   if (count < 4) return 2;
@@ -47,6 +46,5 @@ export const commitHistoryToActivityCalendar = (contributionList: UserContributi
   })
 
   activityCalendar.sort((a, b) => a.date.localeCompare(b.date));
-  console.log(activityCalendar);
   return activityCalendar;
 }

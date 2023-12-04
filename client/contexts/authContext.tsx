@@ -49,7 +49,6 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
     };
     queryUser();
   }, []);
-  console.log("AuthContextProvider", isAuthenticated, username);
   return (
     <AuthContext.Provider
       value={{
