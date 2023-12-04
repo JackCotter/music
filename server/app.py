@@ -77,11 +77,23 @@ def request_loader(request):
 @app.post("/users/login")
 def user_login():
     request_data = request.get_json()
-    if email_in_db(request_data["email"]) and has_correct_password(request_data["email"], request_data["password"]):
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT username FROM users where email = %s",
+                (request_data["email"],))
+    username = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    print(username)
+    print(request_data["email"])
+
+    if username and has_correct_password(request_data["email"], request_data["password"]):
         user = User()
         user.id = request_data["email"]
         flask_login.login_user(user)
-        return 'logged in!', 200
+        return username[0], 200
     return 'Bad login', 400
 
 
@@ -282,15 +294,20 @@ def project_get():
 @flask_login.login_required
 def get_user_logged_in():
     conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur = conn.cursor()
 
     cur.execute("SELECT username FROM users where email = %s",
                 (flask_login.current_user.id,))
     username = cur.fetchone()
 
+    if username is None:
+        conn.close()
+        cur.close()
+        return 'user not found', 400
+
     cur.close()
     conn.close()
-    return jsonify(username)
+    return username[0]
 
 
 @app.get("/users/get")

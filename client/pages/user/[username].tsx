@@ -10,7 +10,6 @@ import {
   Alert,
   AlertColor,
   Button,
-  CircularProgress,
   Grid,
   IconButton,
   Stack,
@@ -18,7 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import ActivityCalendar, { Activity } from "react-activity-calendar";
 import styles from "@/styles/pages/user.module.scss";
 import ProjectCard from "@/components/projectCard";
@@ -29,7 +28,7 @@ import { useMutation } from "react-query";
 const UserProfile = () => {
   const router = useRouter();
   const { username } = router.query;
-  const { isAuthenticated } = useAuthContext();
+  const authContext = useAuthContext();
   const [activityHistory, setActivityHistory] = useState<Activity[]>([]);
   const [userInfo, setUserInfo] = useState<User>();
   const [projectList, setProjectList] = useState<Project[]>([]);
@@ -97,38 +96,40 @@ const UserProfile = () => {
     },
   });
 
+  console.log(userInfo?.username, authContext.username);
   return (
     <form onSubmit={formik.handleSubmit}>
       <Stack className={styles.outerWrapper} direction="column" spacing={2}>
         <Typography className={styles.username} variant="h4">
           {username}
         </Typography>
-        {isAuthenticated && (
-          <div className={styles.editButtonContainer}>
-            {errorBar.show && (
-              <Alert severity={errorBar.severity}>{errorBar.message}</Alert>
-            )}
-            {isEditing ? (
-              <Button
-                className={styles.editButton}
-                variant="contained"
-                color="primary"
-                type="submit"
-                disabled={isLoading}
-              >
-                Save
-              </Button>
-            ) : (
-              <IconButton
-                className={styles.editButton}
-                aria-label="edit"
-                onClick={() => setIsEditing(true)}
-              >
-                <EditIcon />
-              </IconButton>
-            )}
-          </div>
-        )}
+        {authContext.isAuthenticated &&
+          userInfo?.username === authContext.username && (
+            <div className={styles.editButtonContainer}>
+              {errorBar.show && (
+                <Alert severity={errorBar.severity}>{errorBar.message}</Alert>
+              )}
+              {isEditing ? (
+                <Button
+                  className={styles.editButton}
+                  variant="contained"
+                  color="primary"
+                  type="submit"
+                  disabled={isLoading}
+                >
+                  Save
+                </Button>
+              ) : (
+                <IconButton
+                  className={styles.editButton}
+                  aria-label="edit"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <EditIcon />
+                </IconButton>
+              )}
+            </div>
+          )}
         <Stack
           className={styles.descriptionContainer}
           direction="row"

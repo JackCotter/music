@@ -24,18 +24,6 @@
     color: library.$light-text-color;
     max-width: 865px;
   }
-  
-  // .editButton {
-  //   display: absolute;
-  //   left: -30px;
-  //   color: library.$light-text-color;
-  // }
-
-  // &:hover {
-  //   .editButton {
-  //     display: absolute;
-  //   }
-  // }
 }
 
 .activityCalendarRow {
@@ -58,6 +46,7 @@
     justify-content: center;
     padding: 1rem;
     border-radius: 25px;
+    direction: ltr;
   }
 }
 

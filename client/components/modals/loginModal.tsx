@@ -47,13 +47,14 @@ const LoginModal = ({
     onSubmit: () => loginMutation(),
   });
 
-  const loginQuery = async () => {
-    await login(formik.values.email, formik.values.password);
+  const loginQuery = async (): Promise<string> => {
+    return await login(formik.values.email, formik.values.password);
   };
 
   const { mutate: loginMutation, isLoading } = useMutation(loginQuery, {
-    onSuccess: (a) => {
+    onSuccess: (a: string) => {
       authContext.setLoggedIn();
+      authContext.setUsername(a);
       setIsLoginModalOpen(false);
     },
     onError: (error: Error) => {

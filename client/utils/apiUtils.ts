@@ -9,7 +9,7 @@ const api = axios.create({
 
 export const login = async (email: string, password: string) => {
   const response = await api.post("/users/login", { email, password }, {withCredentials: true});
-  return response.data;
+  return response.data as string;
 };
 
 export const getTrackList = async (projectId: number) => {
@@ -41,7 +41,6 @@ export const createTrack = async (projectId: number, title: string, description:
         console.error("Unsupported result type");
         return;
     }
-    console.log(base64Data);
     const response = await api.post("/tracks/create" , { projectId, title, description, instrumentType, blobData: base64Data }, {withCredentials: true});
     return response.data;
   }
