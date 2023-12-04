@@ -7,6 +7,8 @@ import {
 } from "@/utils/apiUtils";
 import { commitHistoryToActivityCalendar } from "@/utils/calendarUtils";
 import {
+  Alert,
+  AlertColor,
   Button,
   CircularProgress,
   Grid,
@@ -32,6 +34,11 @@ const UserProfile = () => {
   const [userInfo, setUserInfo] = useState<User>();
   const [projectList, setProjectList] = useState<Project[]>([]);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [errorBar, setErrorBar] = useState<{
+    show: boolean;
+    message: string;
+    severity: AlertColor;
+  }>({ show: false, message: "", severity: "error" });
 
   const getUserData = async (username: string) => {
     const userInfo = await getUser(username);
@@ -71,6 +78,11 @@ const UserProfile = () => {
         getUserData(username as string);
       },
       onError: () => {
+        setErrorBar({
+          show: true,
+          message: "Error updating description",
+          severity: "error",
+        });
         setIsEditing(false);
       },
     }
@@ -93,6 +105,9 @@ const UserProfile = () => {
         </Typography>
         {isAuthenticated && (
           <div className={styles.editButtonContainer}>
+            {errorBar.show && (
+              <Alert severity={errorBar.severity}>{errorBar.message}</Alert>
+            )}
             {isEditing ? (
               <Button
                 className={styles.editButton}

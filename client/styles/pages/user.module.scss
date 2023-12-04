@@ -6,6 +6,8 @@
   color: library.$light-text-color;
 }
 .editButtonContainer {
+  display: flex;
+  flex-direction: row;
   position: absolute;
   right: 0;
 }
