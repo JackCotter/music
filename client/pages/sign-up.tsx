@@ -1,14 +1,17 @@
-import { Button, Stack, TextField } from "@mui/material";
+import { Button, Divider, Stack, TextField, Typography } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import styles from "@/styles/pages/sign-up.module.scss";
 
 const SignUp = () => {
   const initialValues = {
     email: "",
     password: "",
+    confirmPassword: "",
     username: "",
     description: "",
   };
+
   const validationSchema = Yup.object({
     email: Yup.string()
       .email("Invalid Email Format")
@@ -17,47 +20,87 @@ const SignUp = () => {
       .required("Password is required")
       .min(8, "Password must be at least 8 characters")
       .max(30, "Password must be less than 30 characters"),
+    confirmPassword: Yup.string()
+      .required("Password is required")
+      .min(8, "Password must be at least 8 characters")
+      .max(30, "Password must be less than 30 characters")
+      .oneOf([Yup.ref("password")], "Passwords must match"),
     username: Yup.string().required("Please enter a username"),
     description: Yup.string(),
   });
+
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: validationSchema,
+    validateOnChange: false,
+    validateOnBlur: false,
     onSubmit: () => {},
   });
+
   return (
     <form onSubmit={formik.handleSubmit}>
-      <Stack direction="column">
-        <TextField
-          name="email"
-          value={formik.values.email}
-          onChange={formik.handleChange}
-          error={formik.errors.email !== undefined}
-          helperText={formik.errors.email}
-        />
-        <TextField
-          name="username"
-          value={formik.values.username}
-          onChange={formik.handleChange}
-          error={formik.errors.username !== undefined}
-          helperText={formik.errors.username}
-        />
-        <TextField
-          name="password"
-          value={formik.values.password}
-          onChange={formik.handleChange}
-          error={formik.errors.password !== undefined}
-          helperText={formik.errors.password}
-        />
-        <TextField
-          name="description"
-          value={formik.values.description}
-          onChange={formik.handleChange}
-          error={formik.errors.description !== undefined}
-          helperText={formik.errors.description}
-        />
-        <Button type="submit">Submit</Button>
-      </Stack>
+      <div className="container">
+        <Stack
+          direction="column"
+          className={styles.signupContainer}
+          spacing={2}
+        >
+          <Typography variant="h3" component="div" className={styles.title}>
+            Sign Up!
+          </Typography>
+          <Stack direction="row" spacing={2}>
+            <Stack className={styles.leftColumn} direction="column" spacing={2}>
+              <TextField
+                label="Email"
+                name="email"
+                value={formik.values.email}
+                onChange={formik.handleChange}
+                error={formik.errors.email !== undefined}
+                helperText={formik.errors.email}
+              />
+              <TextField
+                label="Username"
+                name="username"
+                value={formik.values.username}
+                onChange={formik.handleChange}
+                error={formik.errors.username !== undefined}
+                helperText={formik.errors.username}
+              />
+              <TextField
+                label="Password"
+                name="password"
+                value={formik.values.password}
+                onChange={formik.handleChange}
+                error={formik.errors.password !== undefined}
+                type="password"
+                helperText={formik.errors.password}
+              />
+              <TextField
+                label="Confirm Password"
+                name="confirmPassword"
+                value={formik.values.confirmPassword}
+                onChange={formik.handleChange}
+                error={formik.errors.confirmPassword !== undefined}
+                type="password"
+                helperText={formik.errors.confirmPassword}
+              />
+              <TextField
+                label="Description"
+                name="description"
+                value={formik.values.description}
+                onChange={formik.handleChange}
+                error={formik.errors.description !== undefined}
+                helperText={formik.errors.description}
+              />
+              <Button type="submit">Submit</Button>
+            </Stack>
+            <Divider orientation="vertical" flexItem />
+            <div className={styles.rightColumn}>
+              <Button>Sign in with Google</Button>
+            </div>
+          </Stack>
+        </Stack>
+      </div>
     </form>
   );
 };

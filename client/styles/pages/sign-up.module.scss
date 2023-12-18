@@ -1,0 +1,24 @@
+@use "library";
+
+.signupContainer {
+  flex-direction: column;
+
+  .title {
+    color: library.$light-text-color;
+  }
+
+  .leftColumn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    // width: 30%;
+  }
+  .rightColumn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    // width: 70%;
+  }
+}
