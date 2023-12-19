@@ -87,3 +87,8 @@ export const patchUser = async (description: string) => {
   const response = await api.patch(`/users/patch`, {description}, {withCredentials: true});
   return response.data as User;
 }
+
+export const createUser = async (username: string, email: string, password: string, description?:string) => {
+  const response = await api.post("/users/create", { username, email, password, description }, {withCredentials: false});
+  return response.data as string;
+}

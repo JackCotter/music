@@ -102,11 +102,12 @@ def logout():
     flask_login.logout_user()
     return 'Logged out'
 
-
 @app.post("/users/create")
 @cross_origin()
 def user_create():
     request_data = request.get_json()
+    if "password" not in request_data or "username" not in request_data or "email" not in request_data:
+        return 'Missing fields'
     if email_in_db(request_data["email"]):
         return 'User already exists'
     password = request_data["password"].encode('utf-8')
@@ -116,8 +117,12 @@ def user_create():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("INSERT INTO users (email, username, password) VALUES (%s, %s, %s)",
-                (request_data["email"], request_data["username"], hashed_password))
+    if "description" not in request_data:
+        cur.execute("INSERT INTO users (email, username, password) VALUES (%s, %s, %s)",
+                    (request_data["email"], request_data["username"], hashed_password))
+    else:
+        cur.execute("INSERT INTO users (email, username, password, description) VALUES (%s, %s, %s, %s)",
+                    (request_data["email"], request_data["username"], hashed_password, request_data["description"]))
     conn.commit()
 
     conn.close()

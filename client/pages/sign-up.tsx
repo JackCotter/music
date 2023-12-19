@@ -2,6 +2,8 @@ import { Button, Divider, Stack, TextField, Typography } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import styles from "@/styles/pages/sign-up.module.scss";
+import { useMutation } from "react-query";
+import { createUser } from "@/utils/apiUtils";
 
 const SignUp = () => {
   const initialValues = {
@@ -18,12 +20,12 @@ const SignUp = () => {
       .required("Email is required"),
     password: Yup.string()
       .required("Password is required")
-      .min(8, "Password must be at least 8 characters")
-      .max(30, "Password must be less than 30 characters"),
+      .min(8, "Password must be > 8 characters")
+      .max(30, "Password must be < 30 characters"),
     confirmPassword: Yup.string()
       .required("Password is required")
-      .min(8, "Password must be at least 8 characters")
-      .max(30, "Password must be less than 30 characters")
+      .min(8, "Password must be > 8 characters")
+      .max(30, "Password must be < 30 characters")
       .oneOf([Yup.ref("password")], "Passwords must match"),
     username: Yup.string().required("Please enter a username"),
     description: Yup.string(),
@@ -34,7 +36,25 @@ const SignUp = () => {
     validationSchema: validationSchema,
     validateOnChange: false,
     validateOnBlur: false,
-    onSubmit: () => {},
+    onSubmit: () => signUpMutate(),
+  });
+
+  const signUp = async () => {
+    await createUser(
+      formik.values.username,
+      formik.values.email,
+      formik.values.password,
+      formik.values.description
+    );
+  };
+
+  const { mutate: signUpMutate, isLoading } = useMutation(signUp, {
+    onSuccess: () => {
+      console.log("success");
+    },
+    onError: () => {
+      console.log("error");
+    },
   });
 
   return (
@@ -87,6 +107,7 @@ const SignUp = () => {
               <TextField
                 label="Description"
                 name="description"
+                multiline
                 value={formik.values.description}
                 onChange={formik.handleChange}
                 error={formik.errors.description !== undefined}
