@@ -4,8 +4,11 @@ import * as Yup from "yup";
 import styles from "@/styles/pages/sign-up.module.scss";
 import { useMutation } from "react-query";
 import { createUser } from "@/utils/apiUtils";
+import { useRouter } from "next/router";
 
 const SignUp = () => {
+  const router = useRouter();
+
   const initialValues = {
     email: "",
     password: "",
@@ -50,7 +53,7 @@ const SignUp = () => {
 
   const { mutate: signUpMutate, isLoading } = useMutation(signUp, {
     onSuccess: () => {
-      console.log("success");
+      router.push("/");
     },
     onError: () => {
       console.log("error");
@@ -113,11 +116,18 @@ const SignUp = () => {
                 error={formik.errors.description !== undefined}
                 helperText={formik.errors.description}
               />
-              <Button type="submit">Submit</Button>
+              <Stack direction="row" spacing={2}>
+                <Button variant="contained" onClick={() => router.push("/")}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isLoading} variant="contained">
+                  Submit
+                </Button>
+              </Stack>
             </Stack>
             <Divider orientation="vertical" flexItem />
             <div className={styles.rightColumn}>
-              <Button>Sign in with Google</Button>
+              <Button variant="contained">Sign in with Google</Button>
             </div>
           </Stack>
         </Stack>

@@ -107,9 +107,9 @@ def logout():
 def user_create():
     request_data = request.get_json()
     if "password" not in request_data or "username" not in request_data or "email" not in request_data:
-        return 'Missing fields'
+        return 'Missing fields', 400
     if email_in_db(request_data["email"]):
-        return 'User already exists'
+        return 'User already exists', 400
     password = request_data["password"].encode('utf-8')
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password, salt).decode('utf-8')
