@@ -13,7 +13,7 @@ import { useMutation } from "react-query";
 import { createUser } from "@/utils/apiUtils";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { AxiosError, AxiosResponse } from "axios";
+import { AxiosError } from "axios";
 
 const SignUp = () => {
   const router = useRouter();
@@ -82,7 +82,7 @@ const SignUp = () => {
 
   return (
     <form onSubmit={formik.handleSubmit}>
-      <div className="container">
+      <div className={styles.formContainer}>
         <Stack
           direction="column"
           className={styles.signupContainer}
@@ -148,10 +148,6 @@ const SignUp = () => {
                 </Button>
               </Stack>
             </Stack>
-            <Divider orientation="vertical" flexItem />
-            <div className={styles.rightColumn}>
-              <Button variant="contained">Sign in with Google</Button>
-            </div>
           </Stack>
         </Stack>
       </div>

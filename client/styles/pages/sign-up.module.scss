@@ -4,6 +4,11 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  min-height: 90vh;
+  flex-shrink: 0;
+  overflow: auto;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 
   .title {
     color: library.$light-text-color;
