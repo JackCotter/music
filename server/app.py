@@ -34,6 +34,17 @@ def email_in_db(email):
     cur.close()
     return user
 
+def username_in_db(email):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT username FROM users WHERE email = %s", (email,))
+    user = cur.fetchone()
+
+    conn.close()
+    cur.close()
+    return user
+
 
 def has_correct_password(email, password):
     conn = get_db_connection()
@@ -109,7 +120,9 @@ def user_create():
     if "password" not in request_data or "username" not in request_data or "email" not in request_data:
         return 'Missing fields', 400
     if email_in_db(request_data["email"]):
-        return 'User already exists', 400
+        return 'User with that email already exists', 400
+    if username_in_db(request_data["email"]):
+        return 'Username already in use', 400
     password = request_data["password"].encode('utf-8')
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password, salt).decode('utf-8')

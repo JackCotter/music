@@ -1,13 +1,29 @@
-import { Button, Divider, Stack, TextField, Typography } from "@mui/material";
+import {
+  Alert,
+  Button,
+  Divider,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import styles from "@/styles/pages/sign-up.module.scss";
 import { useMutation } from "react-query";
 import { createUser } from "@/utils/apiUtils";
 import { useRouter } from "next/router";
+import { useState } from "react";
+import { AxiosError, AxiosResponse } from "axios";
 
 const SignUp = () => {
   const router = useRouter();
+  const [errorBar, setErrorBar] = useState<{
+    isOpen: boolean;
+    message: string;
+  }>({
+    isOpen: false,
+    message: "",
+  });
 
   const initialValues = {
     email: "",
@@ -55,8 +71,12 @@ const SignUp = () => {
     onSuccess: () => {
       router.push("/");
     },
-    onError: () => {
-      console.log("error");
+    onError: (e: AxiosError) => {
+      if (!e.response) return;
+      setErrorBar({
+        isOpen: true,
+        message: e.response.data as string,
+      });
     },
   });
 
@@ -73,6 +93,9 @@ const SignUp = () => {
           </Typography>
           <Stack direction="row" spacing={2}>
             <Stack className={styles.leftColumn} direction="column" spacing={2}>
+              {errorBar.isOpen && (
+                <Alert severity="error"> {errorBar.message}</Alert>
+              )}
               <TextField
                 label="Email"
                 name="email"
