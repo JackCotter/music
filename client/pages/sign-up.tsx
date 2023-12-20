@@ -88,7 +88,7 @@ const SignUp = () => {
           className={styles.signupContainer}
           spacing={2}
         >
-          <Typography variant="h3" component="div" className={styles.title}>
+          <Typography variant="h3" component="div" className={styles.whiteText}>
             Sign Up!
           </Typography>
           <Stack direction="row" spacing={2}>
@@ -147,6 +147,32 @@ const SignUp = () => {
                   Submit
                 </Button>
               </Stack>
+            </Stack>
+            <Divider
+              className={styles.divider}
+              orientation="vertical"
+              flexItem
+            />
+            <Stack
+              className={styles.rightColumn}
+              direction="column"
+              spacing={2}
+            >
+              <Typography
+                className={styles.whiteText}
+                variant="h5"
+                component="div"
+              >
+                Why sign up?
+              </Typography>
+              <Typography
+                className={styles.whiteText}
+                variant="body1"
+                component="div"
+              >
+                Signing up allows you to create projects, join other projects,
+                and create your own tracks!
+              </Typography>
             </Stack>
           </Stack>
         </Stack>

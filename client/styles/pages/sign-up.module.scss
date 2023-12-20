@@ -7,13 +7,13 @@
   min-height: 90vh;
   flex-shrink: 0;
   overflow: auto;
-  padding: 0;
-  @media (max-height: 300px) {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+  margin: 0;
+  @media (max-height: 500px) {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
   }
 
-  .title {
+  .whiteText {
     color: library.$light-text-color;
   }
 
@@ -22,13 +22,24 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    // width: 30%;
+    flex: 0, 0, auto;
   }
+  
+  .divider {
+    @media screen and (max-width: 1000px) {
+      display: none;
+    }
+  }
+
   .rightColumn {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    // width: 70%;
+    max-width: 15vw;
+
+    @media screen and (max-width: 1000px) {
+      display: none;
+    }
   }
 }
