@@ -14,6 +14,7 @@ import { createUser } from "@/utils/apiUtils";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { AxiosError } from "axios";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const SignUp = () => {
   const router = useRouter();
@@ -80,6 +81,7 @@ const SignUp = () => {
     },
   });
 
+  const sitekey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string;
   return (
     <form onSubmit={formik.handleSubmit}>
       <div className={styles.formContainer}>
@@ -139,6 +141,7 @@ const SignUp = () => {
                 error={formik.errors.description !== undefined}
                 helperText={formik.errors.description}
               />
+              {sitekey && <ReCAPTCHA theme="dark" sitekey={sitekey} />}
               <Stack direction="row" spacing={2}>
                 <Button variant="contained" onClick={() => router.push("/")}>
                   Cancel
