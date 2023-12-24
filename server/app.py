@@ -97,9 +97,6 @@ def user_login():
     cur.close()
     conn.close()
 
-    print(username)
-    print(request_data["email"])
-
     if username and has_correct_password(request_data["email"], request_data["password"]):
         user = User()
         user.id = request_data["email"]

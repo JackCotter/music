@@ -10,14 +10,17 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import styles from "@/styles/pages/sign-up.module.scss";
 import { useMutation } from "react-query";
-import { createUser } from "@/utils/apiUtils";
+import { createUser, login } from "@/utils/apiUtils";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { AxiosError } from "axios";
 import ReCAPTCHA from "react-google-recaptcha";
+import { useAuthContext } from "@/contexts/authContext";
 
 const SignUp = () => {
   const router = useRouter();
+  const authContext = useAuthContext();
+
   const [errorBar, setErrorBar] = useState<{
     isOpen: boolean;
     message: string;
@@ -65,11 +68,15 @@ const SignUp = () => {
       formik.values.email,
       formik.values.password,
       formik.values.description
-    );
+    ).then(() => {
+      login(formik.values.email, formik.values.password);
+    });
   };
 
   const { mutate: signUpMutate, isLoading } = useMutation(signUp, {
     onSuccess: () => {
+      authContext.setLoggedIn();
+      authContext.setUsername(formik.values.username);
       router.push("/");
     },
     onError: (e: AxiosError) => {
