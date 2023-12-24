@@ -163,14 +163,14 @@ const SignUp = () => {
             >
               <Typography
                 className={styles.whiteText}
-                variant="h5"
+                variant="h4"
                 component="div"
               >
                 Why sign up?
               </Typography>
               <Typography
                 className={styles.whiteText}
-                variant="body1"
+                variant="h6"
                 component="div"
               >
                 Signing up allows you to create projects, join other projects,
