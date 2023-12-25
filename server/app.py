@@ -35,11 +35,11 @@ def email_in_db(email):
     cur.close()
     return user
 
-def username_in_db(email):
+def username_in_db(username):
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT username FROM users WHERE email = %s", (email,))
+    cur.execute("SELECT username FROM users WHERE username = %s", (username,))
     user = cur.fetchone()
 
     conn.close()
@@ -132,7 +132,7 @@ def user_create():
         return 'Recaptcha Verification Failed', 400
     if email_in_db(request_data["email"]):
         return 'User with that email already exists', 400
-    if username_in_db(request_data["email"]):
+    if username_in_db(request_data["username"]):
         return 'Username already in use', 400
     password = request_data["password"].encode('utf-8')
     salt = bcrypt.gensalt()

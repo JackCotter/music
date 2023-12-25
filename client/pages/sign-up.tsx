@@ -19,10 +19,7 @@ import { useAuthContext } from "@/contexts/authContext";
 
 const SignUp = () => {
   const [recaptchaValue, setRecaptchaValue] = useState<string | null>("");
-
-  const router = useRouter();
-  const authContext = useAuthContext();
-
+  const [recaptchaKey, setRecaptchaKey] = useState<number>(0); // This is to force the recaptcha to reload
   const [errorBar, setErrorBar] = useState<{
     isOpen: boolean;
     message: string;
@@ -30,6 +27,14 @@ const SignUp = () => {
     isOpen: false,
     message: "",
   });
+
+  const router = useRouter();
+  const authContext = useAuthContext();
+
+  const resetRecaptcha = () => {
+    setRecaptchaKey((prev) => prev + 1);
+    setRecaptchaValue(null);
+  };
 
   const initialValues = {
     email: "",
@@ -83,6 +88,7 @@ const SignUp = () => {
       router.push("/");
     },
     onError: (e: AxiosError) => {
+      resetRecaptcha();
       if (!e.response) return;
       setErrorBar({
         isOpen: true,
@@ -153,6 +159,7 @@ const SignUp = () => {
               />
               {sitekey && (
                 <ReCAPTCHA
+                  key={recaptchaKey}
                   theme="dark"
                   sitekey={sitekey}
                   onChange={(value: string | null) => setRecaptchaValue(value)}
