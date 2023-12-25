@@ -89,11 +89,17 @@ const SignUp = () => {
     },
     onError: (e: AxiosError) => {
       resetRecaptcha();
-      if (!e.response) return;
-      setErrorBar({
-        isOpen: true,
-        message: e.response.data as string,
-      });
+      if (e.response) {
+        setErrorBar({
+          isOpen: true,
+          message: e.response.data as string,
+        });
+      } else {
+        setErrorBar({
+          isOpen: true,
+          message: "An error occurred. Please try again later.",
+        });
+      }
     },
   });
 
