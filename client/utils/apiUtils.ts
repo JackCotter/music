@@ -88,7 +88,7 @@ export const patchUser = async (description: string) => {
   return response.data as User;
 }
 
-export const createUser = async (username: string, email: string, password: string, description?:string) => {
-  const response = await api.post("/users/create", { username, email, password, description }, {withCredentials: false});
+export const createUser = async (username: string, email: string, password: string, recaptchaToken: string, description?: string) => {
+  const response = await api.post("/users/create", { username, email, password, recaptchaToken, description }, {withCredentials: false});
   return response.data as string;
 }

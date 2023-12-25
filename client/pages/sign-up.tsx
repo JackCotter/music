@@ -18,6 +18,8 @@ import ReCAPTCHA from "react-google-recaptcha";
 import { useAuthContext } from "@/contexts/authContext";
 
 const SignUp = () => {
+  const [recaptchaValue, setRecaptchaValue] = useState<string | null>("");
+
   const router = useRouter();
   const authContext = useAuthContext();
 
@@ -67,6 +69,7 @@ const SignUp = () => {
       formik.values.username,
       formik.values.email,
       formik.values.password,
+      recaptchaValue as string,
       formik.values.description
     ).then(() => {
       login(formik.values.email, formik.values.password);
@@ -148,7 +151,13 @@ const SignUp = () => {
                 error={formik.errors.description !== undefined}
                 helperText={formik.errors.description}
               />
-              {sitekey && <ReCAPTCHA theme="dark" sitekey={sitekey} />}
+              {sitekey && (
+                <ReCAPTCHA
+                  theme="dark"
+                  sitekey={sitekey}
+                  onChange={(value: string | null) => setRecaptchaValue(value)}
+                />
+              )}
               <Stack direction="row" spacing={2}>
                 <Button variant="contained" onClick={() => router.push("/")}>
                   Cancel
