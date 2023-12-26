@@ -6,6 +6,7 @@ from psycopg2.extras import RealDictCursor
 import flask_login
 import bcrypt
 import base64
+import requests
 
 
 def get_db_connection():
@@ -28,6 +29,17 @@ def email_in_db(email):
     cur = conn.cursor()
 
     cur.execute("SELECT email FROM users WHERE email = %s", (email,))
+    user = cur.fetchone()
+
+    conn.close()
+    cur.close()
+    return user
+
+def username_in_db(username):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT username FROM users WHERE username = %s", (username,))
     user = cur.fetchone()
 
     conn.close()
@@ -73,6 +85,17 @@ def request_loader(request):
     user.id = email
     return user
 
+def verify_recaptcha(token):
+    recaptcha_url = 'https://www.google.com/recaptcha/api/siteverify'
+    recaptcha_secret_key = os.environ['RECAPTCHA_SECRET_KEY']
+    payload = {
+        'secret': recaptcha_secret_key,
+        'response': token,
+        'remoteip': request.remote_addr,
+    }
+    response = requests.post(recaptcha_url, data = payload)
+    result = response.json()
+    return result.get('success', False)
 
 @app.post("/users/login")
 def user_login():
@@ -85,9 +108,6 @@ def user_login():
     username = cur.fetchone()
     cur.close()
     conn.close()
-
-    print(username)
-    print(request_data["email"])
 
     if username and has_correct_password(request_data["email"], request_data["password"]):
         user = User()
@@ -102,13 +122,18 @@ def logout():
     flask_login.logout_user()
     return 'Logged out'
 
-
 @app.post("/users/create")
 @cross_origin()
 def user_create():
     request_data = request.get_json()
+    if "password" not in request_data or "username" not in request_data or "email" not in request_data or "recaptchaToken" not in request_data:
+        return 'Missing fields', 400
+    if not verify_recaptcha(request_data["recaptchaToken"]):
+        return 'Recaptcha Verification Failed', 400
     if email_in_db(request_data["email"]):
-        return 'User already exists'
+        return 'User with that email already exists', 400
+    if username_in_db(request_data["username"]):
+        return 'Username already in use', 400
     password = request_data["password"].encode('utf-8')
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password, salt).decode('utf-8')
@@ -116,8 +141,12 @@ def user_create():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("INSERT INTO users (email, username, password) VALUES (%s, %s, %s)",
-                (request_data["email"], request_data["username"], hashed_password))
+    if "description" not in request_data:
+        cur.execute("INSERT INTO users (email, username, password) VALUES (%s, %s, %s)",
+                    (request_data["email"], request_data["username"], hashed_password))
+    else:
+        cur.execute("INSERT INTO users (email, username, password, description) VALUES (%s, %s, %s, %s)",
+                    (request_data["email"], request_data["username"], hashed_password, request_data["description"]))
     conn.commit()
 
     conn.close()

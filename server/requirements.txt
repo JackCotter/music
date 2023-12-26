@@ -4,3 +4,4 @@ psycopg2-binary
 flask_cors
 flask_login
 bcrypt
+requests
