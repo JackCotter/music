@@ -35,6 +35,7 @@ const Header: React.FC = () => {
           {!authContext.isAuthenticated && (
             <div className={styles.authButtons}>
               <Button
+                name="signup"
                 className={styles.authButton}
                 color="primary"
                 variant="contained"
@@ -43,6 +44,7 @@ const Header: React.FC = () => {
                 Sign Up
               </Button>
               <Button
+                name="login"
                 className={styles.authButton}
                 color="primary"
                 variant="contained"
