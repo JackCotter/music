@@ -1,6 +1,7 @@
 import os
 import bcrypt
 import psycopg2
+import requests
 
 def get_db_connection():
     return psycopg2.connect(
@@ -44,3 +45,15 @@ def has_correct_password(email, password):
     encoded_password = password.encode('utf-8')
     encoded_correct_password = correct_password[0].encode('utf-8')
     return bcrypt.checkpw(encoded_password, encoded_correct_password)
+
+def verify_recaptcha(token, remote_addr):
+    recaptcha_url = 'https://www.google.com/recaptcha/api/siteverify'
+    recaptcha_secret_key = os.environ['RECAPTCHA_SECRET_KEY']
+    payload = {
+        'secret': recaptcha_secret_key,
+        'response': token,
+        'remoteip': remote_addr,
+    }
+    response = requests.post(recaptcha_url, data = payload)
+    result = response.json()
+    return result.get('success', False)

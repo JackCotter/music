@@ -8,7 +8,7 @@ import bcrypt
 import base64
 import requests
 
-from server.utils import email_in_db, get_db_connection, has_correct_password, username_in_db
+from server.utils import email_in_db, get_db_connection, has_correct_password, username_in_db, verify_recaptcha
 
 app = Flask(__name__)
 app.secret_key = os.environ['SECRET_KEY']
@@ -19,7 +19,6 @@ login_manager.init_app(app)
 class User(flask_login.UserMixin):
     pass
 
-
 @login_manager.user_loader
 def user_loader(email):
     if email_in_db(email) is None:
@@ -28,7 +27,6 @@ def user_loader(email):
     user = User()
     user.id = email
     return user
-
 
 @login_manager.request_loader
 def request_loader(request):
@@ -39,18 +37,6 @@ def request_loader(request):
     user = User()
     user.id = email
     return user
-
-def verify_recaptcha(token):
-    recaptcha_url = 'https://www.google.com/recaptcha/api/siteverify'
-    recaptcha_secret_key = os.environ['RECAPTCHA_SECRET_KEY']
-    payload = {
-        'secret': recaptcha_secret_key,
-        'response': token,
-        'remoteip': request.remote_addr,
-    }
-    response = requests.post(recaptcha_url, data = payload)
-    result = response.json()
-    return result.get('success', False)
 
 @app.post("/users/login")
 def user_login():
@@ -71,19 +57,17 @@ def user_login():
         return username[0], 200
     return 'Bad login', 400
 
-
 @app.post('/users/logout')
 def logout():
     flask_login.logout_user()
     return 'Logged out'
 
 @app.post("/users/create")
-@cross_origin()
 def user_create():
     request_data = request.get_json()
     if "password" not in request_data or "username" not in request_data or "email" not in request_data or "recaptchaToken" not in request_data:
         return 'Missing fields', 400
-    if not verify_recaptcha(request_data["recaptchaToken"]):
+    if not verify_recaptcha(request_data["recaptchaToken"], request.remote_addr):
         return 'Recaptcha Verification Failed', 400
     if email_in_db(request_data["email"]):
         return 'User with that email already exists', 400
@@ -137,20 +121,6 @@ def get_user():
     cur.execute("SELECT username, description FROM users where username = %s",
                 (request.args.get("username"),))
     username = cur.fetchone()
-
-    cur.close()
-    conn.close()
-    return jsonify(username)
-
-
-@app.get("/projecttracks/list")
-def projecttracks_list():
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-
-    cur.execute("SELECT title, trackid, createdat FROM tracks natural join projecttracks join users on (tracks.contributeremail = users.email) where username = %s",
-                (request.args.get("username"),))
-    username = cur.fetchall()
 
     cur.close()
     conn.close()
