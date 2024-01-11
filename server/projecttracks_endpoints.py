@@ -1,8 +1,8 @@
 from flask import Blueprint, jsonify, request
 from psycopg2.extras import RealDictCursor
-from server.utils import get_db_connection
+from utils import get_db_connection
 
-projecttracks_blueprint = Blueprint('tracks', __name__)
+projecttracks_blueprint = Blueprint('projecttracks', __name__)
 
 @projecttracks_blueprint.get("/projecttracks/list")
 def projecttracks_list():

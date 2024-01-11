@@ -1,20 +1,23 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 import os
-import psycopg2
 from psycopg2.extras import RealDictCursor
 import flask_login
 import bcrypt
-import base64
-import requests
+from projects_endpoints import projects_blueprint
+from tracks_endpoints import tracks_blueprint
+from projecttracks_endpoints import projecttracks_blueprint
 
-from server.utils import email_in_db, get_db_connection, has_correct_password, username_in_db, verify_recaptcha
+from utils import email_in_db, get_db_connection, has_correct_password, username_in_db, verify_recaptcha
 
 app = Flask(__name__)
 app.secret_key = os.environ['SECRET_KEY']
 CORS(app, origins=["http://localhost:3000"],  supports_credentials=True)
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
+app.register_blueprint(projects_blueprint)
+app.register_blueprint(tracks_blueprint)
+app.register_blueprint(projecttracks_blueprint)
 
 class User(flask_login.UserMixin):
     pass
@@ -62,6 +65,25 @@ def logout():
     flask_login.logout_user()
     return 'Logged out'
 
+@app.get("/users/loggedIn")
+@flask_login.login_required
+def get_user_logged_in():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT username FROM users where email = %s",
+                (flask_login.current_user.id,))
+    username = cur.fetchone()
+
+    if username is None:
+        conn.close()
+        cur.close()
+        return 'user not found', 400
+
+    cur.close()
+    conn.close()
+    return username[0]
+
 @app.post("/users/create")
 def user_create():
     request_data = request.get_json()
@@ -91,27 +113,6 @@ def user_create():
     conn.close()
     cur.close()
     return 'success'
-
-
-@app.get("/users/loggedIn")
-@flask_login.login_required
-def get_user_logged_in():
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    cur.execute("SELECT username FROM users where email = %s",
-                (flask_login.current_user.id,))
-    username = cur.fetchone()
-
-    if username is None:
-        conn.close()
-        cur.close()
-        return 'user not found', 400
-
-    cur.close()
-    conn.close()
-    return username[0]
-
 
 @app.get("/users/get")
 def get_user():

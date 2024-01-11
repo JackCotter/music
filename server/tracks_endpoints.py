@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 import flask_login
 
-from server.app import get_db_connection
+from utils import get_db_connection
 
 tracks_blueprint = Blueprint('tracks', __name__)
 

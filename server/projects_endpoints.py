@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 from flask_cors import cross_origin
 import flask_login
 from psycopg2.extras import RealDictCursor
-from server.app import get_db_connection
+from utils import get_db_connection
 
 projects_blueprint = Blueprint('projects', __name__)
 
