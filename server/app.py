@@ -8,15 +8,7 @@ import bcrypt
 import base64
 import requests
 
-from server.utils import email_in_db, has_correct_password, username_in_db
-
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database="music",
-        user=os.environ['DB_USERNAME'],
-        password=os.environ['DB_PASSWORD'])
-
+from server.utils import email_in_db, get_db_connection, has_correct_password, username_in_db
 
 app = Flask(__name__)
 app.secret_key = os.environ['SECRET_KEY']
