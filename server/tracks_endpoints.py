@@ -13,12 +13,12 @@ def track_create():
     cur = conn.cursor()
 
     cur.execute("SELECT projectid FROM projects WHERE projectid = %s",
-                (str(request_data["projectId"])))
+                (str(request_data.get("projectId")),))
     projectid = cur.fetchone()
     if projectid is None:
         return 'project not found'
 
-    blob_data_bytes = request_data["blobData"].encode('ascii')
+    blob_data_bytes = request_data.get("blobData").encode('ascii')
     cur.execute("INSERT INTO blob_storage (blob_data) VALUES (%s)",
                 (blob_data_bytes,))
     cur.execute(
