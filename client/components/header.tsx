@@ -22,7 +22,7 @@ const Header: React.FC = () => {
         <Toolbar>
           <Typography variant="h6" component="div" className={styles.title}>
             <Link href="/" className={styles.titleLink}>
-              Track Track er
+              {process.env.NEXT_PUBLIC_APP_NAME ?? "Project Tracker"}
             </Link>
           </Typography>
           {authContext.isAuthenticated && (

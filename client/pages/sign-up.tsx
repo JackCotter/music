@@ -105,7 +105,7 @@ const SignUp = () => {
 
   const sitekey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string;
   return (
-    <form onSubmit={formik.handleSubmit}>
+    <form onSubmit={formik.handleSubmit} name="signup">
       <div className={styles.formContainer}>
         <Stack
           direction="column"

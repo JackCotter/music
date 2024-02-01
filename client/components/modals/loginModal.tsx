@@ -67,7 +67,7 @@ const LoginModal = ({
     <Dialog open={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)}>
       <DialogTitle>Login</DialogTitle>
       <DialogContent className={styles.dialogContent}>
-        <form onSubmit={formik.handleSubmit}>
+        <form onSubmit={formik.handleSubmit} name="login">
           <Stack
             className={styles.inputFieldContainer}
             direction="column"
