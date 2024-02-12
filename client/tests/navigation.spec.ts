@@ -34,8 +34,8 @@ test('can navigate back to main page', async ({ page }) => {
   await page.waitForSelector('button[name="signup"]');
   await page.click('button[name="signup"]');
   await page.waitForSelector('form[name="signup"]');
-  const link = await page.waitForSelector(`a:has-text("Track Track er")`);
-  await link.click();
+  // const link = await page.waitForSelector(`a:has-text("Track Track er")`);
+  await page.click('text="Track Track er"');
   await page.waitForSelector('button[name="login"]');
   // const loginButton = await page.$('button[name="login"]');
   // expect(loginButton).toBeDefined();
