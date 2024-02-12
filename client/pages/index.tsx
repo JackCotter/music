@@ -25,9 +25,13 @@ export default function Home() {
 
   useEffect(() => {
     const getProjectList = async () => {
-      const projectList = await listProject();
-      setProjectList(projectList);
-      setFilteredProjectList(projectList);
+      try {
+        const projectList = await listProject();
+        setProjectList(projectList);
+        setFilteredProjectList(projectList);
+      } catch (error) {
+        console.error("Error fetching project list", error);
+      }
     };
 
     getProjectList();

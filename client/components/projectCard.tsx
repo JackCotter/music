@@ -54,7 +54,11 @@ const ProjectCard = ({
     if (projectid.current === project.projectid) return;
     const populatePlayersQuery = async () => {
       projectid.current = project.projectid;
-      await populatePlayers(project.projectid, setTrackList, setPlayers);
+      try {
+        await populatePlayers(project.projectid, setTrackList, setPlayers);
+      } catch (error) {
+        console.error("Error fetching track list", error);
+      }
     };
     populatePlayersQuery();
   }, [project.projectid]);
