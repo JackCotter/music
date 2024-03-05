@@ -54,17 +54,11 @@ const ProjectCard = ({
     console.log(e.target);
     if (
       e.target.classList.value.includes("MuiChip") ||
-      e.target.classList.value === ""
+      e.target.classList.value === "" ||
+      e.target.classList.value.includes("MuiSvgIcon")
     ) {
-      // if user selected an instrument, don't navigate to new page
       return;
-    }
-    if (e.target.classList.value.includes("MuiSvgIcon")) {
-      // if user clicked on play/stop button, don't navigate to new page
-      return;
-    }
-    if (e.target.classList.value.includes("username")) {
-      // if user clicked on username, navigate to user's profile
+    } else if (e.target.classList.value.includes("username")) {
       router.push(`/user/${project.username}`);
     } else {
       router.push(`/project/${project.projectid}`);
