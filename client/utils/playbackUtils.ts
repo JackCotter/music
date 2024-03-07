@@ -13,9 +13,8 @@ export const populatePlayers = async (
       index.toString()
     ] = `data:audio/mpeg;base64,${track.blobData}`;
   });
-  const players: Players = new Players(playerDict, () =>
-    setPlayers(players)
-  ).toDestination();
+  const players: Players = new Players(playerDict).toDestination();
+  setPlayers(players);
 };
 
 export const startAudio = (
