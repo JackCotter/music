@@ -51,7 +51,6 @@ const ProjectCard = ({
   };
 
   const handleCardClick = (e: any) => {
-    console.log(e.target);
     if (
       e.target.classList.value.includes("MuiChip") ||
       e.target.classList.value === "" ||
