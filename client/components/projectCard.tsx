@@ -13,10 +13,10 @@ import { populatePlayers, startAudio, stopAudio } from "@/utils/playbackUtils";
 import * as Tone from "tone";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
-import Link from "next/link";
 import { maxNCharacters } from "@/utils/stringUtils";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
+import { useRouter } from "next/router";
 
 interface ProjectCardProps {
   project: Project;
@@ -33,6 +33,7 @@ const ProjectCard = ({
   const [players, setPlayers] = useState<Tone.Players | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const projectid = useRef<number | undefined>(undefined);
+  const router = useRouter();
 
   const onInstrumentClick = (instrument: string) => {
     if (
@@ -46,6 +47,21 @@ const ProjectCard = ({
       );
     } else {
       setHighlightedInstruments([...highlightedInstruments, instrument]);
+    }
+  };
+
+  const handleCardClick = (e: any) => {
+    console.log(e.target);
+    if (
+      e.target.classList.value.includes("MuiChip") ||
+      e.target.classList.value === "" ||
+      e.target.classList.value.includes("MuiSvgIcon")
+    ) {
+      return;
+    } else if (e.target.classList.value.includes("username")) {
+      router.push(`/user/${project.username}`);
+    } else {
+      router.push(`/project/${project.projectid}`);
     }
   };
 
@@ -66,39 +82,34 @@ const ProjectCard = ({
   return (
     <Card className={styles.projectCard}>
       <CardContent>
-        <Stack direction="column">
+        <Stack direction="column" onClick={(d) => handleCardClick(d)}>
           <Stack className={styles.topRow} direction="row" spacing={2}>
-            <Link
-              className={styles.titleLink}
-              href={`/project/${project.projectid}`}
-            >
-              <Typography className={styles.title} variant="h5" component="div">
-                {project.projectname}
-              </Typography>
-            </Link>
+            <Typography className={styles.title} variant="h5" component="div">
+              {project.projectname}
+            </Typography>
             <Stack
               className={styles.usernameAndPlayButton}
               direction="row"
               spacing={1}
             >
-              <Link
-                className={styles.titleLink}
-                href={`/user/${project.username}`}
-              >
-                <Typography className={styles.username} variant="body2">
-                  {project.username}
-                </Typography>
-              </Link>
+              <Typography className={styles.username} variant="body2">
+                {project.username}
+              </Typography>
               <div>
                 <IconButton
                   color="secondary"
+                  className={styles.playButton}
                   onClick={() =>
                     isAudioPlaying
                       ? stopAudio(players, setIsAudioPlaying)
                       : startAudio(players, trackList, setIsAudioPlaying)
                   }
                 >
-                  {isAudioPlaying ? <StopIcon /> : <PlayArrowIcon />}
+                  {isAudioPlaying ? (
+                    <StopIcon className={styles.stopIcon} />
+                  ) : (
+                    <PlayArrowIcon className={styles.playIcon} />
+                  )}
                 </IconButton>
               </div>
             </Stack>

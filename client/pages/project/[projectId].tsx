@@ -182,13 +182,11 @@ const Project = () => {
       <Stack className={styles.innerContainer} direction="column" spacing={2}>
         <Stack className={styles.titleRow} direction="row" spacing={6}>
           <Typography variant="h1">
-            {projectInfo?.projectname
-              ? projectInfo.projectname
-              : "Track Project"}
+            {projectInfo?.projectname ? projectInfo.projectname : "Loading"}
           </Typography>
           <Link href={`/user/${projectInfo?.username}`}>
             <Typography variant="h2">
-              By {projectInfo?.username ? projectInfo.username : "A User"}
+              By {projectInfo?.username ? projectInfo.username : "Loading"}
             </Typography>
           </Link>
         </Stack>

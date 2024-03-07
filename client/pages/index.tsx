@@ -38,7 +38,7 @@ export default function Home() {
   }, []);
 
   return (
-    <>
+    <div className={styles.indexContainer}>
       <Stack direction="row" className={styles.titleRow}>
         <Typography className={styles.title} variant="h3" component="div">
           Find a project to contribute to!
@@ -56,6 +56,7 @@ export default function Home() {
       >
         {filteredProjectList.map((project) => (
           <Grid
+            className={styles.gridItem}
             key={project.projectid}
             item
             xs={12}
@@ -72,6 +73,6 @@ export default function Home() {
           </Grid>
         ))}
       </Grid>
-    </>
+    </div>
   );
 }
