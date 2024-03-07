@@ -66,9 +66,8 @@ const CommitTrackModal = ({
           formik.values.instrument,
           recordedData
         );
-        onSuccess();
       } catch (error) {
-        setErrorBar({ isOpen: true, message: "Error creating track" });
+        throw new Error("Error creating track, please try again later");
       }
     } else {
       throw new Error("No recording data provided");
@@ -79,6 +78,10 @@ const CommitTrackModal = ({
       console.log("success");
     },
     onError: () => {
+      setErrorBar({
+        isOpen: true,
+        message: "Error creating track, please try again later",
+      });
       console.log("error");
     },
   });
@@ -87,9 +90,12 @@ const CommitTrackModal = ({
     <Dialog open={isOpen} onClose={() => onClose()}>
       <DialogTitle>Commit Track</DialogTitle>
       <form onSubmit={formik.handleSubmit}>
-        <DialogContent>
+        <DialogContent className={styles.modalContainer}>
           {errorBar.isOpen && (
-            <Alert severity="error"> {errorBar.message}</Alert>
+            <Alert className={styles.errorBar} severity="error">
+              {" "}
+              {errorBar.message}
+            </Alert>
           )}
           <Stack className={styles.containerRow} direction="row" spacing={2}>
             <Stack className={styles.formColumn} direction="column" spacing={2}>
