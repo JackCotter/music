@@ -107,7 +107,7 @@ const CommitTrackModal = ({
                 id="description"
                 name="description"
                 label="Description"
-                InputProps={{ inputProps: { maxLength: 300 } }}
+                InputProps={{ inputProps: { maxLength: 100 } }}
                 multiline
                 minRows={4}
                 maxRows={4}

@@ -15,7 +15,15 @@ def track_create():
     cur.execute("SELECT projectid FROM projects WHERE projectid = %s", (str(request_data["projectId"]),))
     projectid = cur.fetchone()
     if projectid is None:
-        return 'project not found'
+        return 'project not found', 400
+    if request_data["instrumentType"] not in ["bass", "drums", "guitar", "keyboard", "vocals"]:
+        return 'invalid instrument type', 400
+    if request_data["title"] is None or request_data["description"] is None or request_data["blobData"] is None:
+        return 'missing title, description, or blobData', 400
+    if not isinstance(request_data["title"], str) or not isinstance(request_data["description"], str) or not isinstance(request_data["blobData"], str):
+        return 'title, description, and blobData must be strings', 400
+    if len(request_data["title"]) > 30 or len(request_data["description"]) > 100:
+        return 'title must be less than 30 characters and description must be less than 100 characters', 400
 
     blob_data_bytes = request_data["blobData"].encode('ascii')
     cur.execute("INSERT INTO blob_storage (blob_data) VALUES (%s)",
