@@ -16,7 +16,7 @@ def track_create():
     projectid = cur.fetchone()
     if projectid is None:
         return 'project not found', 400
-    if request_data["instrumentType"] not in ["bass", "drums", "guitar", "keyboard", "vocals"]:
+    if request_data["instrumentType"] not in ['Piano','Guitar','Bass','Drums','Saxophone','Trumpet','Violin','Cello','Vocals','Other']:
         return 'invalid instrument type', 400
     if request_data["title"] is None or request_data["description"] is None or request_data["blobData"] is None:
         return 'missing title, description, or blobData', 400

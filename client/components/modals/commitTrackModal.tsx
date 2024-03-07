@@ -75,7 +75,7 @@ const CommitTrackModal = ({
   };
   const { mutate: trackCreateMutation } = useMutation(createTracks, {
     onSuccess: () => {
-      console.log("success");
+      onSuccess();
     },
     onError: () => {
       setErrorBar({
