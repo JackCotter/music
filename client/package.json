@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "testui": "npx playwright test --ui",
+    "test": "npx playwright test"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -25,7 +27,7 @@
     "yup": "^1.3.2"
   },
   "devDependencies": {
-    "@playwright/test": "^1.40.1",
+    "@playwright/test": "^1.41.2",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
