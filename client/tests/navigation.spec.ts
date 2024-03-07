@@ -34,11 +34,9 @@ test('can navigate back to main page', async ({ page }) => {
   await page.waitForSelector('button[name="signup"]');
   await page.click('button[name="signup"]');
   await page.waitForSelector('form[name="signup"]');
-  // const link = await page.waitForSelector(`a:has-text("Track Track er")`);
+  await page.waitForSelector('a:has-text("Track Track er")');
   await page.click('text="Track Track er"');
   await page.waitForSelector('button[name="login"]');
-  // const loginButton = await page.$('button[name="login"]');
-  // expect(loginButton).toBeDefined();
 
   const text = await page.$eval('body', (element) => element.textContent);
   expect(text).toContain('Find a project to contribute to!');
