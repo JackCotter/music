@@ -21,17 +21,16 @@ export const startAudio = (
   players: Players | null,
   trackList: Track[],
   setIsAudioPlaying: (isAudioPlaying: boolean) => void,
-  recordingIndex?: number
+  recordingName?: string,
 ) => {
-  if (!recordingIndex) recordingIndex = 0;
   if (players && players.loaded) {
-    for (let i = 0; i < trackList.length || i < recordingIndex; i++) {
+    for (let i = 0; i < trackList.length; i++) {
       if (players.has(i.toString()) && trackList[i].accepted) {
         players.player(i.toString()).start(i.toString());
       }
-      if (players.has("Recording" + i)) {
-        players.player("Recording" + i).start();
-      }
+    }
+    if (recordingName && players.has(recordingName) && players.player(recordingName)?.loaded) {
+        players.player(recordingName).start();
     }
     setIsAudioPlaying(true);
   } else {

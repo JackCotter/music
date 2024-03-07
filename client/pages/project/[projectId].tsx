@@ -38,13 +38,13 @@ const Project = () => {
   Tone.Transport.debug = true;
   const [players, setPlayers] = useState<Tone.Players | null>(null);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
-  const recordingIndex = useRef<number>(0);
   const [recordedData, setRecordedData] = useState<Blob | null>(null);
   const [trackList, setTrackList] = useState<Track[]>([]);
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const [projectInfo, setProjectInfo] = useState<Project | null>(null);
   const [openCommitTrackModal, setOpenCommitTrackModal] =
     useState<boolean>(false);
+  const recordingIndex = useRef<number>(0);
 
   const router = useRouter();
   const { projectId } = router.query;
@@ -111,12 +111,7 @@ const Project = () => {
         recorder = new MediaRecorder(stream);
         setRecorder(recorder);
         recorder.start();
-        startAudio(
-          players,
-          trackList,
-          setIsAudioPlaying,
-          recordingIndex.current
-        );
+        startAudio(players, trackList, setIsAudioPlaying);
       });
   };
 
@@ -125,13 +120,10 @@ const Project = () => {
       recorder.stop();
       recorder.ondataavailable = (e) => {
         const url = URL.createObjectURL(e.data);
-        if (players?.has("Recording" + (recordingIndex.current - 1))) {
-          players?.player("Recording" + (recordingIndex.current - 1)).dispose();
-          // console.log(
-          //   players?.player("Recording" + (recordingIndex.current - 1)).state
-          // );
+        if (players?.has("Recording" + recordingIndex.current)) {
+          players?.player("Recording" + recordingIndex.current).dispose();
         }
-        players?.add("Recording" + recordingIndex.current++, url);
+        players?.add("Recording" + ++recordingIndex.current, url);
         setRecordedData(e.data);
       };
       setRecorder(null);
@@ -148,12 +140,8 @@ const Project = () => {
     if (recordedData) {
       setRecordedData(null);
     }
-    if (
-      players?.has("Recording" + (recordingIndex.current - 1)) &&
-      recordingIndex.current > 0
-    ) {
-      players?.player("Recording" + (recordingIndex.current - 1)).dispose();
-      recordingIndex.current--;
+    if (players?.has("Recording" + recordingIndex.current)) {
+      players?.player("Recording" + recordingIndex.current).dispose();
     }
   };
 
@@ -225,7 +213,7 @@ const Project = () => {
                     players,
                     trackList,
                     setIsAudioPlaying,
-                    recordingIndex.current
+                    "Recording" + recordingIndex.current
                   )
             }
           >
