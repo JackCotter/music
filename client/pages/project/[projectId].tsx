@@ -19,6 +19,7 @@ import styles from "@/styles/pages/project.module.scss";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   getMaxLengthAcceptedPlayer,
   populatePlayers,
@@ -138,6 +139,24 @@ const Project = () => {
     }
   };
 
+  const deleteRecording = () => {
+    if (recorder) {
+      recorder.stop();
+      setRecorder(null);
+      stopAudio(players, setIsAudioPlaying);
+    }
+    if (recordedData) {
+      setRecordedData(null);
+    }
+    if (
+      players?.has("Recording" + (recordingIndex.current - 1)) &&
+      recordingIndex.current > 0
+    ) {
+      players?.player("Recording" + (recordingIndex.current - 1)).dispose();
+      recordingIndex.current--;
+    }
+  };
+
   const saveTrackList = async () => {
     if (projectId === undefined) return;
     if (typeof projectId === "string") {
@@ -165,17 +184,18 @@ const Project = () => {
     }
   };
 
-  const { mutate: trackCreateMutation, isLoading } = useMutation(
-    saveTrackList,
-    {
-      onSuccess: () => {
-        console.log("success");
-      },
-      onError: () => {
-        console.log("error");
-      },
-    }
-  );
+  const {
+    mutate: trackCreateMutation,
+    isLoading,
+    isSuccess,
+  } = useMutation(saveTrackList, {
+    onSuccess: () => {
+      console.log("success");
+    },
+    onError: () => {
+      console.log("error");
+    },
+  });
 
   return (
     <div className={styles.container}>
@@ -212,9 +232,21 @@ const Project = () => {
             {isAudioPlaying ? <StopIcon /> : <PlayArrowIcon />}
           </IconButton>
           <IconButton
-            onClick={() => (recorder ? stopRecording() : startRecording())}
+            onClick={() =>
+              recordedData
+                ? deleteRecording()
+                : recorder
+                ? stopRecording()
+                : startRecording()
+            }
           >
-            {recorder ? <StopIcon /> : <FiberManualRecordIcon />}
+            {recordedData ? (
+              <DeleteIcon />
+            ) : recorder ? (
+              <StopIcon />
+            ) : (
+              <FiberManualRecordIcon />
+            )}
           </IconButton>
           {recordedData !== null && (
             <Alert severity="success">
@@ -289,6 +321,7 @@ const Project = () => {
                 Save Changes
               </Button>
               {isLoading && <CircularProgress />}
+              {isSuccess && <Alert severity="success">Changes saved!</Alert>}
             </Stack>
           </>
         )}

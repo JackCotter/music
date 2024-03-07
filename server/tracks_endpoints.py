@@ -12,8 +12,7 @@ def track_create():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT projectid FROM projects WHERE projectid = %s",
-                (str(request_data["projectId"])))
+    cur.execute("SELECT projectid FROM projects WHERE projectid = %s", (str(request_data["projectId"]),))
     projectid = cur.fetchone()
     if projectid is None:
         return 'project not found'
@@ -66,6 +65,10 @@ def track_patch():
 
     if request_data["accepted"] is None or request_data["trackIds"] is None:
         return 'missing accepted or trackIds', 400
+    if not isinstance(request_data["accepted"], bool) or not isinstance(request_data["trackIds"], list):
+        return 'accepted must be a boolean and trackIds must be a list', 400
+    if len(request_data["trackIds"]) == 0:
+        return 'no changes made'
     trackids = tuple(request_data["trackIds"])
     cur.execute("SELECT tracks.trackid FROM projects natural join projecttracks join tracks on projecttracks.trackid = tracks.trackid WHERE owner = %s and tracks.trackid in %s and projectid = %s",
                 (flask_login.current_user.id, trackids, request_data["projectId"],))

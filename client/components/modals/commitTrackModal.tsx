@@ -58,14 +58,18 @@ const CommitTrackModal = ({
 
   const createTracks = async () => {
     if (recordedData !== null && typeof projectId === "string") {
-      await createTrack(
-        parseInt(projectId),
-        formik.values.title,
-        formik.values.description,
-        formik.values.instrument,
-        recordedData
-      );
-      onSuccess();
+      try {
+        await createTrack(
+          parseInt(projectId),
+          formik.values.title,
+          formik.values.description,
+          formik.values.instrument,
+          recordedData
+        );
+        onSuccess();
+      } catch (error) {
+        setErrorBar({ isOpen: true, message: "Error creating track" });
+      }
     } else {
       throw new Error("No recording data provided");
     }
