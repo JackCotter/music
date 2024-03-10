@@ -87,6 +87,7 @@ const Project = () => {
 
   const closeModalAndRefesh = () => {
     setOpenCommitTrackModal(false);
+    deleteRecording();
     if (projectId === undefined) return;
     if (typeof projectId === "string") {
       projectGetQuery(parseInt(projectId) as number);
