@@ -32,15 +32,14 @@ def track_create():
     buffer = io.BytesIO()
     buffer.write(blob_data_bytes)
     buffer.seek(0)
-    try:
-        response = s3.upload_fileobj(
-            buffer, os.environ.get('S3_BUCKET_NAME'), "tracks/" + blobId + ".bin")
-    except Exception as e:
-        return str(e), 400
+    response = s3.upload_fileobj(
+        buffer, os.environ.get('S3_BUCKET_NAME'), "tracks/" + str(blobId[0]) + ".bin")
+    # except Exception as e:
+    #     return str(e), 400
 
     cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, blobid, title, description) VALUES (%s, %s, %s, %s, %s)",
                 (request_data["instrumentType"], flask_login.current_user.id, blobId[0], request_data["title"], request_data["description"]))
-    cur.execute("SELECT trackid FROM tracks WHERE blobid = %s", blobId[0])
+    cur.execute("SELECT trackid FROM tracks WHERE blobid = %s", (blobId[0],))
     trackId = cur.fetchone()
 
     cur.execute("INSERT INTO projecttracks (projectid, trackid, accepted) VALUES (%s, %s, false)",
@@ -56,14 +55,18 @@ def track_list():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT tracks.trackid, blob_data, instrumenttype, accepted, tracks.title, tracks.description FROM projects join projecttracks on projects.projectid = projecttracks.projectid join tracks on projecttracks.trackid = tracks.trackid join blob_storage on (tracks.blobid = blob_storage.blobid) where projects.projectid = %s", (request.args.get("projectId"),))
+    cur.execute("SELECT tracks.trackid, blobid, instrumenttype, accepted, tracks.title, tracks.description FROM projects join projecttracks on projects.projectid = projecttracks.projectid join tracks on projecttracks.trackid = tracks.trackid where projects.projectid = %s", (request.args.get("projectId"),))
     tracks = cur.fetchall()
 
     formatted_tracks = []
     for row in tracks:
-        formatted_blob = row[1].tobytes().decode('ascii')
-        formatted_tracks.append(
-            {"trackId": row[0], "blobData": formatted_blob, "instrumentType": row[2], "accepted": row[3], "title": row[4], "description": row[5]})
+        try:
+            blob = s3.download_file(os.environ.get('S3_BUCKET_NAME'), "tracks/" + str(row[1]) + ".bin", "temp.bin")
+            formatted_tracks.append(
+                {"trackId": row[0], "blobData": blob, "instrumentType": row[2], "accepted": row[3], "title": row[4], "description": row[5]})
+        except Exception as e:
+            print(e)
+            continue
 
     conn.close()
     cur.close()
