@@ -1,9 +1,13 @@
 from flask import Blueprint, jsonify, request
 import flask_login
+import os
+import io
+import boto3
 
 from utils import get_db_connection
 
 tracks_blueprint = Blueprint('tracks', __name__)
+s3 = boto3.client('s3', aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'), aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'), region_name='us-east-2')
 
 @tracks_blueprint.post("/tracks/create")
 @flask_login.login_required
@@ -13,21 +17,30 @@ def track_create():
     cur = conn.cursor()
 
     cur.execute("SELECT projectid FROM projects WHERE projectid = %s",
-                (str(request_data["projectId"])))
+                (str(request_data["projectId"]),))
     projectid = cur.fetchone()
     if projectid is None:
-        return 'project not found'
+        return 'project not found', 400
 
-    blob_data_bytes = request_data["blobData"].encode('ascii')
-    cur.execute("INSERT INTO blob_storage (blob_data) VALUES (%s)",
-                (blob_data_bytes,))
-    cur.execute(
-        "SELECT blobid FROM blob_storage WHERE blob_data = %s", (blob_data_bytes,))
-    blobId = cur.fetchone()
+    cur.execute("SELECT max(blobid) + 1 FROM tracks")
+    blobId = cur.fetchone();
+    print(blobId[0])
+    if blobId[0] is None:
+        return 'Error generating blobId', 400
+
+    blob_data_bytes = bytes(request_data["blobData"], 'ascii')
+    buffer = io.BytesIO()
+    buffer.write(blob_data_bytes)
+    buffer.seek(0)
+    try:
+        response = s3.upload_fileobj(
+            buffer, os.environ.get('S3_BUCKET_NAME'), "tracks/" + blobId + ".bin")
+    except Exception as e:
+        return str(e), 400
 
     cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, blobid, title, description) VALUES (%s, %s, %s, %s, %s)",
-                (request_data["instrumentType"], flask_login.current_user.id, blobId, request_data["title"], request_data["description"]))
-    cur.execute("SELECT trackid FROM tracks WHERE blobid = %s", blobId)
+                (request_data["instrumentType"], flask_login.current_user.id, blobId[0], request_data["title"], request_data["description"]))
+    cur.execute("SELECT trackid FROM tracks WHERE blobid = %s", blobId[0])
     trackId = cur.fetchone()
 
     cur.execute("INSERT INTO projecttracks (projectid, trackid, accepted) VALUES (%s, %s, false)",
