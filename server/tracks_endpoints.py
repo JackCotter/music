@@ -28,19 +28,25 @@ def track_create():
         return 'title, description, and blobData must be strings', 400
     if len(request_data["title"]) > 30 or len(request_data["description"]) > 100:
         return 'title must be less than 30 characters and description must be less than 100 characters', 400
+    cur.execute("SELECT title FROM tracks natural join projecttracks WHERE title = %s and projectid = %s", (request_data["title"], projectid,))
+    name_exists_in_project = cur.fetchone()
+    if name_exists_in_project is not None:
+        return 'track with that name already exists in project', 400
 
     cur.execute("SELECT max(blobid) + 1 FROM tracks")
     blobId = cur.fetchone();
-    print(blobId[0])
     if blobId[0] is None:
         return 'Error generating blobId', 400
 
-    blob_data_bytes = bytes(request_data["blobData"], 'ascii')
-    buffer = io.BytesIO()
-    buffer.write(blob_data_bytes)
-    buffer.seek(0)
-    s3.upload_fileobj(
-        buffer, os.environ.get('S3_BUCKET_NAME'), "tracks/" + str(blobId[0]) + ".bin")
+    try:
+        blob_data_bytes = bytes(request_data["blobData"], 'ascii')
+        buffer = io.BytesIO()
+        buffer.write(blob_data_bytes)
+        buffer.seek(0)
+        s3.upload_fileobj(
+            buffer, os.environ.get('S3_BUCKET_NAME'), "tracks/" + str(blobId[0]) + ".bin")
+    except Exception as e:
+        return 'Error uploading blob to S3', 400
 
     cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, blobid, title, description) VALUES (%s, %s, %s, %s, %s)",
                 (request_data["instrumentType"], flask_login.current_user.id, blobId[0], request_data["title"], request_data["description"]))

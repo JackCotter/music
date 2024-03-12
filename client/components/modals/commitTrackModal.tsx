@@ -58,17 +58,13 @@ const CommitTrackModal = ({
 
   const createTracks = async () => {
     if (recordedData !== null && typeof projectId === "string") {
-      try {
-        await createTrack(
-          parseInt(projectId),
-          formik.values.title,
-          formik.values.description,
-          formik.values.instrument,
-          recordedData
-        );
-      } catch (error) {
-        throw new Error("Error creating track, please try again later");
-      }
+      await createTrack(
+        parseInt(projectId),
+        formik.values.title,
+        formik.values.description,
+        formik.values.instrument,
+        recordedData
+      );
     } else {
       throw new Error("No recording data provided");
     }
@@ -77,12 +73,14 @@ const CommitTrackModal = ({
     onSuccess: () => {
       onSuccess();
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.log(error.response);
       setErrorBar({
         isOpen: true,
-        message: "Error creating track, please try again later",
+        message:
+          error.response?.data ??
+          "Error creating track, please try again later",
       });
-      console.log("error");
     },
   });
 
