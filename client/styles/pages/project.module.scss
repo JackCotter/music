@@ -17,6 +17,14 @@
 
     .titleRow {
       align-items: center;
+      flex-wrap: wrap;
+      .title {
+        font-size: 5rem;
+      }
+      .username {
+        font-size: 2rem;
+      
+      }
     }
     
     .trackListEntry {
