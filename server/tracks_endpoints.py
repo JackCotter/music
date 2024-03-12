@@ -1,9 +1,13 @@
 from flask import Blueprint, jsonify, request
 import flask_login
+import os
+import io
+import boto3
 
 from utils import get_db_connection
 
 tracks_blueprint = Blueprint('tracks', __name__)
+s3 = boto3.client('s3', aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'), aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'), region_name='us-east-2')
 
 @tracks_blueprint.post("/tracks/create")
 @flask_login.login_required
@@ -25,16 +29,22 @@ def track_create():
     if len(request_data["title"]) > 30 or len(request_data["description"]) > 100:
         return 'title must be less than 30 characters and description must be less than 100 characters', 400
 
-    blob_data_bytes = request_data["blobData"].encode('ascii')
-    cur.execute("INSERT INTO blob_storage (blob_data) VALUES (%s)",
-                (blob_data_bytes,))
-    cur.execute(
-        "SELECT blobid FROM blob_storage WHERE blob_data = %s", (blob_data_bytes,))
-    blobId = cur.fetchone()
+    cur.execute("SELECT max(blobid) + 1 FROM tracks")
+    blobId = cur.fetchone();
+    print(blobId[0])
+    if blobId[0] is None:
+        return 'Error generating blobId', 400
+
+    blob_data_bytes = bytes(request_data["blobData"], 'ascii')
+    buffer = io.BytesIO()
+    buffer.write(blob_data_bytes)
+    buffer.seek(0)
+    s3.upload_fileobj(
+        buffer, os.environ.get('S3_BUCKET_NAME'), "tracks/" + str(blobId[0]) + ".bin")
 
     cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, blobid, title, description) VALUES (%s, %s, %s, %s, %s)",
-                (request_data["instrumentType"], flask_login.current_user.id, blobId, request_data["title"], request_data["description"]))
-    cur.execute("SELECT trackid FROM tracks WHERE blobid = %s", blobId)
+                (request_data["instrumentType"], flask_login.current_user.id, blobId[0], request_data["title"], request_data["description"]))
+    cur.execute("SELECT trackid FROM tracks WHERE blobid = %s", (blobId[0],))
     trackId = cur.fetchone()
 
     cur.execute("INSERT INTO projecttracks (projectid, trackid, accepted) VALUES (%s, %s, false)",
@@ -50,14 +60,21 @@ def track_list():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT tracks.trackid, blob_data, instrumenttype, accepted, tracks.title, tracks.description FROM projects join projecttracks on projects.projectid = projecttracks.projectid join tracks on projecttracks.trackid = tracks.trackid join blob_storage on (tracks.blobid = blob_storage.blobid) where projects.projectid = %s", (request.args.get("projectId"),))
+    cur.execute("SELECT tracks.trackid, blobid, instrumenttype, accepted, tracks.title, tracks.description FROM projects join projecttracks on projects.projectid = projecttracks.projectid join tracks on projecttracks.trackid = tracks.trackid where projects.projectid = %s", (request.args.get("projectId"),))
     tracks = cur.fetchall()
 
     formatted_tracks = []
     for row in tracks:
-        formatted_blob = row[1].tobytes().decode('ascii')
-        formatted_tracks.append(
-            {"trackId": row[0], "blobData": formatted_blob, "instrumentType": row[2], "accepted": row[3], "title": row[4], "description": row[5]})
+        try:
+            s3.download_file(os.environ.get('S3_BUCKET_NAME'), "tracks/" + str(row[1]) + ".bin", "temp.bin")
+            blob_data = open("temp.bin", "rb").read()
+            blob_data_str = str(blob_data, 'utf-8')
+            os.remove("temp.bin")
+            formatted_tracks.append(
+                {"trackId": row[0], "blobData": blob_data_str, "instrumentType": row[2], "accepted": row[3], "title": row[4], "description": row[5]})
+        except Exception as e:
+            print(e)
+            continue
 
     conn.close()
     cur.close()
