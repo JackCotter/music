@@ -74,7 +74,6 @@ const CommitTrackModal = ({
       onSuccess();
     },
     onError: (error: any) => {
-      console.log(error.response);
       setErrorBar({
         isOpen: true,
         message:

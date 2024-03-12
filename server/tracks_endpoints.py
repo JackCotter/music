@@ -72,10 +72,11 @@ def track_list():
     formatted_tracks = []
     for row in tracks:
         try:
-            s3.download_file(os.environ.get('S3_BUCKET_NAME'), "tracks/" + str(row[1]) + ".bin", "temp.bin")
-            blob_data = open("temp.bin", "rb").read()
+            temp_file_name = str(row[1]) + ".bin"
+            s3.download_file(os.environ.get('S3_BUCKET_NAME'), "tracks/" + str(row[1]) + ".bin", temp_file_name)
+            blob_data = open(temp_file_name, "rb").read()
             blob_data_str = str(blob_data, 'utf-8')
-            os.remove("temp.bin")
+            os.remove(temp_file_name)
             formatted_tracks.append(
                 {"trackId": row[0], "blobData": blob_data_str, "instrumentType": row[2], "accepted": row[3], "title": row[4], "description": row[5]})
         except Exception as e:

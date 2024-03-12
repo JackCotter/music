@@ -39,7 +39,6 @@ export const createTrack = async (projectId: number, title: string, description:
           base64Data = btoa(binaryString);
       } else {
           // Handle unsupported result types here
-          console.error("Unsupported result type");
           reject(new Error("Unsupported result type"));
           return;
       }
