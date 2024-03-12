@@ -32,10 +32,8 @@ def track_create():
     buffer = io.BytesIO()
     buffer.write(blob_data_bytes)
     buffer.seek(0)
-    response = s3.upload_fileobj(
+    s3.upload_fileobj(
         buffer, os.environ.get('S3_BUCKET_NAME'), "tracks/" + str(blobId[0]) + ".bin")
-    # except Exception as e:
-    #     return str(e), 400
 
     cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, blobid, title, description) VALUES (%s, %s, %s, %s, %s)",
                 (request_data["instrumentType"], flask_login.current_user.id, blobId[0], request_data["title"], request_data["description"]))
