@@ -33,6 +33,7 @@ import { useMutation } from "react-query";
 import { maxNCharacters } from "@/utils/stringUtils";
 import TrackProgressBar from "@/components/trackProgressBar";
 import Link from "next/link";
+import TrackProgressCounter from "@/components/trackProgressCounter";
 
 const Project = () => {
   Tone.Transport.debug = true;
@@ -204,7 +205,7 @@ const Project = () => {
             ? maxNCharacters(projectInfo.description, 300)
             : ""}
         </Typography>
-        <Stack direction="row" spacing={2}>
+        <Stack className={styles.playButtonRow} direction="row" spacing={2}>
           <IconButton
             color="secondary"
             onClick={() =>
@@ -237,6 +238,10 @@ const Project = () => {
               <FiberManualRecordIcon />
             )}
           </IconButton>
+          <TrackProgressCounter
+            player={getMaxLengthAcceptedPlayer(players, trackList)}
+            trackStopped={() => setIsAudioPlaying(false)}
+          />
           {recordedData !== null && (
             <Alert severity="success">
               {isAuthenticated
