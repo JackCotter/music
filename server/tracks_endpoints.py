@@ -7,7 +7,7 @@ import boto3
 from utils import get_db_connection
 
 tracks_blueprint = Blueprint('tracks', __name__)
-s3 = boto3.client('s3', aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'), aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'), region_name='us-east-2')
+s3 = boto3.client('s3')
 
 @tracks_blueprint.post("/tracks/create")
 @flask_login.login_required
@@ -73,7 +73,9 @@ def track_list():
     for row in tracks:
         try:
             temp_file_name = str(row[1]) + ".bin"
-            s3.download_file(os.environ.get('S3_BUCKET_NAME'), "tracks/" + str(row[1]) + ".bin", temp_file_name)
+            # print("tracks/" + str(row[1]) + ".bin")
+        
+            s3.download_file(os.environ.get('S3_BUCKET_NAME'), "tracks/" + temp_file_name, temp_file_name)
             blob_data = open(temp_file_name, "rb").read()
             blob_data_str = str(blob_data, 'utf-8')
             os.remove(temp_file_name)
