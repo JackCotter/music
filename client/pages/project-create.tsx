@@ -17,8 +17,6 @@ import AuthWrapper from "@/components/authWrapper";
 import InstrumentTypeSelect from "@/components/instrumentTypeSelect";
 
 const ProjectCreate = () => {
-  const router = useRouter();
-
   const formik = useFormik({
     initialValues: {
       projectName: "",
@@ -45,6 +43,7 @@ const ProjectCreate = () => {
     createProjectQuery,
     {
       onSuccess(data: { projectId: string }) {
+        const router = useRouter();
         router.push(`/project/${data.projectId}`);
       },
       onError(error) {
