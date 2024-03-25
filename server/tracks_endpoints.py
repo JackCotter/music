@@ -46,14 +46,21 @@ def track_create():
         s3.upload_fileobj(
             buffer, os.environ.get('S3_BUCKET_NAME'), "tracks/" + str(blobId[0]) + ".bin")
     except Exception as e:
-        return 'Error uploading blob to S3', 400
+        print(e)
+        return 'Error uploading track to our database', 400
 
     cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, blobid, title, description) VALUES (%s, %s, %s, %s, %s)",
                 (request_data["instrumentType"], flask_login.current_user.id, blobId[0], request_data["title"], request_data["description"]))
     cur.execute("SELECT trackid FROM tracks WHERE blobid = %s", (blobId[0],))
     trackId = cur.fetchone()
 
-    cur.execute("INSERT INTO projecttracks (projectid, trackid, accepted) VALUES (%s, %s, false)",
+    cur.execute("SELECT projectid FROM projects WHERE owner = %s AND projectid = %s", (flask_login.current_user.id, projectid,))
+    isOwner = cur.fetchone()
+    if (request_data.get("accepted") and isOwner):
+        cur.execute("INSERT INTO projecttracks (projectid, trackid, accepted) VALUES (%s, %s, true)",
+                    (request_data["projectId"], trackId))
+    else:
+        cur.execute("INSERT INTO projecttracks (projectid, trackid, accepted) VALUES (%s, %s, false)",
                 (request_data["projectId"], trackId))
 
     conn.commit()

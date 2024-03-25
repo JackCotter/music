@@ -22,7 +22,7 @@ export const patchTrack = async (trackIds: number[], projectId:number, accepted:
   return response.data;
 }
 
-export const createTrack = async (projectId: number, title: string, description:string, instrumentType:string, blobData:Blob) => {
+export const createTrack = async (projectId: number, title: string, description:string, instrumentType:string, blobData:Blob, accepted?: boolean) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = async () => {
@@ -43,7 +43,7 @@ export const createTrack = async (projectId: number, title: string, description:
           return;
       }
       try {
-        const response = await api.post("/tracks/create" , { projectId, title, description, instrumentType, blobData: base64Data }, {withCredentials: true});
+        const response = await api.post("/tracks/create" , { projectId, title, description, instrumentType, blobData: base64Data, accepted }, {withCredentials: true});
         resolve(response.data);
       } catch (error) {
         reject(error);

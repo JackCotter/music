@@ -29,6 +29,7 @@ interface CommitTrackModalProps {
   onSuccess: () => void;
   recordedData: Blob | null;
   projectId: string | string[] | undefined;
+  accepted?: boolean;
 }
 
 const CommitTrackModal = ({
@@ -37,6 +38,7 @@ const CommitTrackModal = ({
   onSuccess,
   recordedData,
   projectId,
+  accepted,
 }: CommitTrackModalProps) => {
   const [errorBar, setErrorBar] = React.useState({
     isOpen: false,
@@ -63,7 +65,8 @@ const CommitTrackModal = ({
         formik.values.title,
         formik.values.description,
         formik.values.instrument,
-        recordedData
+        recordedData,
+        accepted
       );
     } else {
       throw new Error("No recording data provided");

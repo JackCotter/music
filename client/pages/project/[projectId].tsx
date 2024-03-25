@@ -292,7 +292,9 @@ const Project = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={3}>
-                    {projectInfo && projectInfo.isowner
+                    {projectInfo && trackList.length == 0
+                      ? "This project has no tracks. Record one with the record button above!"
+                      : projectInfo && projectInfo.isowner
                       ? "No tracks have been accepted. Select some from the options below!"
                       : "No tracks have been accepted. Check back later!"}
                   </TableCell>
@@ -329,6 +331,7 @@ const Project = () => {
         onSuccess={() => closeModalAndRefesh()}
         recordedData={recordedData}
         projectId={projectId}
+        accepted={projectInfo?.isowner}
       />
     </div>
   );
