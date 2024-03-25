@@ -10,16 +10,15 @@ import {
 import styles from "@/styles/pages/project-create.module.scss";
 import { useFormik } from "formik";
 import * as yup from "yup";
-// import { useMutation } from "react-query";
+import { useMutation } from "react-query";
 import { createProject } from "@/utils/apiUtils";
-// import { useRouter } from "next/router";
+import { useRouter } from "next/router";
 import AuthWrapper from "@/components/authWrapper";
 import InstrumentTypeSelect from "@/components/instrumentTypeSelect";
-import { useEffect, useState } from "react";
-import { red } from "@mui/material/colors";
 
 const ProjectCreate = () => {
-  // const router = useRouter();
+  const router = useRouter();
+
   const formik = useFormik({
     initialValues: {
       projectName: "",
@@ -30,15 +29,8 @@ const ProjectCreate = () => {
     validationSchema: yup.object({
       projectName: yup.string().required("Project Name is required"),
     }),
-    onSubmit: () => {}, //createProjectMutation(),
+    onSubmit: () => createProjectMutation(),
   });
-
-  // const redirectToNewProjectPage = (projectId: string) => {
-  //   if (typeof window !== "undefined" && projectId && router) {
-  //     console.log("Router pathname:", router.pathname);
-  //     router.push(`/project/${projectId}`);
-  //   }
-  // };
 
   const createProjectQuery = async (): Promise<{ projectId: string }> => {
     return await createProject(
@@ -49,19 +41,17 @@ const ProjectCreate = () => {
     );
   };
 
-  // const { mutate: createProjectMutation, isLoading } = useMutation(
-  //   createProjectQuery,
-  //   {
-  //     onSuccess(data: { projectId: string }) {
-  //       if (data.projectId) {
-  //         // router.push("/");
-  //       }
-  //     },
-  //     onError(error) {
-  //       console.log(error);
-  //     },
-  //   }
-  // );
+  const { mutate: createProjectMutation, isLoading } = useMutation(
+    createProjectQuery,
+    {
+      onSuccess(data: { projectId: string }) {
+        router.push(`/project/${data.projectId}`);
+      },
+      onError(error) {
+        console.log(error);
+      },
+    }
+  );
 
   return (
     <AuthWrapper>
@@ -149,7 +139,7 @@ const ProjectCreate = () => {
                 {" "}
                 Create{" "}
               </Button>
-              {/* {isLoading && <CircularProgress />} */}
+              {isLoading && <CircularProgress />}
             </Stack>
           </Stack>
         </div>

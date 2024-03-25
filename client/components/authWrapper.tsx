@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React from "react";
 import { useAuthContext } from "@/contexts/authContext";
 import { useRouter } from "next/router";
 
@@ -10,7 +10,7 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
   const { isAuthenticated } = useAuthContext();
   const router = useRouter();
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && typeof window !== "undefined") {
     router.push("/");
     return;
   }
