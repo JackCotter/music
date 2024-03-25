@@ -15,6 +15,7 @@ import {
   Divider,
   Typography,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -72,7 +73,7 @@ const CommitTrackModal = ({
       throw new Error("No recording data provided");
     }
   };
-  const { mutate: trackCreateMutation } = useMutation(createTracks, {
+  const { mutate: trackCreateMutation, isLoading } = useMutation(createTracks, {
     onSuccess: () => {
       onSuccess();
     },
@@ -165,7 +166,10 @@ const CommitTrackModal = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={() => onClose()}>close</Button>
-          <Button type="submit">Submit</Button>
+          <Button type="submit" disabled={isLoading}>
+            Submit
+          </Button>
+          {isLoading && <CircularProgress />}
         </DialogActions>
       </form>
     </Dialog>
