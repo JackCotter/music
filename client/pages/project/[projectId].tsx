@@ -325,14 +325,15 @@ const Project = () => {
           </>
         )}
       </Stack>
-      <CommitTrackModal
-        isOpen={openCommitTrackModal}
-        onClose={() => setOpenCommitTrackModal(false)}
-        onSuccess={() => closeModalAndRefesh()}
-        recordedData={recordedData}
-        projectId={projectId}
-        accepted={projectInfo?.isowner}
-      />
+      {openCommitTrackModal && (
+        <CommitTrackModal
+          onClose={() => setOpenCommitTrackModal(false)}
+          onSuccess={() => closeModalAndRefesh()}
+          recordedData={recordedData}
+          projectId={projectId}
+          accepted={projectInfo?.isowner}
+        />
+      )}
     </div>
   );
 };

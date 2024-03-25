@@ -25,7 +25,6 @@ import { createTrack } from "@/utils/apiUtils";
 import { useMutation } from "react-query";
 
 interface CommitTrackModalProps {
-  isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
   recordedData: Blob | null;
@@ -34,7 +33,6 @@ interface CommitTrackModalProps {
 }
 
 const CommitTrackModal = ({
-  isOpen,
   onClose,
   onSuccess,
   recordedData,
@@ -88,7 +86,7 @@ const CommitTrackModal = ({
   });
 
   return (
-    <Dialog open={isOpen} onClose={() => onClose()}>
+    <Dialog open={true} onClose={() => onClose()}>
       <DialogTitle>Commit Track</DialogTitle>
       <form onSubmit={formik.handleSubmit}>
         <DialogContent className={styles.modalContainer}>
