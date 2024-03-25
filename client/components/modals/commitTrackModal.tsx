@@ -15,6 +15,7 @@ import {
   Divider,
   Typography,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -24,19 +25,19 @@ import { createTrack } from "@/utils/apiUtils";
 import { useMutation } from "react-query";
 
 interface CommitTrackModalProps {
-  isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
   recordedData: Blob | null;
   projectId: string | string[] | undefined;
+  accepted?: boolean;
 }
 
 const CommitTrackModal = ({
-  isOpen,
   onClose,
   onSuccess,
   recordedData,
   projectId,
+  accepted,
 }: CommitTrackModalProps) => {
   const [errorBar, setErrorBar] = React.useState({
     isOpen: false,
@@ -63,29 +64,37 @@ const CommitTrackModal = ({
         formik.values.title,
         formik.values.description,
         formik.values.instrument,
-        recordedData
+        recordedData,
+        accepted
       );
-      onSuccess();
     } else {
       throw new Error("No recording data provided");
     }
   };
-  const { mutate: trackCreateMutation } = useMutation(createTracks, {
+  const { mutate: trackCreateMutation, isLoading } = useMutation(createTracks, {
     onSuccess: () => {
-      console.log("success");
+      onSuccess();
     },
-    onError: () => {
-      console.log("error");
+    onError: (error: any) => {
+      setErrorBar({
+        isOpen: true,
+        message:
+          error.response?.data ??
+          "Error creating track, please try again later",
+      });
     },
   });
 
   return (
-    <Dialog open={isOpen} onClose={() => onClose()}>
+    <Dialog open={true} onClose={() => onClose()}>
       <DialogTitle>Commit Track</DialogTitle>
       <form onSubmit={formik.handleSubmit}>
-        <DialogContent>
+        <DialogContent className={styles.modalContainer}>
           {errorBar.isOpen && (
-            <Alert severity="error"> {errorBar.message}</Alert>
+            <Alert className={styles.errorBar} severity="error">
+              {" "}
+              {errorBar.message}
+            </Alert>
           )}
           <Stack className={styles.containerRow} direction="row" spacing={2}>
             <Stack className={styles.formColumn} direction="column" spacing={2}>
@@ -103,7 +112,7 @@ const CommitTrackModal = ({
                 id="description"
                 name="description"
                 label="Description"
-                InputProps={{ inputProps: { maxLength: 300 } }}
+                InputProps={{ inputProps: { maxLength: 100 } }}
                 multiline
                 minRows={4}
                 maxRows={4}
@@ -155,7 +164,10 @@ const CommitTrackModal = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={() => onClose()}>close</Button>
-          <Button type="submit">Submit</Button>
+          <Button type="submit" disabled={isLoading}>
+            Submit
+          </Button>
+          {isLoading && <CircularProgress />}
         </DialogActions>
       </form>
     </Dialog>

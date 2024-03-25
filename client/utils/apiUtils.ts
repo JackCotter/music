@@ -22,30 +22,38 @@ export const patchTrack = async (trackIds: number[], projectId:number, accepted:
   return response.data;
 }
 
-export const createTrack = async (projectId: number, title: string, description:string, instrumentType:string, blobData:Blob) => {
-  const reader = new FileReader();
-  reader.onload = async () => {
-    let base64Data: string;
+export const createTrack = async (projectId: number, title: string, description:string, instrumentType:string, blobData:Blob, accepted?: boolean) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      let base64Data: string;
 
-    if (typeof reader.result === 'string') {
-        // If the result is a string, it's already in the expected format
-        base64Data = reader.result.split(',')[1];
-    } else if (reader.result instanceof ArrayBuffer) {
-        // If the result is an ArrayBuffer, convert it to a base64 string
-        const binaryArray = new Uint8Array(reader.result);
-        const binaryStringChars = Array.from(binaryArray).map((charCode) => String.fromCharCode(charCode));
-        const binaryString = binaryStringChars.join('');
-        base64Data = btoa(binaryString);
-    } else {
-        // Handle unsupported result types here
-        console.error("Unsupported result type");
-        return;
+      if (typeof reader.result === 'string') {
+          // If the result is a string, it's already in the expected format
+          base64Data = reader.result.split(',')[1];
+      } else if (reader.result instanceof ArrayBuffer) {
+          // If the result is an ArrayBuffer, convert it to a base64 string
+          const binaryArray = new Uint8Array(reader.result);
+          const binaryStringChars = Array.from(binaryArray).map((charCode) => String.fromCharCode(charCode));
+          const binaryString = binaryStringChars.join('');
+          base64Data = btoa(binaryString);
+      } else {
+          // Handle unsupported result types here
+          reject(new Error("Unsupported result type"));
+          return;
+      }
+      try {
+        const response = await api.post("/tracks/create" , { projectId, title, description, instrumentType, blobData: base64Data, accepted }, {withCredentials: true});
+        resolve(response.data);
+      } catch (error) {
+        reject(error);
+      }
     }
-    const response = await api.post("/tracks/create" , { projectId, title, description, instrumentType, blobData: base64Data }, {withCredentials: true});
-    return response.data;
+  reader.onerror = (error) => {
+    reject(error);
   }
-
   reader.readAsDataURL(blobData);
+  });
 }
 
 export const getProject = async (projectId: number) => {

@@ -1,14 +1,23 @@
-.containerRow {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
+.modalContainer {
+  padding-top: 0.3rem;
 
-  .formColumn {
-    width: 100%;
+  .errorBar {
+    margin-bottom: 1rem;
+    margin-top: 0rem;
   }
 
-  .descriptionColumn {
-    width: 100%;
+  .containerRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    .formColumn {
+      width: 100%;
+    }
+
+    .descriptionColumn {
+      width: 100%;
+    }
   }
 }

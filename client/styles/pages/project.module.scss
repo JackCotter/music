@@ -17,6 +17,14 @@
 
     .titleRow {
       align-items: center;
+      flex-wrap: wrap;
+      .title {
+        font-size: 5rem;
+      }
+      .username {
+        font-size: 2rem;
+      
+      }
     }
     
     .trackListEntry {
@@ -25,6 +33,18 @@
 
     .lightText {
       color: library.$light-text-color;
+    }
+
+    .playButtonRow {
+      display: flex;
+      align-items: center;
+      justify-content: left;
+      flex-wrap: wrap;
+
+      // @media screen and (max-width: 600px) {
+      //   flex-direction: column;
+        
+      // }
     }
 
     .acceptedTracksContainer {

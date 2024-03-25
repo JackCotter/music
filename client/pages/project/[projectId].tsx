@@ -19,6 +19,7 @@ import styles from "@/styles/pages/project.module.scss";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   getMaxLengthAcceptedPlayer,
   populatePlayers,
@@ -32,18 +33,19 @@ import { useMutation } from "react-query";
 import { maxNCharacters } from "@/utils/stringUtils";
 import TrackProgressBar from "@/components/trackProgressBar";
 import Link from "next/link";
+import TrackProgressCounter from "@/components/trackProgressCounter";
 
 const Project = () => {
   Tone.Transport.debug = true;
   const [players, setPlayers] = useState<Tone.Players | null>(null);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
-  const recordingIndex = useRef<number>(0);
   const [recordedData, setRecordedData] = useState<Blob | null>(null);
   const [trackList, setTrackList] = useState<Track[]>([]);
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const [projectInfo, setProjectInfo] = useState<Project | null>(null);
   const [openCommitTrackModal, setOpenCommitTrackModal] =
     useState<boolean>(false);
+  const recordingIndex = useRef<number>(0);
 
   const router = useRouter();
   const { projectId } = router.query;
@@ -86,6 +88,7 @@ const Project = () => {
 
   const closeModalAndRefesh = () => {
     setOpenCommitTrackModal(false);
+    deleteRecording();
     if (projectId === undefined) return;
     if (typeof projectId === "string") {
       projectGetQuery(parseInt(projectId) as number);
@@ -110,12 +113,7 @@ const Project = () => {
         recorder = new MediaRecorder(stream);
         setRecorder(recorder);
         recorder.start();
-        startAudio(
-          players,
-          trackList,
-          setIsAudioPlaying,
-          recordingIndex.current
-        );
+        startAudio(players, trackList, setIsAudioPlaying);
       });
   };
 
@@ -124,17 +122,28 @@ const Project = () => {
       recorder.stop();
       recorder.ondataavailable = (e) => {
         const url = URL.createObjectURL(e.data);
-        if (players?.has("Recording" + (recordingIndex.current - 1))) {
-          players?.player("Recording" + (recordingIndex.current - 1)).dispose();
-          // console.log(
-          //   players?.player("Recording" + (recordingIndex.current - 1)).state
-          // );
+        if (players?.has("Recording" + recordingIndex.current)) {
+          players?.player("Recording" + recordingIndex.current).dispose();
         }
-        players?.add("Recording" + recordingIndex.current++, url);
+        players?.add("Recording" + ++recordingIndex.current, url);
         setRecordedData(e.data);
       };
       setRecorder(null);
       stopAudio(players, setIsAudioPlaying);
+    }
+  };
+
+  const deleteRecording = () => {
+    if (recorder) {
+      recorder.stop();
+      setRecorder(null);
+      stopAudio(players, setIsAudioPlaying);
+    }
+    if (recordedData) {
+      setRecordedData(null);
+    }
+    if (players?.has("Recording" + recordingIndex.current)) {
+      players?.player("Recording" + recordingIndex.current).dispose();
     }
   };
 
@@ -165,26 +174,30 @@ const Project = () => {
     }
   };
 
-  const { mutate: trackCreateMutation, isLoading } = useMutation(
-    saveTrackList,
-    {
-      onSuccess: () => {
-        console.log("success");
-      },
-      onError: () => {
-        console.log("error");
-      },
-    }
-  );
+  const {
+    mutate: trackCreateMutation,
+    isLoading,
+    isSuccess,
+  } = useMutation(saveTrackList, {
+    onSuccess: () => {
+      console.log("success");
+    },
+    onError: () => {
+      console.log("error");
+    },
+  });
 
   return (
     <div className={styles.container}>
       <Stack className={styles.innerContainer} direction="column" spacing={2}>
         <Stack className={styles.titleRow} direction="row" spacing={6}>
-          <Typography variant="h1">
+          <Typography className={styles.title} variant="h1">
             {projectInfo?.projectname ? projectInfo.projectname : "Loading"}
           </Typography>
-          <Link href={`/user/${projectInfo?.username}`}>
+          <Link
+            className={styles.username}
+            href={`/user/${projectInfo?.username}`}
+          >
             <Typography variant="h2">
               By {projectInfo?.username ? projectInfo.username : "Loading"}
             </Typography>
@@ -195,7 +208,7 @@ const Project = () => {
             ? maxNCharacters(projectInfo.description, 300)
             : ""}
         </Typography>
-        <Stack direction="row" spacing={2}>
+        <Stack className={styles.playButtonRow} direction="row" spacing={2}>
           <IconButton
             color="secondary"
             onClick={() =>
@@ -205,17 +218,33 @@ const Project = () => {
                     players,
                     trackList,
                     setIsAudioPlaying,
-                    recordingIndex.current
+                    "Recording" + recordingIndex.current
                   )
             }
           >
             {isAudioPlaying ? <StopIcon /> : <PlayArrowIcon />}
           </IconButton>
           <IconButton
-            onClick={() => (recorder ? stopRecording() : startRecording())}
+            onClick={() =>
+              recordedData
+                ? deleteRecording()
+                : recorder
+                ? stopRecording()
+                : startRecording()
+            }
           >
-            {recorder ? <StopIcon /> : <FiberManualRecordIcon />}
+            {recordedData ? (
+              <DeleteIcon />
+            ) : recorder ? (
+              <StopIcon />
+            ) : (
+              <FiberManualRecordIcon />
+            )}
           </IconButton>
+          <TrackProgressCounter
+            player={getMaxLengthAcceptedPlayer(players, trackList)}
+            trackStopped={() => setIsAudioPlaying(false)}
+          />
           {recordedData !== null && (
             <Alert severity="success">
               {isAuthenticated
@@ -263,7 +292,9 @@ const Project = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={3}>
-                    {projectInfo && projectInfo.isowner
+                    {projectInfo && trackList.length == 0
+                      ? "This project has no tracks. Record one with the record button above!"
+                      : projectInfo && projectInfo.isowner
                       ? "No tracks have been accepted. Select some from the options below!"
                       : "No tracks have been accepted. Check back later!"}
                   </TableCell>
@@ -289,17 +320,20 @@ const Project = () => {
                 Save Changes
               </Button>
               {isLoading && <CircularProgress />}
+              {isSuccess && <Alert severity="success">Changes saved!</Alert>}
             </Stack>
           </>
         )}
       </Stack>
-      <CommitTrackModal
-        isOpen={openCommitTrackModal}
-        onClose={() => setOpenCommitTrackModal(false)}
-        onSuccess={() => closeModalAndRefesh()}
-        recordedData={recordedData}
-        projectId={projectId}
-      />
+      {openCommitTrackModal && (
+        <CommitTrackModal
+          onClose={() => setOpenCommitTrackModal(false)}
+          onSuccess={() => closeModalAndRefesh()}
+          recordedData={recordedData}
+          projectId={projectId}
+          accepted={projectInfo?.isowner}
+        />
+      )}
     </div>
   );
 };
