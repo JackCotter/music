@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "heroku-postbuild": "next build",
     "testui": "npx playwright test --ui",
     "test": "npx playwright test"
   },
