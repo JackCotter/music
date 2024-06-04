@@ -11,6 +11,9 @@
     "testui": "npx playwright test --ui",
     "test": "npx playwright test"
   },
+  "engines": {
+    "node": "22.2.0"
+  },
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
