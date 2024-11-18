@@ -1,0 +1,31 @@
+
+services:
+  db:
+    image: postgres:15
+    container_name: music_db
+    env_file:
+      - .env
+    volumes:
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+    networks:
+      - app-network
+
+  web:
+    build: .
+    command: flask run --host=0.0.0.0 --port=5000
+    container_name: music_server
+    env_file:
+      - .env
+    volumes:
+      - .:/app  # Mount the current directory to the container for hot-reloading
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

@@ -5,10 +5,10 @@ import requests
 
 def get_db_connection():
     return psycopg2.connect(
-        host="localhost",
-        database="music",
-        user=os.environ['DB_USERNAME'],
-        password=os.environ['DB_PASSWORD'])
+        host=os.getenv('DB_HOST'),
+        database=os.getenv('POSTGRES_DB'),
+        user=os.getenv('POSTGRES_USER'),
+        password=os.getenv('POSTGRES_PASSWORD'))
 
 def email_in_db(email):
     conn = get_db_connection()
