@@ -40,7 +40,7 @@ def track_create():
         cur.execute("SELECT COUNT(*) FROM tracks")
         number_rows_in_tracks = cur.fetchone()
         if number_rows_in_tracks[0] == 0:
-            blobId = 1;
+            blobId = [1];
         else:
             return 'Error generating blobId', 400
 
