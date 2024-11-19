@@ -26,10 +26,14 @@
     .usernameAndPlayButton {
       flex-grow: 1;
       align-items: center;
-      .username {
+      .usernameContainer {
         flex-grow: 1;
-        &:hover {
-          color: library.$secondary-MUI-component-color;
+        .usernameText {
+          display: inline-block;
+          &:hover {
+            flex-grow: 0;
+            color: library.$secondary-MUI-component-color;
+          }
         }
       }
     }
