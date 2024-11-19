@@ -37,12 +37,15 @@ def project_create():
 def project_list():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
+    results_per_page = 12
+    page = request.args.get("page", 1)
+    offset = (page - 1) * results_per_page
 
     if 'username' in request.args:
-        cur.execute("SELECT DISTINCT projects.projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM tracks join projecttracks on tracks.trackid = projecttracks.trackid join projects on projecttracks.projectid = projects.projectid join users on (tracks.contributeremail = users.email) where username = %s",
-                    (request.args.get("username"),))
+        cur.execute("SELECT DISTINCT projects.projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM tracks join projecttracks on tracks.trackid = projecttracks.trackid join projects on projecttracks.projectid = projects.projectid join users on (tracks.contributeremail = users.email) where username = %s LIMIT %s OFFSET %s",
+                    (request.args.get("username"),results_per_page, offset,))
     else:
-        cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM projects join users on (projects.owner = users.email)")
+        cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM projects join users on (projects.owner = users.email) LIMIT %s OFFSET %s", (results_per_page, offset,))
     projects = cur.fetchall()
 
     conn.close()
