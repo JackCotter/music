@@ -53,11 +53,10 @@ const ProjectCard = ({
   const handleCardClick = (e: any) => {
     if (
       e.target.classList.value.includes("MuiChip") ||
-      e.target.classList.value === "" ||
       e.target.classList.value.includes("MuiSvgIcon")
     ) {
       return;
-    } else if (e.target.classList.value.includes("username")) {
+    } else if (e.target.classList.value.includes("usernameText")) {
       router.push(`/user/${project.username}`);
     } else {
       router.push(`/project/${project.projectid}`);
@@ -79,9 +78,9 @@ const ProjectCard = ({
   }, [project.projectid]);
 
   return (
-    <Card className={styles.projectCard}>
+    <Card className={styles.projectCard} onClick={(d) => handleCardClick(d)}>
       <CardContent>
-        <Stack direction="column" onClick={(d) => handleCardClick(d)}>
+        <Stack direction="column">
           <Stack className={styles.topRow} direction="row" spacing={2}>
             <Typography className={styles.title} variant="h5" component="div">
               {project.projectname}
@@ -91,9 +90,11 @@ const ProjectCard = ({
               direction="row"
               spacing={1}
             >
-              <Typography className={styles.username} variant="body2">
-                {project.username}
-              </Typography>
+              <div className={styles.usernameContainer}>
+                <Typography className={styles.usernameText} variant="body2">
+                  {project.username}
+                </Typography>
+              </div>
               <div>
                 <IconButton
                   color="secondary"
