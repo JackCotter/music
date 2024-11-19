@@ -71,6 +71,11 @@ export const listProject = async (username?:string) => {
   }
 }
 
+export const pagecountProject = async () => {
+  const response = await api.get("/projects/pagecount", {withCredentials: false});
+  return response.data as number;
+}
+
 export const createProject = async (projectName: string, instrumentTypes: string[], strictMode: boolean, description:string): Promise<{projectId: string}> => {
   const response = await api.post("/projects/create", { projectName, instrumentTypes, strictMode, description }, {withCredentials: true});
   return response.data;
