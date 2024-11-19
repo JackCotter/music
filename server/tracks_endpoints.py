@@ -3,6 +3,7 @@ import flask_login
 import os
 import io
 import boto3
+import logging
 
 from utils import get_db_connection
 
@@ -36,7 +37,12 @@ def track_create():
     cur.execute("SELECT max(blobid) + 1 FROM tracks")
     blobId = cur.fetchone();
     if blobId[0] is None:
-        return 'Error generating blobId', 400
+        cur.execute("SELECT COUNT(*) FROM tracks")
+        number_rows_in_tracks = cur.fetchone()
+        if number_rows_in_tracks[0] == 0:
+            blobId = [1];
+        else:
+            return 'Error generating blobId', 400
 
     try:
         blob_data_bytes = bytes(request_data["blobData"], 'ascii')
@@ -46,7 +52,6 @@ def track_create():
         s3.upload_fileobj(
             buffer, os.environ.get('S3_BUCKET_NAME'), "tracks/" + str(blobId[0]) + ".bin")
     except Exception as e:
-        print(e)
         return 'Error uploading track to our database', 400
 
     cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, blobid, title, description) VALUES (%s, %s, %s, %s, %s)",

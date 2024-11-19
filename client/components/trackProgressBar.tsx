@@ -20,7 +20,7 @@ const TrackProgressBar = ({ player, trackStopped }: TrackProgressBarProps) => {
       if (startTime.current !== undefined) {
         setElapsedTime(currentDateTime.getTime() - startTime.current);
       }
-    }, 1000);
+    }, 200);
   };
 
   const stopTimeCounter = (): void => {
@@ -43,7 +43,11 @@ const TrackProgressBar = ({ player, trackStopped }: TrackProgressBarProps) => {
       startTimeCounter();
     } else if (player && player.state === "stopped") {
       stopTimeCounter();
-      setElapsedTime(0);
+      const timer = setTimeout(() => {
+        setElapsedTime(0);
+      }, 500);
+
+      return () => clearTimeout(timer);
     }
   }, [player?.state]);
 
