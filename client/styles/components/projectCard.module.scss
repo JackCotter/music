@@ -3,6 +3,9 @@
 .projectCard {
   width: 100%;
   min-height: 20vh;
+  &:hover {
+    border: 2px solid library.$primary-MUI-component-color;
+  }
 
   .topRow {
     flex-wrap: wrap;
