@@ -3,6 +3,7 @@
 .projectCard {
   width: 100%;
   min-height: 20vh;
+  box-sizing: border-box;
   &:hover {
     border: 2px solid library.$primary-MUI-component-color;
   }
