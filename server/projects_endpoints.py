@@ -3,8 +3,10 @@ from flask_cors import cross_origin
 import flask_login
 from psycopg2.extras import RealDictCursor
 from utils import get_db_connection
+import math
 
 projects_blueprint = Blueprint('projects', __name__)
+RESULTS_PER_PAGE = 12
 
 @projects_blueprint.post("/projects/create")
 @flask_login.login_required
@@ -37,18 +39,44 @@ def project_create():
 def project_list():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        page = int(request.args.get("page", 1))
+    except ValueError:
+        page = 1
+    offset = (page - 1) * RESULTS_PER_PAGE
 
     if 'username' in request.args:
-        cur.execute("SELECT DISTINCT projects.projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM tracks join projecttracks on tracks.trackid = projecttracks.trackid join projects on projecttracks.projectid = projects.projectid join users on (tracks.contributeremail = users.email) where username = %s",
-                    (request.args.get("username"),))
+        cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM projects join users on (projects.owner = users.email) WHERE username = %s LIMIT %s OFFSET %s", (request.args.get("username"), RESULTS_PER_PAGE, offset,))
+        # cur.execute("SELECT DISTINCT projects.projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM tracks join projecttracks on tracks.trackid = projecttracks.trackid join projects on projecttracks.projectid = projects.projectid join users on (tracks.contributeremail = users.email) where username = %s LIMIT %s OFFSET %s",
+        #             (request.args.get("username"),RESULTS_PER_PAGE, offset,))
     else:
-        cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM projects join users on (projects.owner = users.email)")
+        cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM projects join users on (projects.owner = users.email) LIMIT %s OFFSET %s", (RESULTS_PER_PAGE, offset,))
     projects = cur.fetchall()
 
     conn.close()
     cur.close()
     return jsonify(projects)
 
+@projects_blueprint.get("/projects/pagecount")
+def project_pagecount():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    if 'username' in request.args:
+        cur.execute("SELECT COUNT(*) FROM projects JOIN users ON (owner = users.email) WHERE users.username = %s", (request.args.get('username'),))
+    else:
+        cur.execute("SELECT COUNT(*) FROM projects")
+    count = cur.fetchone()
+
+    conn.close()
+    cur.close()
+
+    if count:
+        total_projects = count['count']
+        total_pages = math.ceil(total_projects / RESULTS_PER_PAGE)
+        return jsonify(total_pages)
+    return jsonify(1)
+    
 
 @projects_blueprint.get("/projects/get")
 def project_get():

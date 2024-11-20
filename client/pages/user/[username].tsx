@@ -3,6 +3,7 @@ import {
   getUser,
   listProject,
   listProjectTracks,
+  pagecountProject,
   patchUser,
 } from "@/utils/apiUtils";
 import { commitHistoryToActivityCalendar } from "@/utils/calendarUtils";
@@ -12,6 +13,7 @@ import {
   Button,
   Grid,
   IconButton,
+  Pagination,
   Stack,
   TextField,
   Tooltip,
@@ -34,6 +36,8 @@ const UserProfile = () => {
   const [userInfo, setUserInfo] = useState<User>();
   const [projectList, setProjectList] = useState<Project[]>([]);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const [pageCount, setPageCount] = useState<number>(0);
   const [errorBar, setErrorBar] = useState<{
     show: boolean;
     message: string;
@@ -52,8 +56,12 @@ const UserProfile = () => {
     setActivityHistory(activityHistory);
   };
   const getProjectList = async (username: string) => {
-    const projectList = await listProject(username);
+    const projectList = await listProject(page, username);
     setProjectList(projectList);
+  };
+  const getPageCount = async (username: string) => {
+    const pageCount = await pagecountProject(username);
+    setPageCount(pageCount);
   };
 
   useEffect(() => {
@@ -62,10 +70,25 @@ const UserProfile = () => {
       getUserData(username);
       getUserContrubutions(username);
       getProjectList(username);
+      getPageCount(username);
     } else {
       console.log("Error: username is not a string");
     }
   }, [username]);
+
+  useEffect(() => {
+    if (username === undefined) return;
+    if (typeof username === "string") {
+      getProjectList(username);
+    }
+  }, [page]);
+
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
+    setPage(value);
+  };
 
   const { mutate: updateDescription, isLoading } = useMutation(
     async () => {
@@ -210,6 +233,9 @@ const UserProfile = () => {
           </Grid>
         ))}
       </Grid>
+      <Stack direction="row" justifyContent="center" alignItems="center">
+        <Pagination count={pageCount} page={page} onChange={handlePageChange} />
+      </Stack>
     </form>
   );
 };
