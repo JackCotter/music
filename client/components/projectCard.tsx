@@ -114,7 +114,7 @@ const ProjectCard = ({
               </div>
             </Stack>
           </Stack>
-          {project.lookingfor && project.lookingfor.length && (
+          {project.lookingfor && project.lookingfor.length > 0 && (
             <Stack className={styles.instrumentRow} direction="row" spacing={1}>
               <div className={styles.instruments}>
                 <Stack direction="row" spacing={1}>
