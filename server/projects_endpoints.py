@@ -46,8 +46,9 @@ def project_list():
     offset = (page - 1) * RESULTS_PER_PAGE
 
     if 'username' in request.args:
-        cur.execute("SELECT DISTINCT projects.projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM tracks join projecttracks on tracks.trackid = projecttracks.trackid join projects on projecttracks.projectid = projects.projectid join users on (tracks.contributeremail = users.email) where username = %s LIMIT %s OFFSET %s",
-                    (request.args.get("username"),RESULTS_PER_PAGE, offset,))
+        cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM projects join users on (projects.owner = users.email) WHERE username = %s LIMIT %s OFFSET %s", (request.args.get("username"), RESULTS_PER_PAGE, offset,))
+        # cur.execute("SELECT DISTINCT projects.projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM tracks join projecttracks on tracks.trackid = projecttracks.trackid join projects on projecttracks.projectid = projects.projectid join users on (tracks.contributeremail = users.email) where username = %s LIMIT %s OFFSET %s",
+        #             (request.args.get("username"),RESULTS_PER_PAGE, offset,))
     else:
         cur.execute("SELECT projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM projects join users on (projects.owner = users.email) LIMIT %s OFFSET %s", (RESULTS_PER_PAGE, offset,))
     projects = cur.fetchall()
@@ -61,7 +62,10 @@ def project_pagecount():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
-    cur.execute("SELECT COUNT(*) FROM projects")
+    if 'username' in request.args:
+        cur.execute("SELECT COUNT(*) FROM projects JOIN users ON (owner = users.email) WHERE users.username = %s", (request.args.get('username'),))
+    else:
+        cur.execute("SELECT COUNT(*) FROM projects")
     count = cur.fetchone()
 
     conn.close()

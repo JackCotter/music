@@ -59,8 +59,8 @@ const UserProfile = () => {
     const projectList = await listProject(page, username);
     setProjectList(projectList);
   };
-  const getPageCount = async () => {
-    const pageCount = await pagecountProject();
+  const getPageCount = async (username: string) => {
+    const pageCount = await pagecountProject(username);
     setPageCount(pageCount);
   };
 
@@ -70,22 +70,17 @@ const UserProfile = () => {
       getUserData(username);
       getUserContrubutions(username);
       getProjectList(username);
-      getPageCount();
+      getPageCount(username);
     } else {
       console.log("Error: username is not a string");
     }
   }, [username]);
 
   useEffect(() => {
-    const getProjectList = async () => {
-      try {
-        const projectList = await listProject(page);
-        setProjectList(projectList);
-      } catch (error) {
-        console.error("Error fetching project list", error);
-      }
-    };
-    getProjectList();
+    if (username === undefined) return;
+    if (typeof username === "string") {
+      getProjectList(username);
+    }
   }, [page]);
 
   const handlePageChange = (

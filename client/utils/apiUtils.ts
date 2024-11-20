@@ -72,9 +72,14 @@ export const listProject = async (page?:number, username?:string) => {
   }
 }
 
-export const pagecountProject = async () => {
-  const response = await api.get("/projects/pagecount", {withCredentials: false});
-  return response.data as number;
+export const pagecountProject = async (username?:string) => {
+  if (username === undefined){
+    const response = await api.get("/projects/pagecount", {withCredentials: false});
+    return response.data as number;
+  } else {
+    const response = await api.get(`/projects/pagecount?username=${username}`, {withCredentials: false});
+    return response.data as number;
+  }
 }
 
 export const createProject = async (projectName: string, instrumentTypes: string[], strictMode: boolean, description:string): Promise<{projectId: string}> => {
