@@ -1,5 +1,5 @@
-import { listProject } from "@/utils/apiUtils";
-import { Button, Grid, Stack, Typography } from "@mui/material";
+import { listProject, pagecountProject } from "@/utils/apiUtils";
+import { Pagination, Grid, Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import ProjectCard from "@/components/projectCard";
 import styles from "@/styles/pages/index.module.scss";
@@ -9,6 +9,8 @@ export default function Home() {
   const [projectList, setProjectList] = useState<Project[]>([]);
   const [filteredProjectList, setFilteredProjectList] = useState<Project[]>([]);
   const [selectedInstruments, setSelectedInstruments] = useState<string[]>([]);
+  const [pageCount, setPageCount] = useState<number>(0);
+  const [page, setPage] = useState<number>(1);
 
   useEffect(() => {
     if (selectedInstruments.length === 0) {
@@ -27,7 +29,9 @@ export default function Home() {
     const getProjectList = async () => {
       try {
         const projectList = await listProject();
+        const pageCount = await pagecountProject();
         setProjectList(projectList);
+        setPageCount(pageCount);
         setFilteredProjectList(projectList);
       } catch (error) {
         console.error("Error fetching project list", error);
@@ -36,6 +40,27 @@ export default function Home() {
 
     getProjectList();
   }, []);
+
+  useEffect(() => {
+    const getProjectList = async () => {
+      try {
+        const projectList = await listProject(page);
+        setProjectList(projectList);
+        setFilteredProjectList(projectList);
+      } catch (error) {
+        console.error("Error fetching project list", error);
+      }
+    };
+
+    getProjectList();
+  }, [page]);
+
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
+    setPage(value);
+  };
 
   return (
     <div className={styles.indexContainer}>
@@ -73,6 +98,9 @@ export default function Home() {
           </Grid>
         ))}
       </Grid>
+      <Stack direction="row" justifyContent="center" alignItems="center">
+        <Pagination count={pageCount} page={page} onChange={handlePageChange} />
+      </Stack>
     </div>
   );
 }

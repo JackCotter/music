@@ -39,7 +39,10 @@ def project_create():
 def project_list():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    page = request.args.get("page", 1)
+    try:
+        page = int(request.args.get("page", 1))
+    except ValueError:
+        page = 1
     offset = (page - 1) * RESULTS_PER_PAGE
 
     if 'username' in request.args:
