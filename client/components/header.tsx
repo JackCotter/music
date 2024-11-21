@@ -12,20 +12,15 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { logout } from "@/utils/apiUtils";
+import LogoutModal from "./modals/logoutModal";
 
 const Header: React.FC = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] =
     React.useState<boolean>(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] =
+    React.useState<boolean>(false);
   const authContext = useAuthContext();
   const router = useRouter();
-
-  const logoutButtonClick = async () => {
-    const response = await logout();
-    if (response.status == 200) {
-      authContext.setLoggedOut();
-      router.push("/");
-    }
-  };
 
   return (
     <>
@@ -57,7 +52,7 @@ const Header: React.FC = () => {
               <IconButton
                 color="secondary"
                 className={styles.dashboardRightButton}
-                onClick={() => logoutButtonClick()}
+                onClick={() => setIsLogoutModalOpen(true)}
               >
                 <LogoutIcon className={styles.dashboardRightIcon} />
               </IconButton>
@@ -90,6 +85,10 @@ const Header: React.FC = () => {
       <LoginModal
         isLoginModalOpen={isLoginModalOpen}
         setIsLoginModalOpen={setIsLoginModalOpen}
+      />
+      <LogoutModal
+        isLogoutModalOpen={isLogoutModalOpen}
+        setIsLogoutModalOpen={setIsLogoutModalOpen}
       />
     </>
   );
