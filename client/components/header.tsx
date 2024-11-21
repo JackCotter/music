@@ -7,6 +7,7 @@ import styles from "@/styles/components/header.module.scss";
 import LoginModal from "./modals/loginModal";
 import { useAuthContext } from "@/contexts/authContext";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
@@ -26,11 +27,24 @@ const Header: React.FC = () => {
             </Link>
           </Typography>
           {authContext.isAuthenticated && (
-            <Link href="/project-create">
-              <IconButton color="secondary" className={styles.newProjectButton}>
-                <AddCircleOutlineIcon className={styles.newProjectIcon} />
-              </IconButton>
-            </Link>
+            <div>
+              <Link href="/project-create">
+                <IconButton
+                  color="secondary"
+                  className={styles.dashboardRightButton}
+                >
+                  <AddCircleOutlineIcon className={styles.dashboardRightIcon} />
+                </IconButton>
+              </Link>
+              <Link href={`/user/${authContext.username}`}>
+                <IconButton
+                  color="secondary"
+                  className={styles.dashboardRightButton}
+                >
+                  <AccountCircleIcon className={styles.dashboardRightIcon} />
+                </IconButton>
+              </Link>
+            </div>
           )}
           {!authContext.isAuthenticated && (
             <div className={styles.authButtons}>
