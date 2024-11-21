@@ -8,14 +8,24 @@ import LoginModal from "./modals/loginModal";
 import { useAuthContext } from "@/contexts/authContext";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import LogoutIcon from "@mui/icons-material/Logout";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { logout } from "@/utils/apiUtils";
 
 const Header: React.FC = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] =
     React.useState<boolean>(false);
   const authContext = useAuthContext();
   const router = useRouter();
+
+  const logoutButtonClick = async () => {
+    const response = await logout();
+    if (response.status == 200) {
+      authContext.setLoggedOut();
+      router.push("/");
+    }
+  };
 
   return (
     <>
@@ -44,6 +54,13 @@ const Header: React.FC = () => {
                   <AccountCircleIcon className={styles.dashboardRightIcon} />
                 </IconButton>
               </Link>
+              <IconButton
+                color="secondary"
+                className={styles.dashboardRightButton}
+                onClick={() => logoutButtonClick()}
+              >
+                <LogoutIcon className={styles.dashboardRightIcon} />
+              </IconButton>
             </div>
           )}
           {!authContext.isAuthenticated && (

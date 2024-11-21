@@ -12,6 +12,11 @@ export const login = async (email: string, password: string) => {
   return response.data as string;
 };
 
+export const logout = async () => {
+  const response = await api.post("/users/logout", {}, {withCredentials: true});
+  return response;
+};
+
 export const getTrackList = async (projectId: number) => {
   const response = await api.get(`/tracks/list?projectId=${projectId}`, {withCredentials: false});
   return response.data;
