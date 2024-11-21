@@ -7,11 +7,17 @@ import styles from "@/styles/components/header.module.scss";
 import LoginModal from "./modals/loginModal";
 import { useAuthContext } from "@/contexts/authContext";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import LogoutIcon from "@mui/icons-material/Logout";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { logout } from "@/utils/apiUtils";
+import LogoutModal from "./modals/logoutModal";
 
 const Header: React.FC = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] =
+    React.useState<boolean>(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] =
     React.useState<boolean>(false);
   const authContext = useAuthContext();
   const router = useRouter();
@@ -26,11 +32,31 @@ const Header: React.FC = () => {
             </Link>
           </Typography>
           {authContext.isAuthenticated && (
-            <Link href="/project-create">
-              <IconButton color="secondary" className={styles.newProjectButton}>
-                <AddCircleOutlineIcon className={styles.newProjectIcon} />
+            <div>
+              <Link href="/project-create">
+                <IconButton
+                  color="secondary"
+                  className={styles.dashboardRightButton}
+                >
+                  <AddCircleOutlineIcon className={styles.dashboardRightIcon} />
+                </IconButton>
+              </Link>
+              <Link href={`/user/${authContext.username}`}>
+                <IconButton
+                  color="secondary"
+                  className={styles.dashboardRightButton}
+                >
+                  <AccountCircleIcon className={styles.dashboardRightIcon} />
+                </IconButton>
+              </Link>
+              <IconButton
+                color="secondary"
+                className={styles.dashboardRightButton}
+                onClick={() => setIsLogoutModalOpen(true)}
+              >
+                <LogoutIcon className={styles.dashboardRightIcon} />
               </IconButton>
-            </Link>
+            </div>
           )}
           {!authContext.isAuthenticated && (
             <div className={styles.authButtons}>
@@ -59,6 +85,10 @@ const Header: React.FC = () => {
       <LoginModal
         isLoginModalOpen={isLoginModalOpen}
         setIsLoginModalOpen={setIsLoginModalOpen}
+      />
+      <LogoutModal
+        isLogoutModalOpen={isLogoutModalOpen}
+        setIsLogoutModalOpen={setIsLogoutModalOpen}
       />
     </>
   );

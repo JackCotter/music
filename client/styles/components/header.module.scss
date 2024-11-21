@@ -8,18 +8,19 @@
   }
 }
 
-.newProjectIcon {
+.dashboardRightIcon {
   width: 1.3em;
   height: 1.3em;
-}
 
-.newProjectButton {
-  margin-right: 0.2em;
-  :hover {
-    cursor: pointer;
-    color: library.$primary-MUI-component-color-hover;
+  .dashboardRightButton {
+    margin-right: 0.2em;
+    :hover {
+      cursor: pointer;
+      color: library.$primary-MUI-component-color-hover;
   }
 }
+}
+
 
 .authButtons {
   display: flex;
