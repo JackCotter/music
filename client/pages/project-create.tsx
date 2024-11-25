@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Checkbox,
   CircularProgress,
@@ -15,21 +16,17 @@ import { createProject } from "@/utils/apiUtils";
 import { useRouter } from "next/router";
 import AuthWrapper from "@/components/authWrapper";
 import InstrumentTypeSelect from "@/components/instrumentTypeSelect";
+import { useState } from "react";
+import { AxiosError } from "axios";
 
 const ProjectCreate = () => {
   const router = useRouter();
-
-  const formik = useFormik({
-    initialValues: {
-      projectName: "",
-      instruments: [],
-      strictMode: false,
-      projectDescription: "",
-    },
-    validationSchema: yup.object({
-      projectName: yup.string().required("Project Name is required"),
-    }),
-    onSubmit: () => createProjectMutation(),
+  const [errorBar, setErrorBar] = useState<{
+    isOpen: boolean;
+    message: string;
+  }>({
+    isOpen: false,
+    message: "",
   });
 
   const createProjectQuery = async (): Promise<{ projectId: string }> => {
@@ -47,11 +44,27 @@ const ProjectCreate = () => {
       onSuccess(data: { projectId: string }) {
         router.push(`/project/${data.projectId}`);
       },
-      onError(error) {
-        console.log(error);
+      onError(error: AxiosError) {
+        setErrorBar({
+          isOpen: true,
+          message: "An error occured. Please try again with a different name.",
+        });
       },
     }
   );
+
+  const formik = useFormik({
+    initialValues: {
+      projectName: "",
+      instruments: [],
+      strictMode: false,
+      projectDescription: "",
+    },
+    validationSchema: yup.object({
+      projectName: yup.string().required("Project Name is required"),
+    }),
+    onSubmit: () => createProjectMutation(),
+  });
 
   return (
     <AuthWrapper>
@@ -65,6 +78,9 @@ const ProjectCreate = () => {
             <Typography variant="h2" className={styles.lightTypography}>
               Create a new Project
             </Typography>
+            {errorBar.isOpen && (
+              <Alert severity="error">{errorBar.message}</Alert>
+            )}
             <Divider className={styles.divider} />
             <Stack direction="row" spacing={2}>
               <TextField
