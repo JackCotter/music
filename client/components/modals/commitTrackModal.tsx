@@ -78,9 +78,7 @@ const CommitTrackModal = ({
     onError: (error: any) => {
       setErrorBar({
         isOpen: true,
-        message:
-          error.response?.data ??
-          "Error creating track, please try again later",
+        message: "Error creating track, please try again later",
       });
     },
   });
