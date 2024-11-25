@@ -49,12 +49,10 @@ export const startAudio = (
     for (let i = 0; i < trackList.length; i++) {
       if (players[i] && trackList[i].accepted) {
         players[i].start(startTime);
-        console.log("playing track")
       }
     }
     if (players[trackList.length]) {
       players[trackList.length].start(startTime);
-        console.log("playing recording")
     }
     // if (recordingName && players.has(recordingName) && players.player(recordingName)?.loaded) {
     //     players.player(recordingName).start();

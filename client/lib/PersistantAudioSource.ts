@@ -23,7 +23,6 @@ class PersistentAudioSource {
     // Method to start the audio playback
     public start(when?:number): void {
         if (this.isPlaying || !this.source) {
-            console.log("Audio is already playing.");
             return;
         }
 
@@ -32,7 +31,6 @@ class PersistentAudioSource {
             this.source = this.audioContext.createBufferSource();
             this.source.buffer = this.audioBuffer;
             this.source.connect(this.audioContext.destination);
-            console.log("Audio playback finished.");
         };
 
         this.source.start(when);
@@ -41,7 +39,6 @@ class PersistentAudioSource {
 
     public stop(): void {
         if (!this.isPlaying || !this.source) {
-            console.log("No audio is currently playing.");
             return;
         }
 
