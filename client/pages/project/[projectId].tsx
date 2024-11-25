@@ -34,6 +34,7 @@ import TrackProgressBar from "@/components/trackProgressBar";
 import Link from "next/link";
 import TrackProgressCounter from "@/components/trackProgressCounter";
 import PersistentAudioSource from "@/lib/PersistantAudioSource";
+import { useAudioContext } from "@/contexts/audioContext";
 
 const Project = () => {
   const [players, setPlayers] = useState<PersistentAudioSource[] | null>(null);
@@ -44,7 +45,7 @@ const Project = () => {
   const [projectInfo, setProjectInfo] = useState<Project | null>(null);
   const [openCommitTrackModal, setOpenCommitTrackModal] =
     useState<boolean>(false);
-  const audioContext = useRef<AudioContext | null>(null);
+  const { audioContext } = useAudioContext();
 
   const router = useRouter();
   const { projectId } = router.query;
@@ -68,11 +69,9 @@ const Project = () => {
     if (projectId === undefined) return;
     if (typeof projectId === "string") {
       projectGetQuery(parseInt(projectId) as number);
-      const audioCtx = new window.AudioContext();
-      audioContext.current = audioCtx;
       populatePlayers(
         parseInt(projectId) as number,
-        audioContext.current,
+        audioContext,
         setTrackList,
         setPlayers
       );
@@ -103,7 +102,7 @@ const Project = () => {
       projectGetQuery(parseInt(projectId) as number);
       populatePlayers(
         parseInt(projectId) as number,
-        audioContext.current,
+        audioContext,
         setTrackList,
         setPlayers
       );
@@ -125,7 +124,7 @@ const Project = () => {
       .then((stream) => {
         recorder = new MediaRecorder(stream);
         setRecorder(recorder);
-        startAudio(players, trackList, setIsAudioPlaying, audioContext.current);
+        startAudio(players, trackList, setIsAudioPlaying, audioContext);
         recorder.start();
       });
   };
@@ -134,12 +133,12 @@ const Project = () => {
     if (recorder) {
       recorder.stop();
       recorder.ondataavailable = async (e) => {
-        if (audioContext.current) {
-          const audioBuffer = await audioContext.current.decodeAudioData(
+        if (audioContext) {
+          const audioBuffer = await audioContext.decodeAudioData(
             await e.data.arrayBuffer()
           );
           const audioSource = new PersistentAudioSource(
-            audioContext.current,
+            audioContext,
             audioBuffer
           );
           players?.push(audioSource);
@@ -236,7 +235,7 @@ const Project = () => {
                     players,
                     trackList,
                     setIsAudioPlaying,
-                    audioContext.current
+                    audioContext
                   )
             }
           >
