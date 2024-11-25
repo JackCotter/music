@@ -21,7 +21,7 @@ import StopIcon from "@mui/icons-material/Stop";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
-  getMaxLengthAcceptedPlayer,
+  getMaxLengthAcceptedPlayerDuration,
   populatePlayers,
   startAudio,
   stopAudio,
@@ -34,10 +34,10 @@ import { maxNCharacters } from "@/utils/stringUtils";
 import TrackProgressBar from "@/components/trackProgressBar";
 import Link from "next/link";
 import TrackProgressCounter from "@/components/trackProgressCounter";
+import PersistentAudioSource from "@/lib/PersistantAudioSource";
 
 const Project = () => {
-  Tone.Transport.debug = true;
-  const [players, setPlayers] = useState<Tone.Players | null>(null);
+  const [players, setPlayers] = useState<PersistentAudioSource[] | null>(null);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
   const [recordedData, setRecordedData] = useState<Blob | null>(null);
   const [trackList, setTrackList] = useState<Track[]>([]);
@@ -45,7 +45,7 @@ const Project = () => {
   const [projectInfo, setProjectInfo] = useState<Project | null>(null);
   const [openCommitTrackModal, setOpenCommitTrackModal] =
     useState<boolean>(false);
-  const recordingIndex = useRef<number>(0);
+  const audioContext = useRef<AudioContext | null>(null);
 
   const router = useRouter();
   const { projectId } = router.query;
@@ -69,13 +69,23 @@ const Project = () => {
     if (projectId === undefined) return;
     if (typeof projectId === "string") {
       projectGetQuery(parseInt(projectId) as number);
-      populatePlayers(parseInt(projectId) as number, setTrackList, setPlayers);
+      const audioCtx = new window.AudioContext();
+      audioContext.current = audioCtx;
+      populatePlayers(
+        parseInt(projectId) as number,
+        audioContext.current,
+        setTrackList,
+        setPlayers
+      );
     } else {
       console.log("Error: projectId is not a string");
     }
     return () => {
       if (players) {
-        players.dispose(); // Clean up the player
+        players.forEach((player) => {
+          player.stop();
+          player.disconnect();
+        }); // Clean up the player
       }
     };
   }, [projectId]);
@@ -92,14 +102,18 @@ const Project = () => {
     if (projectId === undefined) return;
     if (typeof projectId === "string") {
       projectGetQuery(parseInt(projectId) as number);
-      populatePlayers(parseInt(projectId) as number, setTrackList, setPlayers);
+      populatePlayers(
+        parseInt(projectId) as number,
+        audioContext.current,
+        setTrackList,
+        setPlayers
+      );
     } else {
       console.log("Error: projectId is not a string");
     }
   };
 
   const startRecording = () => {
-    Tone.start();
     let recorder: MediaRecorder;
     navigator.mediaDevices
       .getUserMedia({
@@ -112,20 +126,25 @@ const Project = () => {
       .then((stream) => {
         recorder = new MediaRecorder(stream);
         setRecorder(recorder);
+        startAudio(players, trackList, setIsAudioPlaying, audioContext.current);
         recorder.start();
-        startAudio(players, trackList, setIsAudioPlaying);
       });
   };
 
-  const stopRecording = () => {
+  const stopRecording = async () => {
     if (recorder) {
       recorder.stop();
-      recorder.ondataavailable = (e) => {
-        const url = URL.createObjectURL(e.data);
-        if (players?.has("Recording" + recordingIndex.current)) {
-          players?.player("Recording" + recordingIndex.current).dispose();
+      recorder.ondataavailable = async (e) => {
+        if (audioContext.current) {
+          const audioBuffer = await audioContext.current.decodeAudioData(
+            await e.data.arrayBuffer()
+          );
+          const audioSource = new PersistentAudioSource(
+            audioContext.current,
+            audioBuffer
+          );
+          players?.push(audioSource);
         }
-        players?.add("Recording" + ++recordingIndex.current, url);
         setRecordedData(e.data);
       };
       setRecorder(null);
@@ -142,8 +161,8 @@ const Project = () => {
     if (recordedData) {
       setRecordedData(null);
     }
-    if (players?.has("Recording" + recordingIndex.current)) {
-      players?.player("Recording" + recordingIndex.current).dispose();
+    if (players && players.length > trackList.length) {
+      players.pop();
     }
   };
 
@@ -218,7 +237,7 @@ const Project = () => {
                     players,
                     trackList,
                     setIsAudioPlaying,
-                    "Recording" + recordingIndex.current
+                    audioContext.current
                   )
             }
           >
@@ -241,10 +260,10 @@ const Project = () => {
               <FiberManualRecordIcon />
             )}
           </IconButton>
-          <TrackProgressCounter
-            player={getMaxLengthAcceptedPlayer(players, trackList)}
+          {/* <TrackProgressCounter
+            player={getMaxLengthAcceptedPlayerDuration(players, trackList)}
             trackStopped={() => setIsAudioPlaying(false)}
-          />
+          /> */}
           {recordedData !== null && (
             <Alert severity="success">
               {isAuthenticated
@@ -261,10 +280,10 @@ const Project = () => {
             </Button>
           )}
         </Stack>
-        <TrackProgressBar
-          player={getMaxLengthAcceptedPlayer(players, trackList)}
+        {/* <TrackProgressBar
+          player={getMaxLengthAcceptedPlayerDuration(players, trackList)}
           trackStopped={() => setIsAudioPlaying(false)}
-        />
+        /> */}
         <div className={styles.acceptedTracksContainer}>
           <Typography variant="h3" className={styles.lightText}>
             Accepted Tracks
