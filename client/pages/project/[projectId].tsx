@@ -13,7 +13,6 @@ import {
   Alert,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import * as Tone from "tone";
 import { useRouter } from "next/router";
 import styles from "@/styles/pages/project.module.scss";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -34,10 +33,11 @@ import { maxNCharacters } from "@/utils/stringUtils";
 import TrackProgressBar from "@/components/trackProgressBar";
 import Link from "next/link";
 import TrackProgressCounter from "@/components/trackProgressCounter";
+import PersistentAudioSource from "@/lib/PersistantAudioSource";
+import { useAudioContext } from "@/contexts/audioContext";
 
 const Project = () => {
-  Tone.Transport.debug = true;
-  const [players, setPlayers] = useState<Tone.Players | null>(null);
+  const [players, setPlayers] = useState<PersistentAudioSource[] | null>(null);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
   const [recordedData, setRecordedData] = useState<Blob | null>(null);
   const [trackList, setTrackList] = useState<Track[]>([]);
@@ -45,7 +45,7 @@ const Project = () => {
   const [projectInfo, setProjectInfo] = useState<Project | null>(null);
   const [openCommitTrackModal, setOpenCommitTrackModal] =
     useState<boolean>(false);
-  const recordingIndex = useRef<number>(0);
+  const { audioContext } = useAudioContext();
 
   const router = useRouter();
   const { projectId } = router.query;
@@ -69,13 +69,21 @@ const Project = () => {
     if (projectId === undefined) return;
     if (typeof projectId === "string") {
       projectGetQuery(parseInt(projectId) as number);
-      populatePlayers(parseInt(projectId) as number, setTrackList, setPlayers);
+      populatePlayers(
+        parseInt(projectId) as number,
+        audioContext,
+        setTrackList,
+        setPlayers
+      );
     } else {
       console.log("Error: projectId is not a string");
     }
     return () => {
       if (players) {
-        players.dispose(); // Clean up the player
+        players.forEach((player) => {
+          player.stop();
+          player.disconnect();
+        }); // Clean up the player
       }
     };
   }, [projectId]);
@@ -92,14 +100,18 @@ const Project = () => {
     if (projectId === undefined) return;
     if (typeof projectId === "string") {
       projectGetQuery(parseInt(projectId) as number);
-      populatePlayers(parseInt(projectId) as number, setTrackList, setPlayers);
+      populatePlayers(
+        parseInt(projectId) as number,
+        audioContext,
+        setTrackList,
+        setPlayers
+      );
     } else {
       console.log("Error: projectId is not a string");
     }
   };
 
   const startRecording = () => {
-    Tone.start();
     let recorder: MediaRecorder;
     navigator.mediaDevices
       .getUserMedia({
@@ -112,20 +124,25 @@ const Project = () => {
       .then((stream) => {
         recorder = new MediaRecorder(stream);
         setRecorder(recorder);
+        startAudio(players, trackList, setIsAudioPlaying, audioContext);
         recorder.start();
-        startAudio(players, trackList, setIsAudioPlaying);
       });
   };
 
-  const stopRecording = () => {
+  const stopRecording = async () => {
     if (recorder) {
       recorder.stop();
-      recorder.ondataavailable = (e) => {
-        const url = URL.createObjectURL(e.data);
-        if (players?.has("Recording" + recordingIndex.current)) {
-          players?.player("Recording" + recordingIndex.current).dispose();
+      recorder.ondataavailable = async (e) => {
+        if (audioContext) {
+          const audioBuffer = await audioContext.decodeAudioData(
+            await e.data.arrayBuffer()
+          );
+          const audioSource = new PersistentAudioSource(
+            audioContext,
+            audioBuffer
+          );
+          players?.push(audioSource);
         }
-        players?.add("Recording" + ++recordingIndex.current, url);
         setRecordedData(e.data);
       };
       setRecorder(null);
@@ -142,8 +159,8 @@ const Project = () => {
     if (recordedData) {
       setRecordedData(null);
     }
-    if (players?.has("Recording" + recordingIndex.current)) {
-      players?.player("Recording" + recordingIndex.current).dispose();
+    if (players && players.length > trackList.length) {
+      players.pop();
     }
   };
 
@@ -218,7 +235,7 @@ const Project = () => {
                     players,
                     trackList,
                     setIsAudioPlaying,
-                    "Recording" + recordingIndex.current
+                    audioContext
                   )
             }
           >

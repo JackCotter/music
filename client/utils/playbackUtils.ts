@@ -1,37 +1,62 @@
-import { Player, Players } from "tone";
 import { getTrackList } from "./apiUtils";
+import PersistentAudioSource from "@/lib/PersistantAudioSource";
+
+function base64ToArrayBuffer(base64String: string) {
+    // Step 1: Decode the base64 string into a binary string
+    const binaryString = atob(base64String);
+
+    // Step 2: Create an ArrayBuffer of the appropriate size
+    const arrayBuffer = new ArrayBuffer(binaryString.length);
+
+    // Step 3: Create a typed array (Uint8Array) view on the ArrayBuffer
+    const uint8Array = new Uint8Array(arrayBuffer);
+
+    // Step 4: Copy the binary string data into the Uint8Array
+    for (let i = 0; i < binaryString.length; i++) {
+        uint8Array[i] = binaryString.charCodeAt(i);
+    }
+
+    // Return the resulting ArrayBuffer
+    return arrayBuffer;
+}
 
 export const populatePlayers = async (
   id: number, 
+  audioContext: AudioContext | null,
   setTrackList: (trackList: Track[]) => void, 
-  setPlayers: (players: Players) => void ) => {
-  let playerDict: { [key: string]: string } = {};
+  setPlayers: (players: PersistentAudioSource[]) => void ) => {
+  if (audioContext === null) return
+  let players:PersistentAudioSource[] = []
   const trackList: Track[] = await getTrackList(id);
   setTrackList(trackList);
-  trackList.forEach((track, index) => {
-    playerDict[
-      index.toString()
-    ] = `data:audio/mpeg;base64,${track.blobData}`;
+  trackList.forEach( async(track, index) => {
+    const arrayBuffer = base64ToArrayBuffer(track.blobData);
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
+    const audioSource = new PersistentAudioSource(audioContext, audioBuffer)
+    players[index] = audioSource;
   });
-  const players: Players = new Players(playerDict).toDestination();
   setPlayers(players);
 };
 
 export const startAudio = (
-  players: Players | null,
+  players: PersistentAudioSource[] | null,
   trackList: Track[],
   setIsAudioPlaying: (isAudioPlaying: boolean) => void,
-  recordingName?: string,
+  audioContext: AudioContext | null
 ) => {
-  if (players && players.loaded) {
+  if (audioContext && players && players.length > 0) {
+    const startTime = audioContext.currentTime;
     for (let i = 0; i < trackList.length; i++) {
-      if (players.has(i.toString()) && trackList[i].accepted) {
-        players.player(i.toString()).start(i.toString());
+      if (players[i] && trackList[i].accepted) {
+        players[i].start(startTime);
       }
     }
-    if (recordingName && players.has(recordingName) && players.player(recordingName)?.loaded) {
-        players.player(recordingName).start();
+    if (players[trackList.length]) {
+      players[trackList.length].start(startTime);
     }
+    // if (recordingName && players.has(recordingName) && players.player(recordingName)?.loaded) {
+    //     players.player(recordingName).start();
+    // }
     setIsAudioPlaying(true);
   } else {
     console.log("not loaded" + players);
@@ -39,26 +64,30 @@ export const startAudio = (
 };
 
 export const stopAudio = (
-  players: Players | null,
+  players: PersistentAudioSource[] | null,
   setIsAudioPlaying: (isAudioPlaying: boolean) => void
 ) => {
-  if (players && players.loaded) {
-    players.stopAll();
+  if (players && players.length > 0) {
+    players.forEach((player) => {
+      try {
+      player.stop();
+      } catch{}
+    })
     setIsAudioPlaying(false);
   } else {
     console.log("not loaded");
   }
 };
 
-export const getMaxLengthAcceptedPlayer = (Players: Players | null, Tracks: Track[]): Player | null => {
+export const getMaxLengthAcceptedPlayer = (Players: PersistentAudioSource[] | null, Tracks: Track[]):PersistentAudioSource | null  => {
   if (!Players) return null;
   let maxLength = 0;
-  let maxLengthPlayer: Player | null = null
+  let maxLengthPlayer: PersistentAudioSource | null = null
   for (let i = 0; i < Tracks.length; i++) {
-    if (Players.has(i.toString()) && Tracks[i].accepted) {
-      if (Players.player(i.toString()).buffer.duration > maxLength) {
-        maxLengthPlayer = Players.player(i.toString());
-        maxLength = Players.player(i.toString()).buffer.duration;
+    if (Players[i] && Tracks[i].accepted) {
+      if (Players[i].duration > maxLength) {
+        maxLength = Players[i].duration;
+        maxLengthPlayer = Players[i];
       }
     }
   }

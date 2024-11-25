@@ -1,9 +1,9 @@
+import PersistentAudioSource from "@/lib/PersistantAudioSource";
 import { LinearProgress, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import * as Tone from "tone";
 
 interface TrackProgressBarProps {
-  player: Tone.Player | null;
+  player: PersistentAudioSource | null;
   trackStopped: () => void;
 }
 
@@ -19,13 +19,15 @@ const TrackProgressCounter = ({
   );
 
   const startTimeCounter = (): void => {
-    setTrackDuration(player?.buffer.duration);
-    timerId.current = setInterval(() => {
-      const currentDateTime: Date = new Date();
-      if (startTime.current !== undefined) {
-        setElapsedTime(currentDateTime.getTime() - startTime.current);
-      }
-    }, 1000);
+    if (player) {
+      setTrackDuration(player.duration);
+      timerId.current = setInterval(() => {
+        const currentDateTime: Date = new Date();
+        if (startTime.current !== undefined) {
+          setElapsedTime(currentDateTime.getTime() - startTime.current);
+        }
+      }, 1000);
+    }
   };
 
   const stopTimeCounter = (): void => {
@@ -38,19 +40,15 @@ const TrackProgressCounter = ({
   };
 
   useEffect(() => {
-    if (
-      player &&
-      player.state === "started" &&
-      startTime.current === undefined
-    ) {
+    if (player && player.isPlaying && startTime.current === undefined) {
       const currentDateTime: Date = new Date();
       startTime.current = currentDateTime.getTime();
       startTimeCounter();
-    } else if (player && player.state === "stopped") {
+    } else if (player && player.isPlaying === false) {
       stopTimeCounter();
       setElapsedTime(0);
     }
-  }, [player?.state]);
+  }, [player?.isPlaying]);
 
   return (
     <Typography variant="h6">
@@ -59,7 +57,7 @@ const TrackProgressCounter = ({
         : "--:--"}
       /
       {player !== null
-        ? new Date(player.buffer.duration * 1000).toISOString().slice(14, 19)
+        ? new Date(player.duration * 1000).toISOString().slice(14, 19)
         : "--:--"}
     </Typography>
   );

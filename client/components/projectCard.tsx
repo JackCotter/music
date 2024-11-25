@@ -10,13 +10,14 @@ import {
 import styles from "@/styles/components/projectCard.module.scss";
 import { useEffect, useRef, useState } from "react";
 import { populatePlayers, startAudio, stopAudio } from "@/utils/playbackUtils";
-import * as Tone from "tone";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
 import { maxNCharacters } from "@/utils/stringUtils";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import { useRouter } from "next/router";
+import { useAudioContext } from "@/contexts/audioContext";
+import PersistentAudioSource from "@/lib/PersistantAudioSource";
 
 interface ProjectCardProps {
   project: Project;
@@ -30,10 +31,11 @@ const ProjectCard = ({
   setHighlightedInstruments,
 }: ProjectCardProps) => {
   const [trackList, setTrackList] = useState<Track[]>([]);
-  const [players, setPlayers] = useState<Tone.Players | null>(null);
+  const [players, setPlayers] = useState<PersistentAudioSource[] | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const projectid = useRef<number | undefined>(undefined);
   const router = useRouter();
+  const { audioContext } = useAudioContext();
 
   const onInstrumentClick = (instrument: string) => {
     if (
@@ -69,7 +71,12 @@ const ProjectCard = ({
     const populatePlayersQuery = async () => {
       projectid.current = project.projectid;
       try {
-        await populatePlayers(project.projectid, setTrackList, setPlayers);
+        await populatePlayers(
+          project.projectid,
+          audioContext,
+          setTrackList,
+          setPlayers
+        );
       } catch (error) {
         console.error("Error fetching track list", error);
       }
@@ -102,7 +109,12 @@ const ProjectCard = ({
                   onClick={() =>
                     isAudioPlaying
                       ? stopAudio(players, setIsAudioPlaying)
-                      : startAudio(players, trackList, setIsAudioPlaying)
+                      : startAudio(
+                          players,
+                          trackList,
+                          setIsAudioPlaying,
+                          audioContext
+                        )
                   }
                 >
                   {isAudioPlaying ? (
