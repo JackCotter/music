@@ -1,9 +1,9 @@
+import PersistentAudioSource from "@/lib/PersistantAudioSource";
 import { LinearProgress } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import * as Tone from "tone";
 
 interface TrackProgressBarProps {
-  player: Tone.Player | null;
+  player: PersistentAudioSource | null;
   trackStopped: () => void;
 }
 
@@ -14,13 +14,15 @@ const TrackProgressBar = ({ player, trackStopped }: TrackProgressBarProps) => {
   const [trackDuration, setTrackDuration] = useState<number | undefined>(1);
 
   const startTimeCounter = (): void => {
-    setTrackDuration(player?.buffer.duration);
-    timerId.current = setInterval(() => {
-      const currentDateTime: Date = new Date();
-      if (startTime.current !== undefined) {
-        setElapsedTime(currentDateTime.getTime() - startTime.current);
-      }
-    }, 200);
+    if (player) {
+      setTrackDuration(player.duration);
+      timerId.current = setInterval(() => {
+        const currentDateTime: Date = new Date();
+        if (startTime.current !== undefined) {
+          setElapsedTime(currentDateTime.getTime() - startTime.current);
+        }
+      }, 200);
+    }
   };
 
   const stopTimeCounter = (): void => {
@@ -33,15 +35,11 @@ const TrackProgressBar = ({ player, trackStopped }: TrackProgressBarProps) => {
   };
 
   useEffect(() => {
-    if (
-      player &&
-      player.state === "started" &&
-      startTime.current === undefined
-    ) {
+    if (player && player.isPlaying && startTime.current === undefined) {
       const currentDateTime: Date = new Date();
       startTime.current = currentDateTime.getTime();
       startTimeCounter();
-    } else if (player && player.state === "stopped") {
+    } else if (player && player.isPlaying === false) {
       stopTimeCounter();
       const timer = setTimeout(() => {
         setElapsedTime(0);
@@ -49,7 +47,7 @@ const TrackProgressBar = ({ player, trackStopped }: TrackProgressBarProps) => {
 
       return () => clearTimeout(timer);
     }
-  }, [player?.state]);
+  }, [player?.isPlaying]);
 
   return (
     <div>

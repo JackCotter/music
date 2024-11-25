@@ -5,14 +5,17 @@ import "../styles/global.scss";
 import Header from "@/components/header";
 import { AuthContextProvider } from "@/contexts/authContext";
 import { darkThemeOptions } from "@/styles/theme";
+import { AudioContextProvider } from "@/contexts/audioContext";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider theme={createTheme(darkThemeOptions)}>
       <QueryClientProvider client={new QueryClient()}>
         <AuthContextProvider>
-          <Header />
-          <Component {...pageProps} />
+          <AudioContextProvider>
+            <Header />
+            <Component {...pageProps} />
+          </AudioContextProvider>
         </AuthContextProvider>
       </QueryClientProvider>
     </ThemeProvider>
