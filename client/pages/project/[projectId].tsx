@@ -259,10 +259,10 @@ const Project = () => {
               <FiberManualRecordIcon />
             )}
           </IconButton>
-          {/* <TrackProgressCounter
-            player={getMaxLengthAcceptedPlayerDuration(players, trackList)}
+          <TrackProgressCounter
+            player={getMaxLengthAcceptedPlayer(players, trackList)}
             trackStopped={() => setIsAudioPlaying(false)}
-          /> */}
+          />
           {recordedData !== null && (
             <Alert severity="success">
               {isAuthenticated
