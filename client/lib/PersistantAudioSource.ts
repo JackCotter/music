@@ -2,7 +2,7 @@ class PersistentAudioSource {
     private audioContext: AudioContext;
     private audioBuffer: AudioBuffer;
     private source: AudioBufferSourceNode | null = null;
-    private isPlaying: boolean = false;
+    private isPlaying_: boolean = false;
 
     constructor(audioContext: AudioContext, audioBuffer: AudioBuffer) {
         this.audioContext = audioContext;
@@ -10,6 +10,14 @@ class PersistentAudioSource {
         this.source = this.audioContext.createBufferSource();
         this.source.buffer = this.audioBuffer;
         this.source.connect(this.audioContext.destination);
+    }
+
+    get isPlaying() {
+        return this.isPlaying_;
+    }
+    
+    get duration(): number {
+        return this.audioBuffer.duration
     }
 
     // Method to start the audio playback
@@ -20,7 +28,7 @@ class PersistentAudioSource {
         }
 
         this.source.onended = () => {
-            this.isPlaying = false;
+            this.isPlaying_ = false;
             this.source = this.audioContext.createBufferSource();
             this.source.buffer = this.audioBuffer;
             this.source.connect(this.audioContext.destination);
@@ -28,7 +36,7 @@ class PersistentAudioSource {
         };
 
         this.source.start(when);
-        this.isPlaying = true;
+        this.isPlaying_ = true;
     }
 
     public stop(): void {
@@ -38,7 +46,7 @@ class PersistentAudioSource {
         }
 
         this.source.stop();
-        this.isPlaying = false;
+        this.isPlaying_ = false;
     }
 
     public disconnect(): void {
@@ -49,6 +57,7 @@ class PersistentAudioSource {
             this.source.disconnect()
         }
     }
+
 }
 
 export default PersistentAudioSource

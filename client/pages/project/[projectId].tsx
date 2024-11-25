@@ -13,7 +13,6 @@ import {
   Alert,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import * as Tone from "tone";
 import { useRouter } from "next/router";
 import styles from "@/styles/pages/project.module.scss";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -21,7 +20,7 @@ import StopIcon from "@mui/icons-material/Stop";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
-  getMaxLengthAcceptedPlayerDuration,
+  getMaxLengthAcceptedPlayer,
   populatePlayers,
   startAudio,
   stopAudio,
@@ -280,10 +279,10 @@ const Project = () => {
             </Button>
           )}
         </Stack>
-        {/* <TrackProgressBar
-          player={getMaxLengthAcceptedPlayerDuration(players, trackList)}
+        <TrackProgressBar
+          player={getMaxLengthAcceptedPlayer(players, trackList)}
           trackStopped={() => setIsAudioPlaying(false)}
-        /> */}
+        />
         <div className={styles.acceptedTracksContainer}>
           <Typography variant="h3" className={styles.lightText}>
             Accepted Tracks

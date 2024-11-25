@@ -81,15 +81,17 @@ export const stopAudio = (
   }
 };
 
-export const getMaxLengthAcceptedPlayerDuration = (Players: AudioBufferSourceNode[] | null, Tracks: Track[]): number => {
-  if (!Players) return 0;
+export const getMaxLengthAcceptedPlayer = (Players: PersistentAudioSource[] | null, Tracks: Track[]):PersistentAudioSource | null  => {
+  if (!Players) return null;
   let maxLength = 0;
+  let maxLengthPlayer: PersistentAudioSource | null = null
   for (let i = 0; i < Tracks.length; i++) {
     if (Players[i] && Tracks[i].accepted) {
-      if (Players[i].buffer?.duration ?? 0 > maxLength) {
-        maxLength = Players[i].buffer?.duration ?? 0;
+      if (Players[i].duration > maxLength) {
+        maxLength = Players[i].duration;
+        maxLengthPlayer = Players[i];
       }
     }
   }
-  return maxLength;
+  return maxLengthPlayer;
 }
