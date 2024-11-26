@@ -12,7 +12,7 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import styles from "@/styles/pages/project.module.scss";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -41,15 +41,18 @@ const Project = () => {
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
   const [recordedData, setRecordedData] = useState<Blob | null>(null);
   const [trackList, setTrackList] = useState<Track[]>([]);
-  const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const [projectInfo, setProjectInfo] = useState<Project | null>(null);
   const [openCommitTrackModal, setOpenCommitTrackModal] =
     useState<boolean>(false);
-  const { audioContext } = useAudioContext();
+  const { audioContext, setDuration, isPlaying, setIsPlaying } =
+    useAudioContext();
 
   const router = useRouter();
   const { projectId } = router.query;
   const { isAuthenticated } = useAuthContext();
+  const maxLengthAcceptedPlayer = useMemo(() => {
+    return getMaxLengthAcceptedPlayer(players, trackList);
+  }, [players, trackList]);
 
   const projectGetQuery = async (id: number) => {
     const project: Project = await getProject(id);
@@ -89,10 +92,16 @@ const Project = () => {
   }, [projectId]);
 
   useEffect(() => {
-    if (!isAudioPlaying && recorder) {
+    if (maxLengthAcceptedPlayer) {
+      setDuration(maxLengthAcceptedPlayer.duration);
+    }
+  }, [maxLengthAcceptedPlayer]);
+
+  useEffect(() => {
+    if (!isPlaying && recorder) {
       stopRecording();
     }
-  }, [isAudioPlaying]);
+  }, [isPlaying]);
 
   const closeModalAndRefesh = () => {
     setOpenCommitTrackModal(false);
@@ -124,7 +133,7 @@ const Project = () => {
       .then((stream) => {
         recorder = new MediaRecorder(stream);
         setRecorder(recorder);
-        startAudio(players, trackList, setIsAudioPlaying, audioContext);
+        startAudio(players, trackList, setIsPlaying, audioContext);
         recorder.start();
       });
   };
@@ -146,7 +155,7 @@ const Project = () => {
         setRecordedData(e.data);
       };
       setRecorder(null);
-      stopAudio(players, setIsAudioPlaying);
+      stopAudio(players, setIsPlaying);
     }
   };
 
@@ -154,7 +163,7 @@ const Project = () => {
     if (recorder) {
       recorder.stop();
       setRecorder(null);
-      stopAudio(players, setIsAudioPlaying);
+      stopAudio(players, setIsPlaying);
     }
     if (recordedData) {
       setRecordedData(null);
@@ -229,17 +238,12 @@ const Project = () => {
           <IconButton
             color="secondary"
             onClick={() =>
-              isAudioPlaying
-                ? stopAudio(players, setIsAudioPlaying)
-                : startAudio(
-                    players,
-                    trackList,
-                    setIsAudioPlaying,
-                    audioContext
-                  )
+              isPlaying
+                ? stopAudio(players, setIsPlaying)
+                : startAudio(players, trackList, setIsPlaying, audioContext)
             }
           >
-            {isAudioPlaying ? <StopIcon /> : <PlayArrowIcon />}
+            {isPlaying ? <StopIcon /> : <PlayArrowIcon />}
           </IconButton>
           <IconButton
             onClick={() =>
@@ -258,10 +262,7 @@ const Project = () => {
               <FiberManualRecordIcon />
             )}
           </IconButton>
-          <TrackProgressCounter
-            player={getMaxLengthAcceptedPlayer(players, trackList)}
-            trackStopped={() => setIsAudioPlaying(false)}
-          />
+          <TrackProgressCounter />
           {recordedData !== null && (
             <Alert severity="success">
               {isAuthenticated
@@ -278,10 +279,7 @@ const Project = () => {
             </Button>
           )}
         </Stack>
-        <TrackProgressBar
-          player={getMaxLengthAcceptedPlayer(players, trackList)}
-          trackStopped={() => setIsAudioPlaying(false)}
-        />
+        <TrackProgressBar />
         <div className={styles.acceptedTracksContainer}>
           <Typography variant="h3" className={styles.lightText}>
             Accepted Tracks

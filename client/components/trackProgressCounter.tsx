@@ -1,26 +1,15 @@
-import PersistentAudioSource from "@/lib/PersistantAudioSource";
-import { LinearProgress, Typography } from "@mui/material";
+import { useAudioContext } from "@/contexts/audioContext";
+import { Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 
-interface TrackProgressBarProps {
-  player: PersistentAudioSource | null;
-  trackStopped: () => void;
-}
-
-const TrackProgressCounter = ({
-  player,
-  trackStopped,
-}: TrackProgressBarProps) => {
+const TrackProgressCounter = () => {
   const startTime = useRef<number | undefined>();
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const timerId = useRef<NodeJS.Timeout | undefined>();
-  const [trackDuration, setTrackDuration] = useState<number | undefined>(
-    undefined
-  );
+  const { duration, isPlaying } = useAudioContext();
 
   const startTimeCounter = (): void => {
-    if (player) {
-      setTrackDuration(player.duration);
+    if (duration) {
       timerId.current = setInterval(() => {
         const currentDateTime: Date = new Date();
         if (startTime.current !== undefined) {
@@ -35,30 +24,24 @@ const TrackProgressCounter = ({
       clearInterval(timerId.current);
       startTime.current = undefined;
       timerId.current = undefined;
-      trackStopped();
     }
   };
 
   useEffect(() => {
-    if (player && player.isPlaying && startTime.current === undefined) {
+    if (isPlaying && startTime.current === undefined) {
       const currentDateTime: Date = new Date();
       startTime.current = currentDateTime.getTime();
       startTimeCounter();
-    } else if (player && player.isPlaying === false) {
+    } else if (isPlaying === false) {
       stopTimeCounter();
       setElapsedTime(0);
     }
-  }, [player?.isPlaying]);
+  }, [isPlaying]);
 
   return (
     <Typography variant="h6">
-      {trackDuration !== undefined
-        ? new Date(elapsedTime).toISOString().slice(14, 19)
-        : "--:--"}
-      /
-      {player !== null
-        ? new Date(player.duration * 1000).toISOString().slice(14, 19)
-        : "--:--"}
+      {new Date(elapsedTime).toISOString().slice(14, 19)}/
+      {new Date(duration * 1000).toISOString().slice(14, 19)}
     </Typography>
   );
 };

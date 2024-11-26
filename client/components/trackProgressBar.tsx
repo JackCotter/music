@@ -1,21 +1,15 @@
-import PersistentAudioSource from "@/lib/PersistantAudioSource";
+import { useAudioContext } from "@/contexts/audioContext";
 import { LinearProgress } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 
-interface TrackProgressBarProps {
-  player: PersistentAudioSource | null;
-  trackStopped: () => void;
-}
-
-const TrackProgressBar = ({ player, trackStopped }: TrackProgressBarProps) => {
+const TrackProgressBar = () => {
   const startTime = useRef<number | undefined>();
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const timerId = useRef<NodeJS.Timeout | undefined>();
-  const [trackDuration, setTrackDuration] = useState<number | undefined>(1);
+  const { isPlaying, duration } = useAudioContext();
 
   const startTimeCounter = (): void => {
-    if (player) {
-      setTrackDuration(player.duration);
+    if (duration) {
       timerId.current = setInterval(() => {
         const currentDateTime: Date = new Date();
         if (startTime.current !== undefined) {
@@ -30,16 +24,15 @@ const TrackProgressBar = ({ player, trackStopped }: TrackProgressBarProps) => {
       clearInterval(timerId.current);
       startTime.current = undefined;
       timerId.current = undefined;
-      trackStopped();
     }
   };
 
   useEffect(() => {
-    if (player && player.isPlaying && startTime.current === undefined) {
+    if (isPlaying && startTime.current === undefined) {
       const currentDateTime: Date = new Date();
       startTime.current = currentDateTime.getTime();
       startTimeCounter();
-    } else if (player && player.isPlaying === false) {
+    } else if (!isPlaying) {
       stopTimeCounter();
       const timer = setTimeout(() => {
         setElapsedTime(0);
@@ -47,16 +40,16 @@ const TrackProgressBar = ({ player, trackStopped }: TrackProgressBarProps) => {
 
       return () => clearTimeout(timer);
     }
-  }, [player?.isPlaying]);
+  }, [isPlaying]);
 
   return (
     <div>
-      {trackDuration !== undefined && (
+      {duration !== undefined && (
         <LinearProgress
           variant="determinate"
           value={
-            elapsedTime / 10 / trackDuration < 100
-              ? elapsedTime / 10 / trackDuration
+            elapsedTime / 10 / duration < 100
+              ? elapsedTime / 10 / duration
               : 100
           }
         />

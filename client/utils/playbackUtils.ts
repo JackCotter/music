@@ -29,13 +29,15 @@ export const populatePlayers = async (
   let players:PersistentAudioSource[] = []
   const trackList: Track[] = await getTrackList(id);
   setTrackList(trackList);
-  trackList.forEach( async(track, index) => {
+  const playerPromises = trackList.map(async (track, index) => {
     const arrayBuffer = base64ToArrayBuffer(track.blobData);
-    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
-    const audioSource = new PersistentAudioSource(audioContext, audioBuffer)
-    players[index] = audioSource;
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    const audioSource = new PersistentAudioSource(audioContext, audioBuffer);
+    players[index] = audioSource; // Assign audioSource to players at the correct index
   });
-  setPlayers(players);
+
+  await Promise.all(playerPromises)
+  setPlayers([...players]);
 };
 
 export const startAudio = (
