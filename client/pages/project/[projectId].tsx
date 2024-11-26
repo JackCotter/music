@@ -35,6 +35,7 @@ import Link from "next/link";
 import TrackProgressCounter from "@/components/trackProgressCounter";
 import PersistentAudioSource from "@/lib/PersistantAudioSource";
 import { useAudioContext } from "@/contexts/audioContext";
+import usePlayback from "@/lib/playbackHooks";
 
 const Project = () => {
   const [players, setPlayers] = useState<PersistentAudioSource[] | null>(null);
@@ -44,8 +45,8 @@ const Project = () => {
   const [projectInfo, setProjectInfo] = useState<Project | null>(null);
   const [openCommitTrackModal, setOpenCommitTrackModal] =
     useState<boolean>(false);
-  const { audioContext, setDuration, isPlaying, setIsPlaying } =
-    useAudioContext();
+  const { audioContext } = useAudioContext();
+  const { duration, setDuration, isPlaying, setIsPlaying } = usePlayback();
 
   const router = useRouter();
   const { projectId } = router.query;
@@ -262,7 +263,7 @@ const Project = () => {
               <FiberManualRecordIcon />
             )}
           </IconButton>
-          <TrackProgressCounter />
+          <TrackProgressCounter isPlaying={isPlaying} duration={duration} />
           {recordedData !== null && (
             <Alert severity="success">
               {isAuthenticated
@@ -279,7 +280,7 @@ const Project = () => {
             </Button>
           )}
         </Stack>
-        <TrackProgressBar />
+        <TrackProgressBar isPlaying={isPlaying} duration={duration} />
         <div className={styles.acceptedTracksContainer}>
           <Typography variant="h3" className={styles.lightText}>
             Accepted Tracks

@@ -1,12 +1,18 @@
-import { useAudioContext } from "@/contexts/audioContext";
 import { Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 
-const TrackProgressCounter = () => {
+interface TrackProgressBarProps {
+  isPlaying: boolean;
+  duration: number;
+}
+
+const TrackProgressCounter = ({
+  duration,
+  isPlaying,
+}: TrackProgressBarProps) => {
   const startTime = useRef<number | undefined>();
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const timerId = useRef<NodeJS.Timeout | undefined>();
-  const { duration, isPlaying } = useAudioContext();
 
   const startTimeCounter = (): void => {
     if (duration) {

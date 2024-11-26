@@ -18,6 +18,7 @@ import LockOpenIcon from "@mui/icons-material/LockOpen";
 import { useRouter } from "next/router";
 import { useAudioContext } from "@/contexts/audioContext";
 import PersistentAudioSource from "@/lib/PersistantAudioSource";
+import usePlayback from "@/lib/playbackHooks";
 
 interface ProjectCardProps {
   project: Project;
@@ -32,10 +33,10 @@ const ProjectCard = ({
 }: ProjectCardProps) => {
   const [trackList, setTrackList] = useState<Track[]>([]);
   const [players, setPlayers] = useState<PersistentAudioSource[] | null>(null);
-  const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const projectid = useRef<number | undefined>(undefined);
   const router = useRouter();
   const { audioContext } = useAudioContext();
+  const { isPlaying, setIsPlaying } = usePlayback();
 
   const onInstrumentClick = (instrument: string) => {
     if (
@@ -107,17 +108,17 @@ const ProjectCard = ({
                   color="secondary"
                   className={styles.playButton}
                   onClick={() =>
-                    isAudioPlaying
-                      ? stopAudio(players, setIsAudioPlaying)
+                    isPlaying
+                      ? stopAudio(players, setIsPlaying)
                       : startAudio(
                           players,
                           trackList,
-                          setIsAudioPlaying,
+                          setIsPlaying,
                           audioContext
                         )
                   }
                 >
-                  {isAudioPlaying ? (
+                  {isPlaying ? (
                     <StopIcon className={styles.stopIcon} />
                   ) : (
                     <PlayArrowIcon className={styles.playIcon} />
