@@ -23,12 +23,10 @@ function base64ToArrayBuffer(base64String: string) {
 export const populatePlayers = async (
   id: number, 
   audioContext: AudioContext | null,
-  setTrackList: (trackList: Track[]) => void, 
+  trackList: Track[], 
   setPlayers: (players: PersistentAudioSource[]) => void ) => {
   if (audioContext === null) return
   let players:PersistentAudioSource[] = []
-  const trackList: Track[] = await getTrackList(id);
-  setTrackList(trackList);
   const playerPromises = trackList.map(async (track, index) => {
     const arrayBuffer = base64ToArrayBuffer(track.blobData);
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
