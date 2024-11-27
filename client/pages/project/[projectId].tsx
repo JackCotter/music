@@ -18,6 +18,7 @@ import styles from "@/styles/pages/project.module.scss";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
+import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   getMaxLengthAcceptedPlayer,
@@ -251,14 +252,14 @@ const Project = () => {
               recordedData
                 ? deleteRecording()
                 : recorder
-                ? stopRecording()
+                ? deleteRecording()
                 : startRecording()
             }
           >
             {recordedData ? (
               <DeleteIcon />
             ) : recorder ? (
-              <StopIcon />
+              <CloseIcon />
             ) : (
               <FiberManualRecordIcon />
             )}
