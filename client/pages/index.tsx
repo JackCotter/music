@@ -1,5 +1,12 @@
 import { listProject, pagecountProject } from "@/utils/apiUtils";
-import { Pagination, Grid, Stack, Typography, TextField } from "@mui/material";
+import {
+  Pagination,
+  Grid,
+  Stack,
+  Typography,
+  TextField,
+  Alert,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import ProjectCard from "@/components/projectCard";
 import styles from "@/styles/pages/index.module.scss";
@@ -12,6 +19,10 @@ export default function Home() {
   const [page, setPage] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
+  const [errorBar, setErrorBar] = useState<{
+    isOpen: boolean;
+    message: string;
+  }>({ isOpen: false, message: "" });
 
   const getProjectList = async () => {
     try {
@@ -22,7 +33,7 @@ export default function Home() {
       });
       setProjectList(filteredProjectList);
     } catch (error) {
-      console.error("Error fetching project list", error);
+      setErrorBar({ isOpen: true, message: "Error loading projects." });
     }
   };
 
@@ -35,7 +46,7 @@ export default function Home() {
       setPageCount(pageCount);
       setPage(1);
     } catch (error) {
-      console.error("Error fetching project list", error);
+      setErrorBar({ isOpen: true, message: "Error loading projects." });
     }
   };
 
@@ -69,53 +80,63 @@ export default function Home() {
 
   return (
     <div className={styles.indexContainer}>
-      <Stack direction="row" className={styles.titleRow}>
-        <Typography className={styles.title} variant="h3" component="div">
-          Find a project to contribute to!
-        </Typography>
-      </Stack>
-      <Stack direction="row" alignItems="center">
-        <TextField
-          variant="outlined"
-          label="Search"
-          onChange={(event) => {
-            setSearchQuery(event.target.value);
-          }}
-          value={searchQuery}
-        />
-        <InstrumentTypeSelect
-          selectedInstruments={selectedInstruments}
-          setSelectedInstruments={setSelectedInstruments}
-        />
-      </Stack>
-      <Grid
-        className={styles.gridContainer}
-        container
-        direction="row"
-        spacing={2}
-      >
-        {projectList.map((project) => (
-          <Grid
-            className={styles.gridItem}
-            key={project.projectid}
-            item
-            xs={12}
-            sm={6}
-            md={6}
-            lg={4}
-            xl={3}
-          >
-            <ProjectCard
-              project={project}
-              highlightedInstruments={selectedInstruments}
-              setHighlightedInstruments={setSelectedInstruments}
+      {errorBar.isOpen ? (
+        <Alert severity="error">{errorBar.message ?? "An error occured"}</Alert>
+      ) : (
+        <>
+          <Stack direction="row" className={styles.titleRow}>
+            <Typography className={styles.title} variant="h3" component="div">
+              Find a project to contribute to!
+            </Typography>
+          </Stack>
+          <Stack direction="row" alignItems="center">
+            <TextField
+              variant="outlined"
+              label="Search"
+              onChange={(event) => {
+                setSearchQuery(event.target.value);
+              }}
+              value={searchQuery}
             />
+            <InstrumentTypeSelect
+              selectedInstruments={selectedInstruments}
+              setSelectedInstruments={setSelectedInstruments}
+            />
+          </Stack>
+          <Grid
+            className={styles.gridContainer}
+            container
+            direction="row"
+            spacing={2}
+          >
+            {projectList.map((project) => (
+              <Grid
+                className={styles.gridItem}
+                key={project.projectid}
+                item
+                xs={12}
+                sm={6}
+                md={6}
+                lg={4}
+                xl={3}
+              >
+                <ProjectCard
+                  project={project}
+                  highlightedInstruments={selectedInstruments}
+                  setHighlightedInstruments={setSelectedInstruments}
+                />
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
-      <Stack direction="row" justifyContent="center" alignItems="center">
-        <Pagination count={pageCount} page={page} onChange={handlePageChange} />
-      </Stack>
+          <Stack direction="row" justifyContent="center" alignItems="center">
+            <Pagination
+              count={pageCount}
+              page={page}
+              onChange={handlePageChange}
+            />
+          </Stack>
+        </>
+      )}
     </div>
   );
 }

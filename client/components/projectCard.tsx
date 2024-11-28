@@ -8,8 +8,13 @@ import {
   Typography,
 } from "@mui/material";
 import styles from "@/styles/components/projectCard.module.scss";
-import { useEffect, useRef, useState } from "react";
-import { populatePlayers, startAudio, stopAudio } from "@/utils/playbackUtils";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  getMaxLengthAcceptedPlayer,
+  populatePlayers,
+  startAudio,
+  stopAudio,
+} from "@/utils/playbackUtils";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
 import { maxNCharacters } from "@/utils/stringUtils";
@@ -19,6 +24,7 @@ import { useRouter } from "next/router";
 import { useAudioContext } from "@/contexts/audioContext";
 import PersistentAudioSource from "@/lib/PersistantAudioSource";
 import usePlayback from "@/lib/playbackHooks";
+import { getTrackList } from "@/utils/apiUtils";
 
 interface ProjectCardProps {
   project: Project;
@@ -36,7 +42,10 @@ const ProjectCard = ({
   const projectid = useRef<number | undefined>(undefined);
   const router = useRouter();
   const { audioContext } = useAudioContext();
-  const { isPlaying, setIsPlaying } = usePlayback();
+  const { isPlaying, setIsPlaying, duration, setDuration } = usePlayback();
+  const maxLengthAcceptedPlayer = useMemo(() => {
+    return getMaxLengthAcceptedPlayer(players, trackList);
+  }, [players, trackList]);
 
   const onInstrumentClick = (instrument: string) => {
     if (
@@ -66,24 +75,26 @@ const ProjectCard = ({
     }
   };
 
+  const trackListGetQuery = async (id: number) => {
+    try {
+      const trackList: Track[] = await getTrackList(id);
+      setTrackList(trackList);
+      populatePlayers(id, audioContext, trackList, setPlayers);
+    } catch {}
+  };
+
   useEffect(() => {
     if (project.projectid === undefined) return;
     if (projectid.current === project.projectid) return;
-    const populatePlayersQuery = async () => {
-      projectid.current = project.projectid;
-      try {
-        await populatePlayers(
-          project.projectid,
-          audioContext,
-          setTrackList,
-          setPlayers
-        );
-      } catch (error) {
-        console.error("Error fetching track list", error);
-      }
-    };
-    populatePlayersQuery();
+    projectid.current = project.projectid;
+    trackListGetQuery(project.projectid);
   }, [project.projectid]);
+
+  useEffect(() => {
+    if (maxLengthAcceptedPlayer?.duration) {
+      setDuration(maxLengthAcceptedPlayer?.duration);
+    }
+  }, [maxLengthAcceptedPlayer]);
 
   return (
     <Card className={styles.projectCard} onClick={(d) => handleCardClick(d)}>
@@ -103,28 +114,30 @@ const ProjectCard = ({
                   {project.username}
                 </Typography>
               </div>
-              <div>
-                <IconButton
-                  color="secondary"
-                  className={styles.playButton}
-                  onClick={() =>
-                    isPlaying
-                      ? stopAudio(players, setIsPlaying)
-                      : startAudio(
-                          players,
-                          trackList,
-                          setIsPlaying,
-                          audioContext
-                        )
-                  }
-                >
-                  {isPlaying ? (
-                    <StopIcon className={styles.stopIcon} />
-                  ) : (
-                    <PlayArrowIcon className={styles.playIcon} />
-                  )}
-                </IconButton>
-              </div>
+              {duration > 0 && (
+                <div>
+                  <IconButton
+                    color="secondary"
+                    className={styles.playButton}
+                    onClick={() =>
+                      isPlaying
+                        ? stopAudio(players, setIsPlaying)
+                        : startAudio(
+                            players,
+                            trackList,
+                            setIsPlaying,
+                            audioContext
+                          )
+                    }
+                  >
+                    {isPlaying ? (
+                      <StopIcon className={styles.stopIcon} />
+                    ) : (
+                      <PlayArrowIcon className={styles.playIcon} />
+                    )}
+                  </IconButton>
+                </div>
+              )}
             </Stack>
           </Stack>
           {project.lookingfor && project.lookingfor.length > 0 && (
