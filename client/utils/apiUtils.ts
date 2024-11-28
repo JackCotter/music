@@ -66,25 +66,36 @@ export const getProject = async (projectId: number) => {
   return response.data as Project;
 }
 
-export const listProject = async (page?:number, username?:string) => {
-  page ?? 1
-  if (username === undefined) {
-    const response = await api.get(`/projects/list?page=${page}`, {withCredentials: false});
-    return response.data as Project[];
-  } else {
-    const response = await api.get(`/projects/list?page=${page}&username=${username}`, {withCredentials: false});
-    return response.data as Project[];
+export const listProject = async ({page = 1, username, q, instruments}: {page?:number, username?:string, q?:string, instruments?: string[]} = {}) => {
+  let baseQueryString = `/projects/list?page=${page}`
+  if (username) {
+    baseQueryString += `&username=${username}`;
   }
+  if (q && q !== "") {
+    baseQueryString += `&q=${q}`;
+  }
+  if (instruments && instruments.length > 0) {
+    const instrumentsString = instruments.join(",");
+    baseQueryString += `&instruments=${instrumentsString}`;
+  }
+  const response = await api.get(baseQueryString, {withCredentials: false});
+  return response.data as Project[];
 }
 
-export const pagecountProject = async (username?:string) => {
-  if (username === undefined){
-    const response = await api.get("/projects/pagecount", {withCredentials: false});
-    return response.data as number;
-  } else {
-    const response = await api.get(`/projects/pagecount?username=${username}`, {withCredentials: false});
-    return response.data as number;
+export const pagecountProject = async ({username, q, instruments}: {username?:string, q?:string, instruments?: string[]} = {}) => {
+  let baseQueryString = `/projects/pagecount?a=1`
+  if (username) {
+    baseQueryString += `&username=${username}`;
   }
+  if (q && q !== "") {
+    baseQueryString += `&q=${q}`;
+  }
+  if (instruments && instruments.length > 0) {
+    const instrumentsString = instruments.join(",");
+    baseQueryString += `&instruments=${instrumentsString}`;
+  }
+  const response = await api.get(baseQueryString, {withCredentials: false});
+    return response.data as number;
 }
 
 export const createProject = async (projectName: string, instrumentTypes: string[], strictMode: boolean, description:string): Promise<{projectId: string}> => {

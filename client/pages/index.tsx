@@ -1,5 +1,5 @@
 import { listProject, pagecountProject } from "@/utils/apiUtils";
-import { Pagination, Grid, Stack, Typography } from "@mui/material";
+import { Pagination, Grid, Stack, Typography, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import ProjectCard from "@/components/projectCard";
 import styles from "@/styles/pages/index.module.scss";
@@ -7,53 +7,60 @@ import InstrumentTypeSelect from "@/components/instrumentTypeSelect";
 
 export default function Home() {
   const [projectList, setProjectList] = useState<Project[]>([]);
-  const [filteredProjectList, setFilteredProjectList] = useState<Project[]>([]);
   const [selectedInstruments, setSelectedInstruments] = useState<string[]>([]);
   const [pageCount, setPageCount] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
 
-  useEffect(() => {
-    if (selectedInstruments.length === 0) {
-      setFilteredProjectList(projectList);
-      return;
+  const getProjectList = async () => {
+    try {
+      const filteredProjectList = await listProject({
+        page: page,
+        instruments: selectedInstruments,
+        q: debouncedSearchQuery,
+      });
+      setProjectList(filteredProjectList);
+    } catch (error) {
+      console.error("Error fetching project list", error);
     }
-    const filteredProjectList = projectList.filter((project) =>
-      project.lookingfor?.some((instrument) =>
-        selectedInstruments.includes(instrument)
-      )
-    );
-    setFilteredProjectList(filteredProjectList);
-  }, [selectedInstruments]);
+  };
+
+  const getPageCount = async () => {
+    try {
+      const pageCount = await pagecountProject({
+        instruments: selectedInstruments,
+        q: debouncedSearchQuery,
+      });
+      setPageCount(pageCount);
+      setPage(1);
+    } catch (error) {
+      console.error("Error fetching project list", error);
+    }
+  };
 
   useEffect(() => {
-    const getProjectList = async () => {
-      try {
-        const projectList = await listProject();
-        const pageCount = await pagecountProject();
-        setProjectList(projectList);
-        setPageCount(pageCount);
-        setFilteredProjectList(projectList);
-      } catch (error) {
-        console.error("Error fetching project list", error);
-      }
-    };
-
-    getProjectList();
-  }, []);
+    console.log("selectedInstrument or search");
+    if (page === 1) {
+      // if page is already at 1, refetch the project list. If not, this will be done automatically when page is set back to 1.
+      getProjectList();
+    }
+    getPageCount();
+  }, [selectedInstruments, debouncedSearchQuery]);
 
   useEffect(() => {
-    const getProjectList = async () => {
-      try {
-        const projectList = await listProject(page);
-        setProjectList(projectList);
-        setFilteredProjectList(projectList);
-      } catch (error) {
-        console.error("Error fetching project list", error);
-      }
-    };
-
+    console.log("page");
     getProjectList();
   }, [page]);
+
+  useEffect(() => {
+    //debounce searchQuery so that it searches once user stops typing
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -69,17 +76,27 @@ export default function Home() {
           Find a project to contribute to!
         </Typography>
       </Stack>
-      <InstrumentTypeSelect
-        selectedInstruments={selectedInstruments}
-        setSelectedInstruments={setSelectedInstruments}
-      />
+      <Stack direction="row" alignItems="center">
+        <TextField
+          variant="outlined"
+          label="Search"
+          onChange={(event) => {
+            setSearchQuery(event.target.value);
+          }}
+          value={searchQuery}
+        />
+        <InstrumentTypeSelect
+          selectedInstruments={selectedInstruments}
+          setSelectedInstruments={setSelectedInstruments}
+        />
+      </Stack>
       <Grid
         className={styles.gridContainer}
         container
         direction="row"
         spacing={2}
       >
-        {filteredProjectList.map((project) => (
+        {projectList.map((project) => (
           <Grid
             className={styles.gridItem}
             key={project.projectid}

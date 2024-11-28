@@ -47,7 +47,6 @@ def project_list():
     offset = (page - 1) * RESULTS_PER_PAGE
 
     filters = []
-    params = [RESULTS_PER_PAGE, offset]
     params = []
     search_query = request.args.get("q")
     if search_query:
@@ -65,11 +64,15 @@ def project_list():
         filters.append(sql.SQL("username = %s"))
         params.append(username)
 
-    base_query = sql.SQL("SELECT projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM projects join users on (projects.owner = users.email) ")
+    base_query = sql.SQL("SELECT projectid, username, projectname, lookingfor, lookingforstrict, projects.description FROM projects join users on (projects.owner = users.email)")
 
 
     if filters:
         base_query += sql.SQL(" WHERE ") + sql.SQL(" AND ").join(filters)
+    
+    base_query += sql.SQL("LIMIT %s OFFSET %s")
+    params.append(RESULTS_PER_PAGE)
+    params.append(offset)
 
     cur.execute(base_query.as_string(conn), params)
     projects = cur.fetchall()
@@ -83,10 +86,29 @@ def project_pagecount():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
-    if 'username' in request.args:
-        cur.execute("SELECT COUNT(*) FROM projects JOIN users ON (owner = users.email) WHERE users.username = %s", (request.args.get('username'),))
-    else:
-        cur.execute("SELECT COUNT(*) FROM projects")
+    filters = []
+    params = []
+    search_query = request.args.get("q")
+    if search_query:
+        filters.append(sql.SQL("projectname ILIKE %s OR projects.description ILIKE %s OR username ILIKE %s"))
+        params.append(f"%{search_query}%")
+        params.append(f"%{search_query}%")
+        params.append(f"%{search_query}%")
+    instruments = request.args.get("instruments")
+    if instruments:
+        instruments_array = instruments.split(",")
+        filters.append(sql.SQL("lookingfor && %s"))
+        params.append(instruments_array)
+    username = request.args.get("username")
+    if username:
+        filters.append(sql.SQL("username = %s"))
+        params.append(username)
+
+    base_query = sql.SQL("SELECT COUNT(*) FROM projects join users on (projects.owner = users.email)")
+    if filters:
+        base_query += sql.SQL(" WHERE ") + sql.SQL(" AND ").join(filters)
+    cur.execute(base_query.as_string(conn), params)
+
     count = cur.fetchone()
 
     conn.close()
