@@ -40,7 +40,6 @@ export default function Home() {
   };
 
   useEffect(() => {
-    console.log("selectedInstrument or search");
     if (page === 1) {
       // if page is already at 1, refetch the project list. If not, this will be done automatically when page is set back to 1.
       getProjectList();
@@ -49,7 +48,6 @@ export default function Home() {
   }, [selectedInstruments, debouncedSearchQuery]);
 
   useEffect(() => {
-    console.log("page");
     getProjectList();
   }, [page]);
 
