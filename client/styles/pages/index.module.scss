@@ -11,15 +11,21 @@
   }
 
   .titleRow {
-    margin-top: 0.5rem;
+    margin: 1rem;
     justify-content: center;
     align-items: center;
+
+    .title {
+      color: library.$light-text-color;
+      text-align: center;
+    }
+
+    .info {
+      color: library.$light-text-color;
+      text-align: left;
+    }
   }
 
-  .title {
-    color: library.$light-text-color;
-    text-align: center;
-  }
 
   .instrumentypeSelect {
     height: 2.5rem;

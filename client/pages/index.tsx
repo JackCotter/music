@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import ProjectCard from "@/components/projectCard";
 import styles from "@/styles/pages/index.module.scss";
 import InstrumentTypeSelect from "@/components/instrumentTypeSelect";
+import { useAuthContext } from "@/contexts/authContext";
 
 export default function Home() {
   const [projectList, setProjectList] = useState<Project[]>([]);
@@ -23,6 +24,7 @@ export default function Home() {
     isOpen: boolean;
     message: string;
   }>({ isOpen: false, message: "" });
+  const { isAuthenticated } = useAuthContext();
 
   const getProjectList = async () => {
     try {
@@ -84,11 +86,20 @@ export default function Home() {
         <Alert severity="error">{errorBar.message ?? "An error occured"}</Alert>
       ) : (
         <>
-          <Stack direction="row" className={styles.titleRow}>
-            <Typography className={styles.title} variant="h3" component="div">
-              Find a project to contribute to!
-            </Typography>
-          </Stack>
+          {page === 1 && !isAuthenticated && (
+            <Stack direction="column" className={styles.titleRow} spacing={4}>
+              <Typography className={styles.title} variant="h3" component="div">
+                Find a project to contribute to!
+              </Typography>
+              <Typography className={styles.info} variant="h5" component="div">
+                Welcome to{" "}
+                {process.env.NEXT_PUBLIC_APP_NAME ?? "Project Tracker"}! This
+                platform is designed to connect musicians and encourage the
+                creation of colaborative tracks. Go ahead, click on one of the
+                tracks below to see what the community has already made!
+              </Typography>
+            </Stack>
+          )}
           <Stack direction="row" alignItems="center">
             <TextField
               variant="outlined"
