@@ -68,7 +68,7 @@ const ProjectCreate = () => {
 
   return (
     <AuthWrapper>
-      <form onSubmit={formik.handleSubmit}>
+      <form onSubmit={formik.handleSubmit} name="newProjectForm">
         <div className={styles.projectCreateContainer}>
           <Stack
             className={styles.formContainer}
