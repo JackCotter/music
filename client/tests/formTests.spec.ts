@@ -45,4 +45,12 @@ test.describe('Signup form', () => {
     await submitButton.click();
     await expect(confirmPasswordLocator).toHaveAttribute('aria-invalid', 'true');
   });
+
+  test('valid email must be input', async ({ page}) => {
+    emailInput.fill('fakeemail');
+
+    const emailInputLocator = page.locator('input[name="email"]')
+    await submitButton.click();
+    await expect(emailInputLocator).toHaveAttribute('aria-invalid', 'true');
+  });
 });
