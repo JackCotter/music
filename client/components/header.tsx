@@ -53,6 +53,7 @@ const Header: React.FC = () => {
                 color="secondary"
                 className={styles.dashboardRightButton}
                 onClick={() => setIsLogoutModalOpen(true)}
+                aria-label="logoutButton"
               >
                 <LogoutIcon className={styles.dashboardRightIcon} />
               </IconButton>

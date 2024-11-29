@@ -1,8 +1,7 @@
-import { test, expect, ElementHandle  } from '@playwright/test';
+import { test, expect, ElementHandle } from "@playwright/test";
 // import '@testing-library/jest-dom/extend-expect'
 
-test.describe('Signup form', () => {
-
+test.describe("Signup form", () => {
   let emailInput: ElementHandle<SVGElement | HTMLElement>;
   let usernameInput: ElementHandle<SVGElement | HTMLElement>;
   let passwordInput: ElementHandle<SVGElement | HTMLElement>;
@@ -10,14 +9,7 @@ test.describe('Signup form', () => {
   let submitButton: ElementHandle<SVGElement | HTMLElement>;
 
   test.beforeEach(async ({ page }) => {
-    await page.route('**/users/create', route => {
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ success: true, message: 'User created successfully' }),
-      });
-    });
-    await page.goto('http://localhost:3000');
+    await page.goto("http://localhost:3000");
     await page.waitForSelector('button[name="signup"]');
     await page.click('button[name="signup"]');
     await page.waitForSelector('form[name="signup"]');
@@ -26,31 +18,86 @@ test.describe('Signup form', () => {
     emailInput = await page.waitForSelector('input[name="email"]');
     usernameInput = await page.waitForSelector('input[name="username"]');
     passwordInput = await page.waitForSelector('input[name="password"]');
-    confirmPasswordInput = await page.waitForSelector('input[name="confirmPassword"]');
+    confirmPasswordInput = await page.waitForSelector(
+      'input[name="confirmPassword"]'
+    );
     submitButton = await page.waitForSelector('button[type="submit"]');
   });
 
-  test('password must be confirmed', async ({ page }) => {
-    emailInput.fill('email@email.com');
-    usernameInput.fill('username');
-    passwordInput.fill('password');
-    
-    await submitButton.click();
-    
-    const confirmPasswordLocator = page.locator('input[name="confirmPassword"]');
-    await expect(confirmPasswordLocator).toHaveAttribute('aria-invalid', 'true');
-
-    confirmPasswordInput.fill('passwordNotMatching');
+  test("password must be confirmed", async ({ page }) => {
+    emailInput.fill("email@email.com");
+    usernameInput.fill("username");
+    passwordInput.fill("password");
 
     await submitButton.click();
-    await expect(confirmPasswordLocator).toHaveAttribute('aria-invalid', 'true');
+
+    const confirmPasswordLocator = page.locator(
+      'input[name="confirmPassword"]'
+    );
+    await expect(confirmPasswordLocator).toHaveAttribute(
+      "aria-invalid",
+      "true"
+    );
+
+    confirmPasswordInput.fill("passwordNotMatching");
+
+    await submitButton.click();
+    await expect(confirmPasswordLocator).toHaveAttribute(
+      "aria-invalid",
+      "true"
+    );
   });
 
-  test('valid email must be input', async ({ page}) => {
-    emailInput.fill('fakeemail');
+  test("valid email must be input", async ({ page }) => {
+    emailInput.fill("fakeemail");
 
-    const emailInputLocator = page.locator('input[name="email"]')
+    const emailInputLocator = page.locator('input[name="email"]');
     await submitButton.click();
-    await expect(emailInputLocator).toHaveAttribute('aria-invalid', 'true');
+    await expect(emailInputLocator).toHaveAttribute("aria-invalid", "true");
+  });
+
+  test("user successfuly created", async ({ page }) => {
+    await page.route("**/users/create", (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          success: true,
+          message: "User created successfully",
+        }),
+      });
+    });
+
+    await emailInput.fill("fakeemail@amailprovider.com");
+    await usernameInput.fill("username");
+    await passwordInput.fill("password1234");
+    await confirmPasswordInput.fill("password1234");
+
+    submitButton.click();
+    const button = page.locator('button[aria-label="logoutButton"]');
+    await expect(button).toBeVisible();
+  });
+
+  test("user creation failed", async ({ page }) => {
+    await page.route("**/users/create", (route) => {
+      route.fulfill({
+        status: 400,
+        contentType: "application/json",
+      });
+    });
+
+    await emailInput.fill("fakeemail@amailprovider.com");
+    await usernameInput.fill("username");
+    await passwordInput.fill("password1234");
+    await confirmPasswordInput.fill("password1234");
+
+    await submitButton.click();
+    const errorBar = page.locator('div[aria-label="errorBar"]');
+    const emailInputLocator = page.locator('input[name="email"]');
+    const sumbitButtonLocator = page.locator('button[type="submit"]');
+
+    expect(errorBar).toBeVisible();
+    expect(emailInputLocator).toBeVisible();
+    expect(sumbitButtonLocator).toBeVisible();
   });
 });

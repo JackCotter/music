@@ -118,7 +118,10 @@ const SignUp = () => {
           <Stack direction="row" spacing={2}>
             <Stack className={styles.leftColumn} direction="column" spacing={2}>
               {errorBar.isOpen && (
-                <Alert severity="error"> {errorBar.message}</Alert>
+                <Alert aria-label="errorBar" severity="error">
+                  {" "}
+                  {errorBar.message}
+                </Alert>
               )}
               <TextField
                 label="Email"
