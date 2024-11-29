@@ -48,6 +48,32 @@ test.describe("Signup form", () => {
     );
   });
 
+  test("password must be at least 8 characters", async ({ page }) => {
+    await emailInput.fill("email@email.com");
+    await usernameInput.fill("username");
+    await passwordInput.fill("1234567");
+    await confirmPasswordInput.fill("1234567");
+
+    await submitButton.click();
+
+    const confirmPasswordLocator = page.locator(
+      'input[name="confirmPassword"]'
+    );
+    await expect(confirmPasswordLocator).toHaveAttribute(
+      "aria-invalid",
+      "true"
+    );
+
+    await passwordInput.fill("12345678");
+    await confirmPasswordInput.fill("12345678");
+
+    await submitButton.click();
+    await expect(confirmPasswordLocator).not.toHaveAttribute(
+      "aria-invalid",
+      "true"
+    );
+  });
+
   test("valid email must be input", async ({ page }) => {
     emailInput.fill("fakeemail");
 
