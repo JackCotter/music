@@ -44,6 +44,36 @@ test("can navigate to new project page if logged in", async ({ page }) => {
   await expect(newProjectForm).toBeVisible();
 });
 
+test("can navigate to username page if logged in", async ({ page }) => {
+  page.route("**/users/loggedIn", (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: "myUsername",
+    });
+  });
+  page.route("**/users/get?username=myUsername", (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        username: "myUsername",
+        description: "Welcome to my profile!",
+      }),
+    });
+  });
+  await page.goto("http://localhost:3000");
+  const button = await page.waitForSelector(
+    'button[aria-label="profileButton"]'
+  );
+  button.click();
+  const description = page.locator("text=Welcome to my profile");
+  const username = page.locator("text='myUsername'");
+  await description.waitFor({ state: "visible" });
+  await expect(description).toBeVisible();
+  await expect(username).toBeVisible();
+});
+
 // test('can navigate back to main page', async ({ page }) => {
 //   await page.goto('http://localhost:3000');
 //   await page.waitForSelector('button[name="signup"]');

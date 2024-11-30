@@ -56,11 +56,11 @@ const UserProfile = () => {
     setActivityHistory(activityHistory);
   };
   const getProjectList = async (username: string) => {
-    const projectList = await listProject(page, username);
+    const projectList = await listProject({ page: page, username: username });
     setProjectList(projectList);
   };
   const getPageCount = async (username: string) => {
-    const pageCount = await pagecountProject(username);
+    const pageCount = await pagecountProject({ username: username });
     setPageCount(pageCount);
   };
 
@@ -121,7 +121,7 @@ const UserProfile = () => {
   });
 
   return (
-    <form onSubmit={formik.handleSubmit}>
+    <form onSubmit={formik.handleSubmit} name="userForm">
       <Stack className={styles.outerWrapper} direction="column" spacing={2}>
         <Typography className={styles.username} variant="h4">
           {username}

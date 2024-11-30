@@ -46,6 +46,7 @@ const Header: React.FC = () => {
                 <IconButton
                   color="secondary"
                   className={styles.dashboardRightButton}
+                  aria-label="profileButton"
                 >
                   <AccountCircleIcon className={styles.dashboardRightIcon} />
                 </IconButton>
