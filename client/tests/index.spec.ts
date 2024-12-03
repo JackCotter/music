@@ -104,8 +104,8 @@ test.describe("index sunny day tests", () => {
     await expect(project3Name).toBeVisible();
   });
 
-  test("index page loads and projects are searchable", async ({ page }) => {
-    page.route("**/projects/list?page=1&q=*", (route) => {
+  test("projects are searchable", async ({ page }) => {
+    page.route(/^.*\/projects\/list(?=.*instruments=).*$/, (route) => {
       route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -125,6 +125,37 @@ test.describe("index sunny day tests", () => {
     const searchBar = await page.getByLabel("Search");
     await searchBar.fill(PROJECT1_NAME);
     await page.waitForResponse("**/projects/list*");
+
+    const projectCardLocator = await page.locator(
+      "div[aria-label=projectCard]"
+    );
+    const project1Locator = await page.locator(`text=${PROJECT1_NAME}`);
+    const projectCardCount = await projectCardLocator.count();
+
+    await expect(projectCardCount).toBe(1);
+    await expect(project1Locator).toBeVisible();
+  });
+
+  test("projects are filterable", async ({ page }) => {
+    page.route(/^.*\/projects\/list(?=.*instruments=).*$/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify([
+          {
+            description: "Go crazy!",
+            lookingfor: ["Drums", "Saxophone", "Violin"],
+            lookingforstrict: false,
+            projectid: 1,
+            projectname: PROJECT1_NAME,
+            username: "jacktest",
+          },
+        ]),
+      });
+    });
+
+    await page.locator("#instrumentTypeSelectId").click();
+    await page.locator('li[role="option"]:nth-child(1)').click();
 
     const projectCardLocator = await page.locator(
       "div[aria-label=projectCard]"
