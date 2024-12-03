@@ -228,3 +228,17 @@ test.describe("index sunny day tests", () => {
     await expect(project2Locator).toBeVisible();
   });
 });
+
+test.describe("index rainy day tests", () => {
+  test("error retrieving project list", async ({ page }) => {
+    page.route(/^.*\/projects\/list.*$/, (route) => {
+      route.fulfill({
+        status: 500,
+        contentType: "application/json",
+      });
+    });
+    page.goto("http://localhost:3000/");
+    const errorBarLocator = await page.locator("div[aria-label=errorBar]");
+    await expect(errorBarLocator).toBeVisible();
+  });
+});
