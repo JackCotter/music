@@ -125,7 +125,10 @@ def get_user():
 
     cur.close()
     conn.close()
-    return jsonify(username)
+    if username:
+        return jsonify(username)
+    else:
+        return "User not found", 404
 
 @app.patch("/users/patch")
 @flask_login.login_required

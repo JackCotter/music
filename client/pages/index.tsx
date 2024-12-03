@@ -81,7 +81,9 @@ export default function Home() {
   return (
     <div className={styles.indexContainer}>
       {errorBar.isOpen ? (
-        <Alert severity="error">{errorBar.message ?? "An error occured"}</Alert>
+        <Alert severity="error" aria-label="errorBar">
+          {errorBar.message ?? "An error occured"}
+        </Alert>
       ) : (
         <>
           <Stack direction="row" className={styles.titleRow}>

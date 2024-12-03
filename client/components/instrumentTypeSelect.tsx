@@ -20,12 +20,13 @@ const InstrumentTypeSelect = ({
 }: InstrumentTypeSelectProps) => {
   return (
     <FormControl color="primary" sx={{ m: 1, width: 300 }}>
-      <InputLabel id="instrumentTypeSelect">
+      <InputLabel id="instrumentTypeSelectLabel">
         Desired Instrument Types
       </InputLabel>
       <Select
         labelId="instrumentTypeSelect"
         label="Desired Instrument Types"
+        id="instrumentTypeSelectId"
         name="instruments"
         multiple
         value={selectedInstruments}
@@ -42,6 +43,7 @@ const InstrumentTypeSelect = ({
               <Chip
                 key={value}
                 label={value}
+                role="option"
                 onDelete={() =>
                   setSelectedInstruments(
                     selectedInstruments.filter((i) => i !== value)
