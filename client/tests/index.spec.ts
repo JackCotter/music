@@ -10,7 +10,7 @@ test.describe("index sunny day tests", () => {
   const PROJECT2_NAME = "PROJ2 its a good project!";
   const PROJECT3_NAME = "prj3";
   test.beforeEach(async ({ page }) => {
-    page.route(/^.*\/projects\/list(?!.*q=).*$/, (route) => {
+    page.route(/^.*\/projects\/list(?!.*(q=|instruments=)).*$/, (route) => {
       console.log(route.request.toString());
       route.fulfill({
         status: 200,
@@ -83,10 +83,10 @@ test.describe("index sunny day tests", () => {
         ]),
       });
     });
-    await page.goto("http://localhost:3000/");
   });
 
   test("index page loads and projects are visible", async ({ page }) => {
+    await page.goto("http://localhost:3000/");
     const project1Name = page.locator(`text=${PROJECT1_NAME}`);
     const project1Description = page.locator(`text=${PROJECT1_DESCRIPTION}`);
     const project1Username = page.locator(`text=${PROJECT1_USERNAME}`);
@@ -105,7 +105,7 @@ test.describe("index sunny day tests", () => {
   });
 
   test("projects are searchable", async ({ page }) => {
-    page.route(/^.*\/projects\/list(?=.*instruments=).*$/, (route) => {
+    page.route(/^.*\/projects\/list(?=.*q=).*$/, (route) => {
       route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -121,6 +121,7 @@ test.describe("index sunny day tests", () => {
         ]),
       });
     });
+    await page.goto("http://localhost:3000/");
 
     const searchBar = await page.getByLabel("Search");
     await searchBar.fill(PROJECT1_NAME);
@@ -153,6 +154,7 @@ test.describe("index sunny day tests", () => {
         ]),
       });
     });
+    await page.goto("http://localhost:3000/");
 
     await page.locator("#instrumentTypeSelectId").click();
     await page.locator('li[role="option"]:nth-child(1)').click();
@@ -165,5 +167,64 @@ test.describe("index sunny day tests", () => {
 
     await expect(projectCardCount).toBe(1);
     await expect(project1Locator).toBeVisible();
+  });
+
+  test("pagination causes project refresh", async ({ page }) => {
+    page.route(/^.*\/projects\/list(?=.*page=1).*$/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          new Array(12).fill(0).map((_, index) => {
+            return {
+              description: "Project" + index.toString(),
+              lookingfor: ["Drums", "Saxophone", "Violin"],
+              lookingforstrict: false,
+              projectid: index,
+              projectname: PROJECT1_NAME,
+              username: "jacktest",
+            };
+          })
+        ),
+      });
+    });
+    page.route(/^.*\/projects\/list(?=.*page=2).*$/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify([
+          {
+            description: "DESCRIPTION",
+            lookingfor: ["Drums", "Saxophone", "Violin"],
+            lookingforstrict: false,
+            projectid: 2,
+            projectname: PROJECT2_NAME,
+            username: "jacktest2",
+          },
+        ]),
+      });
+    });
+    page.route("**/projects/pagecount*", (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(2),
+      });
+    });
+
+    await page.goto("http://localhost:3000/");
+    await page.waitForResponse("**/projects/list*");
+
+    const page2Button = await page.getByLabel("Go to page");
+    await page2Button.click();
+
+    const projectCardLocator = await page.locator(
+      "div[aria-label=projectCard]"
+    );
+    const project2Locator = await page.locator(`text=${PROJECT2_NAME}`);
+    const projectCardCount = await projectCardLocator.count();
+
+    await expect(projectCardCount).toBe(1);
+    await expect(project2Locator).toBeVisible();
   });
 });
