@@ -97,7 +97,11 @@ const ProjectCard = ({
   }, [maxLengthAcceptedPlayer]);
 
   return (
-    <Card className={styles.projectCard} onClick={(d) => handleCardClick(d)}>
+    <Card
+      className={styles.projectCard}
+      onClick={(d) => handleCardClick(d)}
+      aria-label="projectCard"
+    >
       <CardContent>
         <Stack direction="column">
           <Stack className={styles.topRow} direction="row" spacing={2}>

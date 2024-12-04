@@ -37,6 +37,7 @@ const Header: React.FC = () => {
                 <IconButton
                   color="secondary"
                   className={styles.dashboardRightButton}
+                  aria-label="newProjectButton"
                 >
                   <AddCircleOutlineIcon className={styles.dashboardRightIcon} />
                 </IconButton>
@@ -45,6 +46,7 @@ const Header: React.FC = () => {
                 <IconButton
                   color="secondary"
                   className={styles.dashboardRightButton}
+                  aria-label="profileButton"
                 >
                   <AccountCircleIcon className={styles.dashboardRightIcon} />
                 </IconButton>
@@ -53,6 +55,7 @@ const Header: React.FC = () => {
                 color="secondary"
                 className={styles.dashboardRightButton}
                 onClick={() => setIsLogoutModalOpen(true)}
+                aria-label="logoutButton"
               >
                 <LogoutIcon className={styles.dashboardRightIcon} />
               </IconButton>
