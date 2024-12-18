@@ -29,6 +29,9 @@ def track_create():
         return 'title, description, and blobData must be strings', 400
     if len(request_data["title"]) > 30 or len(request_data["description"]) > 100:
         return 'title must be less than 30 characters and description must be less than 100 characters', 400
+    if request_data["offset"] is None:
+        return 'bad offset', 400
+
     cur.execute("SELECT title FROM tracks natural join projecttracks WHERE title = %s and projectid = %s", (request_data["title"], projectid,))
     name_exists_in_project = cur.fetchone()
     if name_exists_in_project is not None:
@@ -54,8 +57,8 @@ def track_create():
     except Exception as e:
         return 'Error uploading track to our database', 400
 
-    cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, blobid, title, description) VALUES (%s, %s, %s, %s, %s)",
-                (request_data["instrumentType"], flask_login.current_user.id, blobId[0], request_data["title"], request_data["description"]))
+    cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, blobid, recording_offset, title, description) VALUES (%s, %s, %s, %s, %s, %s)",
+                (request_data["instrumentType"], flask_login.current_user.id, blobId[0], int(request_data["offset"]), request_data["title"], request_data["description"]))
     cur.execute("SELECT trackid FROM tracks WHERE blobid = %s", (blobId[0],))
     trackId = cur.fetchone()
 
@@ -78,7 +81,7 @@ def track_list():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT tracks.trackid, blobid, instrumenttype, accepted, tracks.title, tracks.description FROM projects join projecttracks on projects.projectid = projecttracks.projectid join tracks on projecttracks.trackid = tracks.trackid where projects.projectid = %s", (request.args.get("projectId"),))
+    cur.execute("SELECT tracks.trackid, blobid, recording_offset, instrumenttype, accepted, tracks.title, tracks.description FROM projects join projecttracks on projects.projectid = projecttracks.projectid join tracks on projecttracks.trackid = tracks.trackid where projects.projectid = %s", (request.args.get("projectId"),))
     tracks = cur.fetchall()
 
     formatted_tracks = []
@@ -92,7 +95,7 @@ def track_list():
             blob_data_str = str(blob_data, 'utf-8')
             os.remove(temp_file_name)
             formatted_tracks.append(
-                {"trackId": row[0], "blobData": blob_data_str, "instrumentType": row[2], "accepted": row[3], "title": row[4], "description": row[5]})
+                {"trackId": row[0], "blobData": blob_data_str, "offset": row[2], "instrumentType": row[3], "accepted": row[4], "title": row[5], "description": row[6]})
         except Exception as e:
             print(e)
             continue

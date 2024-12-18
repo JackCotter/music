@@ -1,6 +1,7 @@
 interface Track {
   trackId: number;
   blobData: string;
+  offset: number;
   title: string;
   description: string;
   instrumentType: string;

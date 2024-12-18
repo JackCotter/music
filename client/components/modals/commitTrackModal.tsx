@@ -28,6 +28,7 @@ interface CommitTrackModalProps {
   onClose: () => void;
   onSuccess: () => void;
   recordedData: Blob | null;
+  offset: number;
   projectId: string | string[] | undefined;
   accepted?: boolean;
 }
@@ -36,6 +37,7 @@ const CommitTrackModal = ({
   onClose,
   onSuccess,
   recordedData,
+  offset,
   projectId,
   accepted,
 }: CommitTrackModalProps) => {
@@ -65,6 +67,7 @@ const CommitTrackModal = ({
         formik.values.description,
         formik.values.instrument,
         recordedData,
+        offset,
         accepted
       );
     } else {

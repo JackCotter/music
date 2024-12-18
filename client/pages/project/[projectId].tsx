@@ -12,7 +12,7 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import styles from "@/styles/pages/project.module.scss";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -42,6 +42,7 @@ const Project = () => {
   const [players, setPlayers] = useState<PersistentAudioSource[] | null>(null);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
   const [recordedData, setRecordedData] = useState<Blob | null>(null);
+  const recordingOffset = useRef<number>(0);
   const [trackList, setTrackList] = useState<Track[]>([]);
   const [projectInfo, setProjectInfo] = useState<Project | null>(null);
   const [openCommitTrackModal, setOpenCommitTrackModal] =
@@ -165,6 +166,15 @@ const Project = () => {
             audioContext,
             audioBuffer
           );
+          if (maxLengthAcceptedPlayer) {
+            const offset =
+              audioBuffer.duration - maxLengthAcceptedPlayer?.duration;
+            console.log(offset);
+            if (offset > 0) {
+              recordingOffset.current = offset;
+              audioSource.offset = offset;
+            }
+          }
           players?.push(audioSource);
         }
         setRecordedData(e.data);
@@ -182,6 +192,9 @@ const Project = () => {
     }
     if (recordedData) {
       setRecordedData(null);
+    }
+    if (recordingOffset.current) {
+      recordingOffset.current = 0;
     }
     if (players && players.length > trackList.length) {
       players.pop();
@@ -369,6 +382,7 @@ const Project = () => {
           onSuccess={() => closeModalAndRefesh()}
           recordedData={recordedData}
           projectId={projectId}
+          offset={recordingOffset.current}
           accepted={projectInfo?.isowner}
         />
       )}
