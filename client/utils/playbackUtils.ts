@@ -46,7 +46,7 @@ export const startAudio = (
   setIsAudioPlaying: (isAudioPlaying: boolean) => void,
   audioContext: AudioContext | null
 ) => {
-  if (audioContext && players && players.length > 0) {
+  if (audioContext && players !== null) {
     for (let i = 0; i < trackList.length; i++) {
       if (players[i] && trackList[i].accepted) {
         players[i].start();
@@ -68,7 +68,7 @@ export const stopAudio = (
   players: PersistentAudioSource[] | null,
   setIsAudioPlaying: (isAudioPlaying: boolean) => void
 ) => {
-  if (players && players.length > 0) {
+  if (players !== null) {
     players.forEach((player) => {
       try {
         player.stop();

@@ -43,6 +43,7 @@ const Project = () => {
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
   const [recordedData, setRecordedData] = useState<Blob | null>(null);
   const recordingOffset = useRef<number>(0);
+  const recordingTimeout = useRef<NodeJS.Timeout | null>(null);
   const [trackList, setTrackList] = useState<Track[]>([]);
   const [projectInfo, setProjectInfo] = useState<Project | null>(null);
   const [openCommitTrackModal, setOpenCommitTrackModal] =
@@ -58,8 +59,15 @@ const Project = () => {
   const { projectId } = router.query;
   const { isAuthenticated } = useAuthContext();
   const maxLengthAcceptedPlayer = useMemo(() => {
-    return getMaxLengthAcceptedPlayer(players, trackList);
-  }, [players, trackList]);
+    const maxLengthAcceptedPlayer = getMaxLengthAcceptedPlayer(
+      players,
+      trackList
+    );
+    if (!maxLengthAcceptedPlayer && players && players.length === 1) {
+      return players[0];
+    }
+    return maxLengthAcceptedPlayer;
+  }, [players, trackList, recordedData]);
 
   const projectGetQuery = async (id: number) => {
     try {
@@ -110,6 +118,8 @@ const Project = () => {
   useEffect(() => {
     if (maxLengthAcceptedPlayer) {
       setDuration(maxLengthAcceptedPlayer.duration);
+    } else if (duration !== 0) {
+      setDuration(0);
     }
   }, [maxLengthAcceptedPlayer]);
 
@@ -117,6 +127,22 @@ const Project = () => {
     if (!isPlaying && recorder) {
       stopRecording();
     }
+  }, [isPlaying]);
+
+  useEffect(() => {
+    if (isPlaying && recorder) {
+      console.log("timeout set");
+      recordingTimeout.current = setTimeout(() => {
+        stopRecording();
+      }, 60000);
+    }
+    console.log(isPlaying);
+
+    return () => {
+      if (recordingTimeout.current) {
+        clearTimeout(recordingTimeout.current);
+      }
+    };
   }, [isPlaying]);
 
   const closeModalAndRefesh = () => {
@@ -188,6 +214,8 @@ const Project = () => {
     if (recorder) {
       recorder.stop();
       setRecorder(null);
+    }
+    if (isPlaying) {
       stopAudio(players, setIsPlaying);
     }
     if (recordedData) {
@@ -274,6 +302,7 @@ const Project = () => {
                     ? stopAudio(players, setIsPlaying)
                     : startAudio(players, trackList, setIsPlaying, audioContext)
                 }
+                disabled={players?.length === 0 && !isPlaying}
               >
                 {isPlaying ? <StopIcon /> : <PlayArrowIcon />}
               </IconButton>
