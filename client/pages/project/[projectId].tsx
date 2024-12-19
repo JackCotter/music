@@ -150,13 +150,7 @@ const Project = () => {
     deleteRecording();
     if (projectId === undefined) return;
     if (typeof projectId === "string") {
-      projectGetQuery(parseInt(projectId) as number);
-      populatePlayers(
-        parseInt(projectId) as number,
-        audioContext,
-        trackList,
-        setPlayers
-      );
+      trackListGetQuery(parseInt(projectId) as number);
     } else {
       console.log("Error: projectId is not a string");
     }
