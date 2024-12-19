@@ -335,44 +335,48 @@ const Project = () => {
               )}
             </Stack>
             <TrackProgressBar isPlaying={isPlaying} duration={duration} />
-            <div className={styles.acceptedTracksContainer}>
-              <Typography variant="h3" className={styles.lightText}>
-                Accepted Tracks
-              </Typography>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Title</TableCell>
-                    <TableCell>Description</TableCell>
-                    <TableCell>Instrument</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {trackList.some((track) => track.accepted) ? (
-                    trackList.map(
-                      (track, index) =>
-                        track.accepted && (
-                          <TableRow key={index}>
-                            <TableCell>{track.title}</TableCell>
-                            <TableCell>{track.description}</TableCell>
-                            <TableCell>{track.instrumentType}</TableCell>
-                          </TableRow>
-                        )
-                    )
-                  ) : (
+            {players !== null ? (
+              <div className={styles.acceptedTracksContainer}>
+                <Typography variant="h3" className={styles.lightText}>
+                  Accepted Tracks
+                </Typography>
+                <Table>
+                  <TableHead>
                     <TableRow>
-                      <TableCell colSpan={3}>
-                        {projectInfo && trackList.length == 0
-                          ? "This project has no tracks. Record one with the record button above!"
-                          : projectInfo && projectInfo.isowner
-                          ? "No tracks have been accepted. Select some from the options below!"
-                          : "No tracks have been accepted. Check back later!"}
-                      </TableCell>
+                      <TableCell>Title</TableCell>
+                      <TableCell>Description</TableCell>
+                      <TableCell>Instrument</TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHead>
+                  <TableBody>
+                    {trackList.some((track) => track.accepted) ? (
+                      trackList.map(
+                        (track, index) =>
+                          track.accepted && (
+                            <TableRow key={index}>
+                              <TableCell>{track.title}</TableCell>
+                              <TableCell>{track.description}</TableCell>
+                              <TableCell>{track.instrumentType}</TableCell>
+                            </TableRow>
+                          )
+                      )
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={3}>
+                          {projectInfo && trackList.length == 0
+                            ? "This project has no tracks. Record one with the record button above!"
+                            : projectInfo && projectInfo.isowner
+                            ? "No tracks have been accepted. Select some from the options below!"
+                            : "No tracks have been accepted. Check back later!"}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <CircularProgress />
+            )}
             {projectInfo && projectInfo.isowner && trackList.length > 0 && (
               <>
                 <TrackTable trackList={trackList} setTrackList={setTrackList} />
