@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 interface TrackProgressBarProps {
   isPlaying: boolean;
-  duration: number;
+  duration: number | undefined;
 }
 
 const TrackProgressCounter = ({
@@ -15,14 +15,12 @@ const TrackProgressCounter = ({
   const timerId = useRef<NodeJS.Timeout | undefined>();
 
   const startTimeCounter = (): void => {
-    if (duration) {
-      timerId.current = setInterval(() => {
-        const currentDateTime: Date = new Date();
-        if (startTime.current !== undefined) {
-          setElapsedTime(currentDateTime.getTime() - startTime.current);
-        }
-      }, 1000);
-    }
+    timerId.current = setInterval(() => {
+      const currentDateTime: Date = new Date();
+      if (startTime.current !== undefined) {
+        setElapsedTime(currentDateTime.getTime() - startTime.current);
+      }
+    }, 1000);
   };
 
   const stopTimeCounter = (): void => {
@@ -34,7 +32,7 @@ const TrackProgressCounter = ({
   };
 
   useEffect(() => {
-    if (isPlaying && startTime.current === undefined) {
+    if (isPlaying) {
       const currentDateTime: Date = new Date();
       startTime.current = currentDateTime.getTime();
       startTimeCounter();
@@ -47,7 +45,9 @@ const TrackProgressCounter = ({
   return (
     <Typography variant="h6">
       {new Date(elapsedTime).toISOString().slice(14, 19)}/
-      {new Date(duration * 1000).toISOString().slice(14, 19)}
+      {duration
+        ? new Date(duration * 1000).toISOString().slice(14, 19)
+        : "--:--"}
     </Typography>
   );
 };

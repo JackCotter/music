@@ -31,7 +31,7 @@ const TrackProgressBar = ({ isPlaying, duration }: TrackProgressBarProps) => {
   };
 
   useEffect(() => {
-    if (isPlaying && startTime.current === undefined) {
+    if (isPlaying) {
       const currentDateTime: Date = new Date();
       startTime.current = currentDateTime.getTime();
       startTimeCounter();
