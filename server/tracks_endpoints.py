@@ -58,7 +58,7 @@ def track_create():
         return 'Error uploading track to our database', 400
 
     cur.execute("INSERT INTO tracks (instrumenttype, contributeremail, blobid, recording_offset, title, description) VALUES (%s, %s, %s, %s, %s, %s)",
-                (request_data["instrumentType"], flask_login.current_user.id, blobId[0], int(request_data["offset"]), request_data["title"], request_data["description"]))
+                (request_data["instrumentType"], flask_login.current_user.id, blobId[0], request_data["offset"], request_data["title"], request_data["description"]))
     cur.execute("SELECT trackid FROM tracks WHERE blobid = %s", (blobId[0],))
     trackId = cur.fetchone()
 

@@ -137,7 +137,7 @@ CREATE TABLE public.tracks (
     trackid bigint NOT NULL,
     contributeremail character varying(100) NOT NULL,
     blobid integer,
-    recording_offset integer DEFAULT 0,
+    recording_offset real DEFAULT 0.0,
     title character varying(30),
     description character varying(300),
     createdat timestamp without time zone DEFAULT CURRENT_TIMESTAMP
