@@ -12,7 +12,7 @@ from utils import email_in_db, get_db_connection, has_correct_password, username
 
 app = Flask(__name__)
 app.secret_key = os.environ['SECRET_KEY']
-CORS(app, origins=["http://localhost:3000"],  supports_credentials=True, methods=["GET", "POST", "PATCH", "DELETE"])
+CORS(app, origins=["http://localhost:3000", "https://music-front-267bb60b660a.herokuapp.com/"],  supports_credentials=True, methods=["GET", "POST", "PATCH", "DELETE"])
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 app.register_blueprint(projects_blueprint)
