@@ -12,7 +12,7 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import styles from "@/styles/pages/project.module.scss";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -42,6 +42,8 @@ const Project = () => {
   const [players, setPlayers] = useState<PersistentAudioSource[] | null>(null);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
   const [recordedData, setRecordedData] = useState<Blob | null>(null);
+  const recordingOffset = useRef<number>(0);
+  const recordingTimeout = useRef<NodeJS.Timeout | null>(null);
   const [trackList, setTrackList] = useState<Track[]>([]);
   const [projectInfo, setProjectInfo] = useState<Project | null>(null);
   const [openCommitTrackModal, setOpenCommitTrackModal] =
@@ -57,8 +59,15 @@ const Project = () => {
   const { projectId } = router.query;
   const { isAuthenticated } = useAuthContext();
   const maxLengthAcceptedPlayer = useMemo(() => {
-    return getMaxLengthAcceptedPlayer(players, trackList);
-  }, [players, trackList]);
+    const maxLengthAcceptedPlayer = getMaxLengthAcceptedPlayer(
+      players,
+      trackList
+    );
+    if (!maxLengthAcceptedPlayer && players && players.length === 1) {
+      return players[0];
+    }
+    return maxLengthAcceptedPlayer;
+  }, [players, trackList, recordedData]);
 
   const projectGetQuery = async (id: number) => {
     try {
@@ -109,6 +118,8 @@ const Project = () => {
   useEffect(() => {
     if (maxLengthAcceptedPlayer) {
       setDuration(maxLengthAcceptedPlayer.duration);
+    } else if (duration !== 0) {
+      setDuration(0);
     }
   }, [maxLengthAcceptedPlayer]);
 
@@ -118,18 +129,26 @@ const Project = () => {
     }
   }, [isPlaying]);
 
+  useEffect(() => {
+    if (isPlaying && recorder) {
+      recordingTimeout.current = setTimeout(() => {
+        stopRecording();
+      }, 60000);
+    }
+
+    return () => {
+      if (recordingTimeout.current) {
+        clearTimeout(recordingTimeout.current);
+      }
+    };
+  }, [isPlaying]);
+
   const closeModalAndRefesh = () => {
     setOpenCommitTrackModal(false);
     deleteRecording();
     if (projectId === undefined) return;
     if (typeof projectId === "string") {
-      projectGetQuery(parseInt(projectId) as number);
-      populatePlayers(
-        parseInt(projectId) as number,
-        audioContext,
-        trackList,
-        setPlayers
-      );
+      trackListGetQuery(parseInt(projectId) as number);
     } else {
       console.log("Error: projectId is not a string");
     }
@@ -165,6 +184,14 @@ const Project = () => {
             audioContext,
             audioBuffer
           );
+          if (maxLengthAcceptedPlayer) {
+            const offset =
+              audioBuffer.duration - maxLengthAcceptedPlayer?.duration;
+            if (offset > 0) {
+              recordingOffset.current = offset;
+              audioSource.offset = offset;
+            }
+          }
           players?.push(audioSource);
         }
         setRecordedData(e.data);
@@ -178,10 +205,15 @@ const Project = () => {
     if (recorder) {
       recorder.stop();
       setRecorder(null);
+    }
+    if (isPlaying) {
       stopAudio(players, setIsPlaying);
     }
     if (recordedData) {
       setRecordedData(null);
+    }
+    if (recordingOffset.current) {
+      recordingOffset.current = 0;
     }
     if (players && players.length > trackList.length) {
       players.pop();
@@ -261,6 +293,7 @@ const Project = () => {
                     ? stopAudio(players, setIsPlaying)
                     : startAudio(players, trackList, setIsPlaying, audioContext)
                 }
+                disabled={players?.length === 0 && !isPlaying}
               >
                 {isPlaying ? <StopIcon /> : <PlayArrowIcon />}
               </IconButton>
@@ -299,44 +332,48 @@ const Project = () => {
               )}
             </Stack>
             <TrackProgressBar isPlaying={isPlaying} duration={duration} />
-            <div className={styles.acceptedTracksContainer}>
-              <Typography variant="h3" className={styles.lightText}>
-                Accepted Tracks
-              </Typography>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Title</TableCell>
-                    <TableCell>Description</TableCell>
-                    <TableCell>Instrument</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {trackList.some((track) => track.accepted) ? (
-                    trackList.map(
-                      (track, index) =>
-                        track.accepted && (
-                          <TableRow key={index}>
-                            <TableCell>{track.title}</TableCell>
-                            <TableCell>{track.description}</TableCell>
-                            <TableCell>{track.instrumentType}</TableCell>
-                          </TableRow>
-                        )
-                    )
-                  ) : (
+            {players !== null ? (
+              <div className={styles.acceptedTracksContainer}>
+                <Typography variant="h3" className={styles.lightText}>
+                  Accepted Tracks
+                </Typography>
+                <Table>
+                  <TableHead>
                     <TableRow>
-                      <TableCell colSpan={3}>
-                        {projectInfo && trackList.length == 0
-                          ? "This project has no tracks. Record one with the record button above!"
-                          : projectInfo && projectInfo.isowner
-                          ? "No tracks have been accepted. Select some from the options below!"
-                          : "No tracks have been accepted. Check back later!"}
-                      </TableCell>
+                      <TableCell>Title</TableCell>
+                      <TableCell>Description</TableCell>
+                      <TableCell>Instrument</TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHead>
+                  <TableBody>
+                    {trackList.some((track) => track.accepted) ? (
+                      trackList.map(
+                        (track, index) =>
+                          track.accepted && (
+                            <TableRow key={index}>
+                              <TableCell>{track.title}</TableCell>
+                              <TableCell>{track.description}</TableCell>
+                              <TableCell>{track.instrumentType}</TableCell>
+                            </TableRow>
+                          )
+                      )
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={3}>
+                          {projectInfo && trackList.length == 0
+                            ? "This project has no tracks. Record one with the record button above!"
+                            : projectInfo && projectInfo.isowner
+                            ? "No tracks have been accepted. Select some from the options below!"
+                            : "No tracks have been accepted. Check back later!"}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <CircularProgress />
+            )}
             {projectInfo && projectInfo.isowner && trackList.length > 0 && (
               <>
                 <TrackTable trackList={trackList} setTrackList={setTrackList} />
@@ -369,6 +406,7 @@ const Project = () => {
           onSuccess={() => closeModalAndRefesh()}
           recordedData={recordedData}
           projectId={projectId}
+          offset={recordingOffset.current}
           accepted={projectInfo?.isowner}
         />
       )}
