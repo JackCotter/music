@@ -131,12 +131,10 @@ const Project = () => {
 
   useEffect(() => {
     if (isPlaying && recorder) {
-      console.log("timeout set");
       recordingTimeout.current = setTimeout(() => {
         stopRecording();
       }, 60000);
     }
-    console.log(isPlaying);
 
     return () => {
       if (recordingTimeout.current) {
@@ -189,7 +187,6 @@ const Project = () => {
           if (maxLengthAcceptedPlayer) {
             const offset =
               audioBuffer.duration - maxLengthAcceptedPlayer?.duration;
-            console.log(offset);
             if (offset > 0) {
               recordingOffset.current = offset;
               audioSource.offset = offset;
