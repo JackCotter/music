@@ -6,3 +6,4 @@ flask_login
 bcrypt
 requests
 boto3
+gunicorn
